@@ -24,7 +24,7 @@ from scrapers import ticketmaster, venues, la_sources
 import re
 from scoring.scoring import score_events
 from scoring import genre_check
-from digest import render, list_page
+from digest import render, list_page, email_page
 from digest.dedupe import dedupe
 from digest.email_builder import send_html
 
@@ -169,7 +169,7 @@ def main():
         return
     subject = (f"🎛 Mo's House Music Radar — {datetime.now().strftime('%b %-d')} "
                f"({len(announced)} announced, {sum(1 for e in events if e.get('watched'))} at your spots)")
-    send_html(subject, page)
+    send_html(subject, email_page.build_email(events, announced, health, site_url=SITE_URL, dupes_removed=dupes_removed))
 
 
 if __name__ == "__main__":

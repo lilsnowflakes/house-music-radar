@@ -33,6 +33,9 @@ def _same(a, b):
 
 
 def _merge(keep, other):
+    oa, ka = _n(other.get("artist")), _n(keep.get("artist"))
+    if oa and ka and oa != ka and oa in _n(keep.get("title")) and len(oa) < len(ka):
+        keep["artist"] = other["artist"]     # a real artist name beats an event title
     srcs = keep.setdefault("sources", [keep.get("source", "")])
     for s in other.get("sources") or [other.get("source", "")]:
         if s and s not in srcs:

@@ -35,6 +35,7 @@ _cache = {}
 # SPOTIFY
 # ------------------------------------------------------------------
 _spotify_token = None
+_spotify_urls = {}  # artist name -> Spotify artist page
 _images = {}   # artist name -> Spotify photo url (used for thumbnails)
 
 def get_spotify_token():
@@ -82,6 +83,7 @@ def get_spotify_listeners(artist_name: str) -> int:
         imgs = items[0].get("images") or []
         if imgs:
             _images[artist_name] = (imgs[-2] if len(imgs) > 1 else imgs[0]).get("url", "")
+        _spotify_urls[artist_name] = (items[0].get("external_urls") or {}).get("spotify", "")
         artist_id = items[0]["id"]
 
         # Get artist details with monthly listeners
@@ -279,6 +281,7 @@ def score_events(events: list) -> list:
 
         ev["spotify_listeners"] = get_spotify_monthly_listeners(artist)
         ev["image"] = _images.get(artist, "")
+        ev["spotify_url"] = _spotify_urls.get(artist, "")
         ev["ra_followers"] = get_ra_followers(artist)
         ev["soundcloud_followers"] = get_soundcloud_followers(artist)
 

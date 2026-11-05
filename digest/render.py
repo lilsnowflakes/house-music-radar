@@ -18,6 +18,7 @@ from collections import Counter, OrderedDict
 import os
 from digest.dates import bucket, sort_key, day_label, to_date, now_pt
 from digest import theme as _theme
+from digest.artist_links import links_html
 from digest.hero import hero_svg, vapor_svg, console_svg
 from config.config import CODE_VERSION
 from digest.colors import legend_html, chips_for
@@ -41,6 +42,7 @@ def announced_card(r: dict) -> str:
         📅 {esc(r['date_str'])} &nbsp;|&nbsp; 📍 {venue_html(r['venue'], r.get('address',''))}
       </div>
       <div style="color:{ORANGE};font-size:13px;">⏳ {esc(r['on_sale_text'])}</div>
+      <div style="margin-top:6px;">{links_html(r)}</div>
       <div style="font-size:12px;margin-top:6px;">{link}</div>
     </div>"""
 
@@ -107,6 +109,7 @@ def event_row(ev: dict) -> str:
             f'<div style="color:#ccc;font-size:12px;margin-top:2px;">📍 {venue_html(ev.get("venue", ""), ev.get("address", ""))}'
             f'{" · " + sub if sub else ""}</div>'
             f'<div style="margin-top:6px;">{chips_for(ev)}</div>'
+            f'<div style="margin-top:4px;">{links_html(ev)}</div>'
             f'<div style="color:#009092;font-size:11px;">via {via}</div></div>'
             f'<div style="text-align:right;flex:none;">{sc}<div style="margin-top:6px;">{btn}</div></div></div>')
 

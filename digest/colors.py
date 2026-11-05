@@ -33,23 +33,35 @@ def genre_bucket(genres, title=""):
     return OTHER_HOUSE
 
 
-def chip(label, fg, bg):
+def chip(label, fg, bg, light=False):
+    if light and label in LIGHT:
+        fg, bg = LIGHT[label]
     return (f'<span style="display:inline-block;background:{bg};color:{fg};font-size:11px;'
             f'padding:2px 8px;border-radius:4px;margin:0 6px 4px 0;">{label}</span>')
 
 
-def chips_for(ev):
+LIGHT = {  # (text, background) on a white email
+    "Progressive / melodic": ("#4a2fc4", "#e7e1ff"), "Deep / organic / afro": ("#0b6b63", "#d6f2ee"),
+    "Tech / minimal": ("#8a5200", "#fde8c8"), "Disco / funky / garage": ("#a3246b", "#fbdcec"),
+    "House": ("#475a6c", "#e3e9ef"),
+    "On sale": ("#17692a", "#d9f2de"), "Not on sale yet": ("#9a5200", "#ffe8cc"), "Sold out": ("#b4232a", "#fadcdc"),
+    "✓ Confirmed house": ("#17692a", "#d9f2de"), "? Genre unverified": ("#7a5b00", "#fff0c2"),
+    "Tagged house by source": ("#5b5b72", "#e9e8ee"),
+}
+
+
+def chips_for(ev, light=False):
     """Genre + ticket status + genre-check chips for one show."""
     label, fg, bg = genre_bucket(ev.get("genres"), ev.get("title", ""))
-    out = chip(label, fg, bg)
+    out = chip(label, fg, bg, light)
     status = ev.get("ticket_status") or ("on sale" if ev.get("ticket_url") else "")
     if "sold out" in (ev.get("title", "") + " " + ev.get("price", "")).lower():
         status = "sold out"
     if status in STATUS:
-        out += chip(*STATUS[status])
+        out += chip(*STATUS[status], light=light)
     verdict = (ev.get("house_check") or {}).get("verdict") or "tagged"
     if verdict in CHECK:
-        out += chip(*CHECK[verdict])
+        out += chip(*CHECK[verdict], light=light)
     return out
 
 

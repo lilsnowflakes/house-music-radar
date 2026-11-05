@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 from digest.colors import chips_for, legend_html
 from digest.dates import sort_key, day_label, bucket
 from digest import theme as _theme
+from digest.artist_links import links_html
 from digest.render import style_switcher, STYLE_JS
 from config.config import CODE_VERSION
 from digest.venue_links import venue_html
@@ -60,7 +61,8 @@ def build_list_page(events, site_url="", home_url="index.html", style="classic")
             out.append(
                 f'<article class="ev" data-k="{kind}"><div class="main">{t}'
                 f'<div class="v">{venue_html(x.get("venue", ""), x.get("address", ""), "#00b9bc")}</div>'
-                f'<div class="bs">{chips_for(x)}{star}</div></div>'
+                f'<div class="bs">{chips_for(x)}{star}</div>'
+                f'<div style="margin-top:6px">{links_html(x, "#00b9bc", "12px")}</div></div>'
                 f'<div class="side"><div class="pr">{e(x.get("price", ""))}</div>'
                 f'<div class="lk">{lk}'
                 '</div></div></article>')

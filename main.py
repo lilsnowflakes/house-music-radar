@@ -9,6 +9,7 @@ main.py — House Music Radar
 """
 
 import argparse
+from zoneinfo import ZoneInfo
 import os
 import sys
 from datetime import datetime
@@ -22,7 +23,7 @@ from config.config import (
 from scrapers.scrapers import SCRAPER_MAP
 from scrapers import ticketmaster, venues, la_sources
 import re
-from scoring.scoring import score_events
+from scoring.scoring import score_events, spotify_selftest, SPOTIFY_ERRORS
 from scoring import genre_check
 from digest import render, list_page, email_page
 from digest.dedupe import dedupe
@@ -35,6 +36,9 @@ SCRAPER_MAP["dice"] = la_sources.scrape_dice
 SCRAPER_MAP["shotgun"] = la_sources.scrape_shotgun
 SCRAPER_MAP["scenestar"] = la_sources.scrape_scenestar
 SCRAPER_MAP["heard"] = la_sources.scrape_heard
+from scrapers import apis
+SCRAPER_MAP["seatgeek"] = apis.scrape_seatgeek
+SCRAPER_MAP["edmtrain"] = apis.scrape_edmtrain
 
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs")
 
@@ -74,6 +78,9 @@ def collect(cities, sources_map):
     for name, (n, err) in la_sources.LAST.items():
         if err:
             health.append((f"{name} / los_angeles detail", "error", err))
+    for name, (n, note) in apis.LAST.items():
+        if note:
+            health.append((f"{name} detail", "skipped" if note.startswith("skipped") else "error", note))
     for venue, (n, err) in venues.LAST.items():
         health.append((f"venue calendar / {venue}", "ok" if n else ("error" if err else "empty"),
                        f"{n} shows" if n else (err or "0 shows (page layout changed or blocked)")))
@@ -142,8 +149,15 @@ def main():
         events, dupes_removed = dedupe(events)
         print(f"  merged {dupes_removed} duplicate listings")
 
+        st, detail = spotify_selftest()
+        health.append(("Spotify connection", st, detail))
         if not args.no_score and events:
             events = score_events(events)
+            n_link = sum(1 for e in events if e.get("spotify_url"))
+            n_pic = sum(1 for e in events if e.get("image"))
+            health.append(("Spotify matches", "ok" if n_link else "empty",
+                           f"{n_link} of {len(events)} shows linked to an artist page, {n_pic} with photos"
+                           + (" · errors: " + " | ".join(SPOTIFY_ERRORS[:2]) if SPOTIFY_ERRORS else "")))
         events.sort(key=lambda e: e.get("score", 0), reverse=True)
 
         print("Checking Ticketmaster for announced-not-on-sale shows...")
@@ -166,6 +180,11 @@ def main():
 
     if args.demo or args.no_email:
         print("Email skipped.")
+        return
+    # The site refreshes on every run (daily); the email goes out Mondays, or whenever you press Run workflow.
+    manual = os.environ.get("GITHUB_EVENT_NAME", "") == "workflow_dispatch"
+    if not manual and datetime.now(ZoneInfo("America/Los_Angeles")).weekday() != 0 and os.environ.get("GITHUB_ACTIONS"):
+        print("Not Monday and not a manual run: website updated, email skipped.")
         return
     subject = (f"🎛 Mo's House Music Radar — {datetime.now().strftime('%b %-d')} "
                f"({len(announced)} announced, {sum(1 for e in events if e.get('watched'))} at your spots)")

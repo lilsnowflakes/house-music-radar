@@ -35,14 +35,25 @@ DICE_ANNOUNCED = []   # announced-not-on-sale shows found on DICE, read by main.
 LAST = {}             # source -> (count, error) for the health table
 
 
+class Blocked(Exception):
+    pass
+
+
 def fetch_html(url, scrolls=0):
-    """Headless browser first, plain download second."""
+    """Headless browser first, plain download second.
+    403 = the site blocks automated readers: stop, no second attempt.
+    429 = rate limited: wait as the site asks (max 60s) and try once more, then stop."""
+    status = [0]
     try:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
             b = p.chromium.launch()
             page = b.new_page(user_agent=HEADERS["User-Agent"])
-            page.goto(url, wait_until="domcontentloaded", timeout=40000)
+            resp = page.goto(url, wait_until="domcontentloaded", timeout=40000)
+            status[0] = resp.status if resp else 0
+            if status[0] in (403, 429):
+                b.close()
+                raise Blocked(status[0])
             page.wait_for_timeout(3000)
             for _ in range(scrolls):
                 page.mouse.wheel(0, 6000)
@@ -51,11 +62,38 @@ def fetch_html(url, scrolls=0):
             b.close()
             if len(html) > 20000:
                 return html
+    except Blocked:
+        pass
     except Exception as e:
         print(f"    browser fetch failed for {url}: {e}")
+    if status[0] == 403:
+        raise RuntimeError("403: this site blocks automated readers from GitHub's servers (not retried)")
+    if status[0] != 429:
+        r = requests.get(url, headers=HEADERS, timeout=25)
+        if r.status_code not in (403, 429):
+            r.raise_for_status()
+            return r.text
+        if r.status_code == 403:
+            raise RuntimeError("403: this site blocks automated readers from GitHub's servers (not retried)")
+        wait = r.headers.get("Retry-After", "30")
+    else:
+        wait = "30"
+    import time
+    time.sleep(min(int(wait) if str(wait).isdigit() else 30, 60))
     r = requests.get(url, headers=HEADERS, timeout=25)
+    if r.status_code == 429:
+        raise RuntimeError("429: rate limited twice, skipped this run (will try again next run)")
     r.raise_for_status()
     return r.text
+
+
+INBOX = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "inbox")
+
+
+def saved_page(name):
+    """A page you saved by hand into inbox/ (e.g. inbox/ra.html). Used when the site blocks automated reads."""
+    p = os.path.join(INBOX, name)
+    return open(p, encoding="utf-8", errors="ignore").read() if os.path.exists(p) else None
 
 
 def _next_data(html):
@@ -231,8 +269,22 @@ def _run(name, fn):
         return []
 
 
+def _with_inbox(name, url, parser, city, scrolls=0, inbox_file=""):
+    def go():
+        try:
+            return parser(fetch_html(url, scrolls=scrolls), city)
+        except Exception as e:
+            saved = saved_page(inbox_file) if inbox_file else None
+            if saved:
+                found = parser(saved, city)
+                print(f"    {name}: live read failed ({e}); used inbox/{inbox_file} ({len(found)} shows)")
+                return found
+            raise
+    return _run(name, go) if city == "los_angeles" else []
+
+
 def scrape_ra(city):
-    return _run("RA", lambda: parse_ra(fetch_html(RA_URL), city)) if city == "los_angeles" else []
+    return _with_inbox("RA", RA_URL, parse_ra, city, inbox_file="ra.html")
 
 
 def scrape_dice(city):
@@ -247,7 +299,7 @@ def scrape_dice(city):
 
 
 def scrape_shotgun(city):
-    return _run("Shotgun", lambda: parse_shotgun(fetch_html(SHOTGUN_URL, scrolls=4), city)) if city == "los_angeles" else []
+    return _with_inbox("Shotgun", SHOTGUN_URL, parse_shotgun, city, scrolls=4, inbox_file="shotgun.html")
 
 
 def scrape_scenestar(city):

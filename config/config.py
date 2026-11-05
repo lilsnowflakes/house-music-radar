@@ -24,6 +24,8 @@ SITE_URL = env("SITE_URL")                 # set by the workflow
 SPOTIFY_CLIENT_ID = env("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = env("SPOTIFY_CLIENT_SECRET")
 TICKETMASTER_API_KEY = env("TICKETMASTER_API_KEY")
+SEATGEEK_CLIENT_ID = env("SEATGEEK_CLIENT_ID")      # free: seatgeek.com/account/develop
+EDMTRAIN_CLIENT_KEY = env("EDMTRAIN_CLIENT_KEY")    # free on request: edmtrain.com/developer-api
 SONGKICK_API_KEY = env("SONGKICK_API_KEY")  # optional
 
 # --- WINDOWS ----------------------------------------------------------
@@ -36,7 +38,7 @@ CITIES = ["los_angeles"]
 
 SOURCES = {
     "los_angeles": ["19hz", "resident_advisor", "dice", "shotgun", "scenestar",
-                    "venue_calendars", "heard"],
+                    "venue_calendars", "heard", "seatgeek", "edmtrain"],
 }
 # Note: 1001Tracklists has no city listings, so it is not a source here.
 

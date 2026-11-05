@@ -18,10 +18,12 @@ import requests
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scoring.scoring import get_spotify_token
 
-VENUE_SOURCES = {"DICE venue", "Discotech", "Framework", "RA", "DICE", "SceneStar","Heard"}
+VENUE_SOURCES = {"DICE venue", "Discotech", "Framework", "RA", "DICE", "SceneStar", "Heard", "SeatGeek", "Edmtrain"}
 UA = {"User-Agent": "HouseMusicRadar/1.0 (personal event digest)"}
 EXTRA_HOUSE = {"nu disco", "nu-disco", "disco", "uk garage", "garage", "minimal", "minimal techno house",
-               "deep tech", "organic", "afro tech", "melodic house and techno"}
+               "deep tech", "organic", "afro tech", "melodic house and techno",
+               # techno family: same rooms, same crowd (Framework, Sound); kept, not dropped
+               "techno", "melodic techno", "minimal techno", "tech-house", "peak time techno", "progressive"}
 _cache = {}
 _last_mb = [0.0]
 
@@ -30,12 +32,29 @@ def norm(s):
     return re.sub(r"[^a-z0-9]", "", s.lower())
 
 
+def _promoters():
+    try:
+        from config.config import WATCH_PROMOTERS
+        return {norm(p) for p in WATCH_PROMOTERS}
+    except Exception:
+        return set()
+
+
 def split_acts(title):
-    """'Framework Afterparty ft. Pete Tong' -> ['Pete Tong']; 'Kyle Starkey & Paige Tomlinson' -> both."""
+    """'Framework Afterparty ft. Pete Tong' -> ['Pete Tong']; 'Kyle Starkey & Paige Tomlinson' -> both.
+    'Clinic Wednesdays: Clinic' -> [] (the part before ':' is the party name, and a party or promoter
+    name is never looked up as a band)."""
     t = re.sub(r"\(.*?\)", " ", title)
+    prefix = ""
+    if ":" in t:
+        prefix, t = t.split(":", 1)
     t = re.sub(r"(?i)\b(live|dj set|hybrid set|extended set|opening party|second date|presents?)\b", " ", t)
     parts = re.split(r"(?i)\s+(?:ft\.?|feat\.?|w/|with|b2b|x|&|and|vs\.?|\+)\s+|,|\s-\s|:", t)
     acts = [p.strip() for p in parts if len(p.strip()) > 1]
+    promos, np = _promoters(), norm(prefix)
+    acts = [a for a in acts if norm(a) not in promos and not (np and norm(a) in np)]
+    if not acts:
+        return []
     # a party-name prefix ("Framework Afterparty") is not an act
     return [a for a in acts if not re.search(r"(?i)afterparty|after party|nye|new years|warehouse|night|party|passes|tour$", a)] or acts[:1]
 
@@ -50,7 +69,10 @@ def _spotify_genres(name):
     if not tok:
         return []
     r = requests.get("https://api.spotify.com/v1/search", headers={"Authorization": f"Bearer {tok}"},
-                     params={"q": name, "type": "artist", "limit": 5}, timeout=10)
+                     params={"q": f'artist:"{name}"', "type": "artist", "market": "US", "limit": 10}, timeout=10)
+    if r.status_code != 200:
+        print(f"[Spotify] search {r.status_code} for {name}: {r.text[:160]}")
+        return []
     for it in r.json().get("artists", {}).get("items", []):
         if norm(it.get("name", "")) == norm(name) and it.get("genres"):
             return it["genres"]

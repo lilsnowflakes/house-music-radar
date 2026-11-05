@@ -38,10 +38,16 @@ _spotify_token = None
 _spotify_urls = {}  # artist name -> Spotify artist page
 _images = {}   # artist name -> Spotify photo url (used for thumbnails)
 
+_token_failed = [False]
+SPOTIFY_ERRORS = []   # first few error messages, shown in Source health
+
+
 def get_spotify_token():
     global _spotify_token
     if _spotify_token:
         return _spotify_token
+    if _token_failed[0]:
+        return None
     if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
         return None
     try:
@@ -51,7 +57,10 @@ def get_spotify_token():
             auth=(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET),
             timeout=10,
         )
-        _spotify_token = resp.json().get("access_token")
+        _spotify_token = resp.json().get("access_token") if resp.status_code == 200 else None
+        if not _spotify_token:
+            _token_failed[0] = True
+            SPOTIFY_ERRORS.append(f"token {resp.status_code}: {resp.text[:120]}")
         return _spotify_token
     except Exception as e:
         print(f"[Spotify] Token error: {e}")
@@ -72,9 +81,14 @@ def get_spotify_listeners(artist_name: str) -> int:
         resp = requests.get(
             "https://api.spotify.com/v1/search",
             headers={"Authorization": f"Bearer {token}"},
-            params={"q": artist_name, "type": "artist", "limit": 5},
+            params={"q": f'artist:"{artist_name}"', "type": "artist", "market": "US", "limit": 10},
             timeout=10,
         )
+        if resp.status_code != 200:
+            if len(SPOTIFY_ERRORS) < 3:
+                SPOTIFY_ERRORS.append(f"search {resp.status_code}: {resp.text[:120]}")
+            _cache[cache_key] = 0
+            return 0
         items = resp.json().get("artists", {}).get("items", [])
         if not items:
             _cache[cache_key] = 0
@@ -119,18 +133,9 @@ def get_spotify_monthly_listeners(artist_name: str) -> int:
     if cache_key in _cache:
         return _cache[cache_key]
 
-    try:
-        # Try scraping the artist page for monthly listeners
-        search_url = f"https://open.spotify.com/search/{requests.utils.quote(artist_name)}/artists"
-        resp = requests.get(search_url, headers=HEADERS, timeout=10)
-        # Monthly listeners are loaded via JS — fall back to API followers
-        listeners = get_spotify_listeners(artist_name)
-        _cache[cache_key] = listeners
-        return listeners
-    except Exception:
-        listeners = get_spotify_listeners(artist_name)
-        _cache[cache_key] = listeners
-        return listeners
+    listeners = get_spotify_listeners(artist_name)
+    _cache[cache_key] = listeners
+    return listeners
 
 
 # ------------------------------------------------------------------
@@ -319,3 +324,27 @@ def score_events(events: list) -> list:
     events.sort(key=lambda x: x["score"], reverse=True)
 
     return events
+
+
+def spotify_selftest():
+    """One known artist, end to end. Returns (status, detail) for the Source health table."""
+    if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
+        return ("error", "SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET are empty in this run: check the secret names "
+                         "and that radar.yml passes them under env:")
+    tok = get_spotify_token()
+    if not tok:
+        return ("error", "could not get a token. " + "; ".join(SPOTIFY_ERRORS[:1]) +
+                " (invalid_client = wrong ID/secret pair)")
+    try:
+        r = requests.get("https://api.spotify.com/v1/search", headers={"Authorization": f"Bearer {tok}"},
+                         params={"q": 'artist:"Peggy Gou"', "type": "artist", "market": "US", "limit": 10}, timeout=10)
+        if r.status_code != 200:
+            return ("error", f"search refused: {r.status_code} {r.text[:140]}")
+        items = r.json().get("artists", {}).get("items", [])
+        hit = next((i for i in items if i.get("name", "").lower() == "peggy gou"), None)
+        if not hit:
+            return ("empty", f"token ok, search ok, but test artist not found ({len(items)} results)")
+        return ("ok", f"token ok · search ok · test artist found · genres: {'yes' if hit.get('genres') else 'EMPTY'} "
+                      f"· photo: {'yes' if hit.get('images') else 'none'} · link: {'yes' if hit.get('external_urls') else 'none'}")
+    except Exception as e:
+        return ("error", f"search failed: {e}")

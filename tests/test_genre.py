@@ -18,5 +18,6 @@ kept, dropped = g.filter_venue_events(evs)
 assert [e["artist"] for e in dropped] == ["Emancipator"]
 v = {e["artist"]: e.get("house_check", {}).get("verdict") for e in kept}
 assert v["Mystery Act"] == "unverified" and v["Locky"] == "house" and v["Whoever"] is None, v
-assert g.is_house_genre("melodic house and techno") and not g.is_house_genre("melodic techno")
+assert g.is_house_genre("melodic house and techno") and g.is_house_genre("melodic techno") and not g.is_house_genre("indie rock")
+assert g.split_acts("Clinic Wednesdays: Clinic") == [], "a party/promoter name must not be looked up as a band"
 print("genre check OK")

@@ -91,6 +91,8 @@ def build_email(events, announced, health, site_url="", dupes_removed=0):
     run_no = _theme.run_number()
     run_txt = f"Run #{run_no}" if run_no else "Local build"
     groups = {k: [] for k in ("tonight", "week", "next", "later", "unknown")}
+    # Edmtrain's terms: their data must not be shown older than 24h, and an email can sit unread for days.
+    events = [x for x in events if (x.get("sources") or [x.get("source")]) != ["Edmtrain"]]
     for x in events:
         b = bucket(x.get("date_str", ""), now)
         if b != "past":

@@ -110,7 +110,8 @@ def event_row(ev: dict) -> str:
             f'{" · " + sub if sub else ""}</div>'
             f'<div style="margin-top:6px;">{chips_for(ev)}</div>'
             f'<div style="margin-top:4px;">{links_html(ev)}</div>'
-            f'<div style="color:#009092;font-size:11px;">via {via}</div></div>'
+            f'<div style="color:#009092;font-size:11px;">via {via}'
+            f'{(" · <a href=" + chr(34) + esc(ev["edmtrain_url"]) + chr(34) + " style=" + chr(34) + "color:#00b9bc;" + chr(34) + ">on Edmtrain</a>") if ev.get("edmtrain_url") else ""}</div></div>'
             f'<div style="text-align:right;flex:none;">{sc}<div style="margin-top:6px;">{btn}</div></div></div>')
 
 

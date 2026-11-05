@@ -2,8 +2,8 @@ name: House Music Radar
 
 on:
   schedule:
-    # Mondays 16:30 UTC = 8:30am Pacific in winter (9:30am in summer time)
-    - cron: "30 16 * * 1"
+    # Every day 15:30 UTC = 7:30am Pacific in winter (8:30am in summer time). Email only goes out Mondays.
+    - cron: "30 15 * * *"
   workflow_dispatch:      # lets you press "Run workflow" to test it any time
 
 permissions:
@@ -39,6 +39,8 @@ jobs:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
           TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+          SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
+          EDMTRAIN_CLIENT_KEY: ${{ secrets.EDMTRAIN_CLIENT_KEY }}
           SONGKICK_API_KEY: ${{ secrets.SONGKICK_API_KEY }}
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 

@@ -80,7 +80,7 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
 
     heard = (f'<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:10px;'
              f'text-align:center;font-family:monospace;font-size:12px;color:#bbb;margin-bottom:16px;">'
-             f'🎧 LA house radar · tap a venue for Google Maps · Smaller rooms and tonight\'s live music: '
+             f'🎧 <a href="list.html" style="color:{ORANGE};">Full list by night</a> · tap a venue for Google Maps · Smaller rooms and tonight\'s live music: '
              f'<a href="{HEARD_HOME}" style="color:{ORANGE};">Heard (getheard.live)</a></div>')
     banner += heard
 

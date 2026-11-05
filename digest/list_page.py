@@ -11,29 +11,20 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from digest.colors import chips_for, legend_html
+from digest.dates import sort_key, day_label, bucket
+from digest import theme as _theme
+from digest.render import style_switcher, STYLE_JS
+from config.config import CODE_VERSION
 from digest.venue_links import venue_html
 from config.config import HEARD_HOME
 
 e = html.escape
-MON = {m: i + 1 for i, m in enumerate("jan feb mar apr may jun jul aug sep oct nov dec".split())}
 CAL_SOURCES = ("DICE venue", "Discotech", "Framework")
 
 
-def sort_key(date_str, today):
-    m = re.search(r"([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2})(?:,\s*(\d{4}))?", re.sub(r"^[A-Za-z]{3,9}:?\s", "", date_str or ""))
-    if not m or m.group(1).lower() not in MON:
-        return (9999, 12, 31)
-    mo, d = MON[m.group(1).lower()], int(m.group(2))
-    y = int(m.group(3)) if m.group(3) else today.year + (1 if mo < today.month - 1 else 0)
-    return (y, mo, d)
-
-
-def day_label(date_str):
-    return re.sub(r"\s*\(.*$", "", (date_str or "").replace(": ", " ")).strip()
-
-
-def build_list_page(events, site_url="", home_url="index.html"):
+def build_list_page(events, site_url="", home_url="index.html", style="classic"):
     today = datetime.now(ZoneInfo("America/Los_Angeles"))
+    events = [x for x in events if bucket(x.get("date_str", ""), today) != "past"]
     evs = sorted(events, key=lambda x: (sort_key(x.get("date_str", ""), today), -x.get("score", 0)))
 
     cal = OrderedDict()
@@ -76,11 +67,13 @@ def build_list_page(events, site_url="", home_url="index.html"):
         out.append("</section>")
 
     n = len(evs)
+    run_no = _theme.run_number()
+    run_txt = f"Run #{run_no}" if run_no else "Local build"
     pm = sum(1 for x in evs if "progressive" in " ".join(x.get("genres") or []).lower() + x.get("title", "").lower()
              or "melodic" in " ".join(x.get("genres") or []).lower() + x.get("title", "").lower())
     ns = sum(1 for x in evs if x.get("watched"))
-    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>LA House Radar</title>
+    page = f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mo's House Music Radar · Full list</title>
 <style>
 :root{{--bg:#001515;--fg:#e6fafa;--mut:#00a5a7;--line:#005254;--card:#00292a;--acc:#00b9bc}}
 *{{box-sizing:border-box}}body{{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;font-size:15px;line-height:1.4;margin:0;padding:20px 16px 48px}}
@@ -102,10 +95,11 @@ def build_list_page(events, site_url="", home_url="index.html"):
 .b.s{{display:inline-block;background:#3d2a0a;color:#ffc16b;font-size:11px;padding:2px 8px;border-radius:4px}}
 .lk a{{color:var(--acc);text-decoration:none}}
 @media(max-width:520px){{.ev{{flex-direction:column;gap:8px}}.side{{text-align:left;max-width:none}}}}
-</style></head><body><div class="wrap">
+</style></head><body data-style="{style}"><div class="wrap">
+{style_switcher(style, "", "list")}
 <div class="nav"><a href="{e(home_url)}">← Weekly digest</a> · Smaller rooms and tonight's live music: <a href="{HEARD_HOME}">Heard</a></div>
-<h1>LA House Radar</h1>
-<p class="sub">Updated {today:%b %-d, %Y}. {n} Los Angeles house listings from 19hz, RA, DICE, Shotgun, SceneStar, venue calendars and Heard. Titles link to the ticket page.</p>
+<h1>Mo's House Music Radar</h1>
+<p class="sub">Updated {today:%b %-d, %Y %-I:%M %p} PT · {run_txt} · code v{CODE_VERSION}. {n} Los Angeles house listings from 19hz, RA, DICE, Shotgun, SceneStar, venue calendars and Heard. Titles link to the ticket page.</p>
 {legend_html()}
 <div class="bar" role="group" aria-label="Filter"><button data-f="" aria-pressed="true">All {n}</button><button data-f="g" aria-pressed="false">Progressive / melodic {pm}</button><button data-f="s" aria-pressed="false">Your spots {ns}</button></div>
 {vblock}
@@ -118,4 +112,5 @@ document.querySelectorAll('.bar button').forEach(b=>b.addEventListener('click',(
  document.querySelectorAll('.ev').forEach(el=>el.hidden=!!f&&!el.dataset.k.includes(f));
  document.querySelectorAll('.day').forEach(d=>d.hidden=![...d.querySelectorAll('.ev')].some(el=>!el.hidden));
 }}));
-</script></body></html>"""
+</script>{STYLE_JS}</body></html>"""
+    return _theme.apply(page, _theme.choose() if style == "classic" else (style, 0, "set"))

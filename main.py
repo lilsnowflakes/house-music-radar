@@ -25,6 +25,7 @@ import re
 from scoring.scoring import score_events
 from scoring import genre_check
 from digest import render, list_page
+from digest.dedupe import dedupe
 from digest.email_builder import send_html
 
 SCRAPER_MAP["venue_calendars"] = venues.scrape_venue_calendars
@@ -120,6 +121,7 @@ def main():
     ap.add_argument("--demo", action="store_true")
     args = ap.parse_args()
 
+    dupes_removed = 0
     if args.demo:
         events, announced, health = demo_data()
     else:
@@ -137,6 +139,9 @@ def main():
                        f"{n_ok} confirmed house, {n_unv} unverified (kept, marked ?), "
                        f"{len(dropped)} dropped as not house" + (f": {names}" if names else "")))
 
+        events, dupes_removed = dedupe(events)
+        print(f"  merged {dupes_removed} duplicate listings")
+
         if not args.no_score and events:
             events = score_events(events)
         events.sort(key=lambda e: e.get("score", 0), reverse=True)
@@ -146,21 +151,23 @@ def main():
         health.extend(tm_notes)
         announced = sorted(announced + la_sources.DICE_ANNOUNCED, key=lambda r: r.get('sort_key', ''))
 
-    page = render.build_page(events, announced, health,
-                             site_url=SITE_URL, demo=args.demo)
-
     os.makedirs(OUT_DIR, exist_ok=True)
-    with open(os.path.join(OUT_DIR, "index.html"), "w", encoding="utf-8") as f:
-        f.write(page)
-    print(f"Wrote {OUT_DIR}/index.html")
-    with open(os.path.join(OUT_DIR, "list.html"), "w", encoding="utf-8") as f:
-        f.write(list_page.build_list_page(events))
-    print(f"Wrote {OUT_DIR}/list.html")
+    page = None
+    for style, _label, index_file, list_file in render.STYLES:
+        html_ = render.build_page(events, announced, health, site_url=SITE_URL, demo=args.demo,
+                                  dupes_removed=dupes_removed, style=style)
+        if style == "classic":
+            page = html_           # the email uses the classic style
+        with open(os.path.join(OUT_DIR, index_file), "w", encoding="utf-8") as f:
+            f.write(html_)
+        with open(os.path.join(OUT_DIR, list_file), "w", encoding="utf-8") as f:
+            f.write(list_page.build_list_page(events, style=style, home_url=index_file))
+        print(f"Wrote {OUT_DIR}/{index_file} and {list_file}")
 
     if args.demo or args.no_email:
         print("Email skipped.")
         return
-    subject = (f"🎛 House Music Radar — {datetime.now().strftime('%b %-d')} "
+    subject = (f"🎛 Mo's House Music Radar — {datetime.now().strftime('%b %-d')} "
                f"({len(announced)} announced, {sum(1 for e in events if e.get('watched'))} at your spots)")
     send_html(subject, page)
 

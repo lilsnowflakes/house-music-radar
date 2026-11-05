@@ -132,3 +132,8 @@ HEARD_VENUES = {
     "footsie's": "footsie-s", "the little joy": "the-little-joy",
 }
 HEARD_HOME = "https://getheard.live/"
+
+
+# --- VERSION AND THEME -------------------------------------------------
+CODE_VERSION = "2026.11.05"   # bump when the code changes; shown on the page and in the email
+# Color theme: edit config/theme.txt (one word). "auto" rotates to a new color every run.

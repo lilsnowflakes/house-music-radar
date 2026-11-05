@@ -168,7 +168,7 @@ def build_html(events: list) -> str:
 
       <div style="text-align:center;padding:24px 0 16px;">
         <div style="font-size:28px;font-weight:bold;color:#00b9bc;
-                    letter-spacing:2px;">🎛 HOUSE MUSIC RADAR</div>
+                    letter-spacing:2px;">🎛 MO'S HOUSE MUSIC RADAR</div>
         <div style="color:#00a5a7;font-size:13px;margin-top:4px;">
           Weekly drop · {today} · Next 30 days
         </div>
@@ -209,7 +209,7 @@ def send_email(events: list):
     today = datetime.now().strftime("%b %d")
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"🎛 House Music Radar — {today}"
+    msg["Subject"] = f"🎛 Mo's House Music Radar — {today}"
     msg["From"] = EMAIL_FROM
     msg["To"] = EMAIL_TO
 
@@ -231,7 +231,7 @@ def send_email(events: list):
 def print_console_digest(events: list):
     """Fallback: prints a simple text digest to terminal."""
     print("\n" + "="*60)
-    print("🎛  HOUSE MUSIC RADAR")
+    print("🎛  MO'S HOUSE MUSIC RADAR")
     print("="*60)
 
     by_city = {}

@@ -94,7 +94,8 @@ def parse_dice(html, city="los_angeles"):
         start = re.match(r"(\d{4})-(\d{2})-(\d{2})", dt.get("event_start_date") or "")
         if not start:
             continue
-        venue = (e.get("venues") or [{}])[0].get("name", "")
+        v0 = (e.get("venues") or [{}])[0]
+        venue, address = v0.get("name", ""), v0.get("address", "")
         url = f"https://dice.fm/event/{e['id']}"
         pr = e.get("price") or {}
         amt = pr.get("amount") or pr.get("amount_from")
@@ -102,6 +103,7 @@ def parse_dice(html, city="los_angeles"):
         date_str = _fmt(int(start.group(2)), int(start.group(3)), int(start.group(1)))
         ev = normalize_event(title=e["name"], artist=e["name"], venue=venue, city=city,
                              date_str=date_str, genres=[], ticket_url=url, price=price, source="DICE")
+        ev["address"] = address
         sale = dt.get("sale_start_date") or dt.get("pre_sale_start_date")
         try:
             when = datetime.fromisoformat(sale) if sale else None
@@ -172,6 +174,50 @@ def parse_scenestar(html, city="los_angeles"):
             date_str=_fmt(int(m.group(1)), int(m.group(2)), 2000 + int(m.group(3))), genres=[],
             ticket_url=SCENESTAR_URL, price="", source="SceneStar"))
     return out
+
+
+# --- Heard (getheard.live) -------------------------------------------
+# Heard's robots.txt allows all crawlers. One request per run, no backend or API calls.
+HEARD_URL = "https://getheard.live/"
+HEARD_GENRE_WORDS = ("house", "disco", "balearic", "italo", "garage", "techno", "electro")
+
+
+def parse_heard(html, city="los_angeles"):
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    soup = BeautifulSoup(html, "html.parser")
+    today = datetime.now(ZoneInfo("America/Los_Angeles"))
+    date_str = _fmt(today.month, today.day)
+    out = []
+    for card in soup.select("div.v-card"):
+        a = card.select_one("a.v-link")
+        if not a:
+            continue
+        venue = a.get_text(strip=True)
+        hood = (card.select_one(".v-hood") or a).get_text(strip=True)
+        time_ = (card.select_one(".v-time") or a).get_text(strip=True)
+        for s in card.select(".v-set"):
+            title = (s.select_one(".v-set-title") or s).get_text(strip=True)
+            acts = [p.get_text(strip=True) for p in s.select(".v-performer-link")]
+            meta = s.select_one(".v-set-meta")
+            genre = ""
+            if meta:
+                t = meta.get_text(" ", strip=True)
+                genre = t.split("Genre:", 1)[1].strip() if "Genre:" in t else ""
+            if not any(w in genre.lower() or w in title.lower() for w in HEARD_GENRE_WORDS):
+                continue
+            toks = [g.strip().lower() for g in genre.split(",")]
+            if ("hip hop" in toks or "jazz" in toks) and not any(t in ("house", "deep house", "tech house") for t in toks):
+                continue
+            out.append(normalize_event(
+                title=f"{title} ({time_})", artist=acts[0] if acts else title, venue=venue, city=city,
+                date_str=date_str, genres=[g.strip() for g in genre.split(",") if g.strip()],
+                ticket_url=a.get("href") or HEARD_URL, price="", source="Heard"))
+    return out
+
+
+def scrape_heard(city):
+    return _run("Heard", lambda: parse_heard(fetch_html(HEARD_URL), city)) if city == "los_angeles" else []
 
 
 # --- registered scrapers (names match config.SOURCES) -----------------

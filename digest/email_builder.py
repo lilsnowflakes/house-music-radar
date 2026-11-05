@@ -21,7 +21,6 @@ from config.config import (
 
 CITY_LABELS = {
     "los_angeles": "Los Angeles",
-    "phoenix": "Phoenix",
 }
 
 SCORE_EMOJI = {
@@ -46,6 +45,7 @@ def format_number(n: int) -> str:
     return str(n)
 
 from digest.colors import chips_for
+from digest.venue_links import venue_html
 
 
 def build_event_card(ev: dict) -> str:
@@ -106,7 +106,7 @@ def build_event_card(ev: dict) -> str:
       </div>
 
       <div style="color:#ccc;font-size:13px;margin:8px 0 4px;">
-        📅 {date_str} &nbsp;|&nbsp; 📍 {venue}
+        📅 {date_str} &nbsp;|&nbsp; 📍 {venue_html(venue, ev.get('address', ''))}
       </div>
 
       <div style="margin:8px 0 2px;">{chips_html}</div>

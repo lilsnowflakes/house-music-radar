@@ -9,6 +9,8 @@ Monday email. Sections, in order:
 """
 
 import html as _html
+from digest.venue_links import venue_html
+from config.config import HEARD_HOME
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -31,7 +33,7 @@ def announced_card(r: dict) -> str:
                 padding:14px;margin-bottom:10px;font-family:monospace;">
       <div style="font-size:16px;font-weight:bold;color:#fff;">{esc(r['artist'])}</div>
       <div style="color:#ccc;font-size:13px;margin:6px 0;">
-        📅 {esc(r['date_str'])} &nbsp;|&nbsp; 📍 {esc(r['venue'])}
+        📅 {esc(r['date_str'])} &nbsp;|&nbsp; 📍 {venue_html(r['venue'], r.get('address',''))}
       </div>
       <div style="color:{ORANGE};font-size:13px;">⏳ {esc(r['on_sale_text'])}</div>
       <div style="font-size:12px;margin-top:6px;">{link}</div>
@@ -75,6 +77,12 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
         banner = (f'<div style="text-align:center;margin-bottom:16px;font-family:monospace;'
                   f'font-size:12px;"><a href="{esc(site_url)}" style="color:{ORANGE};">'
                   f'Open the live page</a></div>')
+
+    heard = (f'<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:10px;'
+             f'text-align:center;font-family:monospace;font-size:12px;color:#bbb;margin-bottom:16px;">'
+             f'🎧 LA house radar · tap a venue for Google Maps · Smaller rooms and tonight\'s live music: '
+             f'<a href="{HEARD_HOME}" style="color:{ORANGE};">Heard (getheard.live)</a></div>')
+    banner += heard
 
     # 1. Announced, not on sale
     if announced:

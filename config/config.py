@@ -36,7 +36,7 @@ CITIES = ["los_angeles"]
 
 SOURCES = {
     "los_angeles": ["19hz", "resident_advisor", "dice", "shotgun", "scenestar",
-                    "venue_calendars"],
+                    "venue_calendars", "heard"],
 }
 # Note: 1001Tracklists has no city listings, so it is not a source here.
 
@@ -109,3 +109,26 @@ VENUE_CALENDARS = {
 }
 # Calendar entries containing these words are dropped (jazz nights, comedy, passes).
 VENUE_SKIP_WORDS = ["jazz", "comedy", "season 2 passes", "two-day pass"]
+
+
+# --- VENUE ADDRESSES AND LINKS ---------------------------------------
+# Only addresses seen on the venues' own listings (DICE, Discotech) are filled in.
+# Any other venue still gets a Google Maps link, searched by name + "Los Angeles, CA".
+VENUE_ADDRESSES = {
+    "sound nightclub": "1642 N Las Palmas Ave, Los Angeles, CA 90028",
+    "the spotlight": "1601 N Cahuenga Blvd, Los Angeles, CA",
+    "origin": "613 Imperial St, Los Angeles, CA",
+}
+
+# Venues that have a page on getheard.live (names as Heard writes them, lowercased).
+HEARD_VENUES = {
+    "el cid": "el-cid", "club tee gee": "club-tee-gee", "slipper clutch": "slipper-clutch",
+    "jungle hollywood": "jungle-hollywood", "la cita": "la-cita", "silverlake lounge": "silverlake-lounge",
+    "the association": "the-association", "johnny's cocktails & hi-fi": "johnny-s-cocktails-and-hi-fi",
+    "the short stop": "the-short-stop", "the room hollywood": "the-room-hollywood",
+    "general lee's": "general-lee-s", "boardner's": "boardner-s", "loulou": "loulou",
+    "the grayson": "the-grayson", "gold line": "gold-line", "palomino": "palomino",
+    "juju social club": "juju-social-club", "animal la": "animal-la", "good housekeeping": "good-housekeeping",
+    "footsie's": "footsie-s", "the little joy": "the-little-joy",
+}
+HEARD_HOME = "https://getheard.live/"

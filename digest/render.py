@@ -18,7 +18,7 @@ from digest.email_builder import build_event_card, CITY_LABELS
 from digest.colors import legend_html
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
-ORANGE = "#ff6b35"
+ORANGE = "#00b9bc"
 
 
 def esc(x) -> str:
@@ -29,7 +29,7 @@ def announced_card(r: dict) -> str:
     link = (f'<a href="{esc(r["ticket_url"])}" style="color:{ORANGE};">Event page</a>'
             if r.get("ticket_url") else "")
     return f"""
-    <div style="background:#1a1a1a;border:1px solid #333;border-radius:8px;
+    <div style="background:#00292a;border:1px solid #005254;border-radius:8px;
                 padding:14px;margin-bottom:10px;font-family:monospace;">
       <div style="font-size:16px;font-weight:bold;color:#fff;">{esc(r['artist'])}</div>
       <div style="color:#ccc;font-size:13px;margin:6px 0;">
@@ -41,11 +41,11 @@ def announced_card(r: dict) -> str:
 
 
 def section(title: str, body: str, note: str = "") -> str:
-    note_html = (f'<div style="color:#777;font-size:12px;margin-bottom:10px;">{note}</div>'
+    note_html = (f'<div style="color:#009092;font-size:12px;margin-bottom:10px;">{note}</div>'
                  if note else "")
     return f"""
     <div style="margin-bottom:32px;">
-      <h2 style="color:{ORANGE};border-bottom:1px solid #333;padding-bottom:8px;
+      <h2 style="color:{ORANGE};border-bottom:1px solid #005254;padding-bottom:8px;
                  font-family:monospace;">{title}</h2>
       {note_html}{body}
     </div>"""
@@ -53,13 +53,13 @@ def section(title: str, body: str, note: str = "") -> str:
 
 def health_table(rows) -> str:
     colors = {"ok": "#5ec269", "empty": "#e0b341", "error": "#e5534b",
-              "skipped": "#888"}
+              "skipped": "#00a5a7"}
     trs = ""
     for label, status, detail in rows:
-        c = colors.get(status, "#888")
+        c = colors.get(status, "#00a5a7")
         trs += (f'<tr><td style="padding:4px 10px;color:#ccc;">{esc(label)}</td>'
                 f'<td style="padding:4px 10px;color:{c};">{esc(status)}</td>'
-                f'<td style="padding:4px 10px;color:#888;">{esc(detail)}</td></tr>')
+                f'<td style="padding:4px 10px;color:#00a5a7;">{esc(detail)}</td></tr>')
     return ('<table style="font-family:monospace;font-size:12px;border-collapse:collapse;">'
             f"{trs}</table>")
 
@@ -78,7 +78,7 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
                   f'font-size:12px;"><a href="{esc(site_url)}" style="color:{ORANGE};">'
                   f'Open the live page</a></div>')
 
-    heard = (f'<div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:10px;'
+    heard = (f'<div style="background:#00292a;border:1px solid #005254;border-radius:6px;padding:10px;'
              f'text-align:center;font-family:monospace;font-size:12px;color:#bbb;margin-bottom:16px;">'
              f'🎧 <a href="list.html" style="color:{ORANGE};">Full list by night</a> · tap a venue for Google Maps · Smaller rooms and tonight\'s live music: '
              f'<a href="{HEARD_HOME}" style="color:{ORANGE};">Heard (getheard.live)</a></div>')
@@ -88,7 +88,7 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
     if announced:
         body = "".join(announced_card(r) for r in announced)
     else:
-        body = '<p style="color:#888;font-family:monospace;">Nothing announced-but-unsold found this run.</p>'
+        body = '<p style="color:#00a5a7;font-family:monospace;">Nothing announced-but-unsold found this run.</p>'
     s1 = section(f"⏳ Announced, not on sale yet ({len(announced)})", body,
                  "Ticketmaster rooms only. AXS is not covered (its site blocks automated checks).")
 
@@ -97,7 +97,7 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
     if watched:
         body = "".join(build_event_card(e) for e in watched)
     else:
-        body = '<p style="color:#888;font-family:monospace;">No shows at your watched venues or promoters this run.</p>'
+        body = '<p style="color:#00a5a7;font-family:monospace;">No shows at your watched venues or promoters this run.</p>'
     s2 = section(f"★ Your spots ({len(watched)})", body,
                  "Shows at venues or from promoters you have bought tickets from before.")
 
@@ -111,7 +111,7 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
         label = CITY_LABELS.get(city, city.replace("_", " ").title())
         s3 += section(f"📍 {label} ({len(evs)})", "".join(build_event_card(e) for e in evs))
     if not s3:
-        s3 = section("📍 Other house shows", '<p style="color:#888;font-family:monospace;">None this run.</p>')
+        s3 = section("📍 Other house shows", '<p style="color:#00a5a7;font-family:monospace;">None this run.</p>')
 
     # 4. Health
     s4 = section("Source health", health_table(health),
@@ -121,15 +121,15 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
 <html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>House Music Radar</title></head>
-<body style="background:#0d0d0d;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
+<body style="background:#001515;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
   {banner}
   <div style="text-align:center;padding:16px 0;">
     <div style="font-size:28px;font-weight:bold;color:{ORANGE};letter-spacing:2px;">🎛 HOUSE MUSIC RADAR</div>
-    <div style="color:#888;font-size:13px;margin-top:4px;">{stamp} · Los Angeles</div>
+    <div style="color:#00a5a7;font-size:13px;margin-top:4px;">{stamp} · Los Angeles</div>
   </div>
   {legend_html()}
   {s1}{s2}{s3}{s4}
-  <div style="text-align:center;color:#444;font-size:11px;padding:24px 0;border-top:1px solid #222;">
-    Updated every Monday morning. Scores: Spotify 50% · RA 30% · SoundCloud 20%.
+  <div style="text-align:center;color:#007c7d;font-size:11px;padding:24px 0;border-top:1px solid #003e3f;">
+    Updated every Monday morning · build 3 (turquoise, Maps, list page). Scores: Spotify 50% · RA 30% · SoundCloud 20%.
   </div>
 </body></html>"""

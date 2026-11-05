@@ -37,7 +37,7 @@ def heard_url(venue):
     return ""
 
 
-def venue_html(venue, address="", color="#ff6b35"):
+def venue_html(venue, address="", color="#00b9bc"):
     """Venue name linked to Google Maps, plus a small 'Heard' link when it exists."""
     if not venue:
         return ""

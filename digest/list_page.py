@@ -45,7 +45,7 @@ def build_list_page(events, site_url="", home_url="index.html"):
         lis = "".join(
             f'<li><b>{e(day_label(i["date_str"]))}</b> {e(i["artist"] or i["title"])}'
             f' <i>{e(i.get("price", ""))}</i></li>' for i in items)
-        vh += (f'<div class="vn"><div class="vt">{venue_html(venue, items[0].get("address", ""), "#9d8bff")}</div>'
+        vh += (f'<div class="vn"><div class="vt">{venue_html(venue, items[0].get("address", ""), "#00b9bc")}</div>'
                f'<span class="vs">{e(items[0]["source"])}</span><ul>{lis}</ul></div>')
     vblock = (f'<section class="vsec"><h2>Straight from the venue calendars</h2>'
               f'<p class="vnote">Read directly from venue calendars. Tap a venue name for Google Maps.</p>'
@@ -68,7 +68,7 @@ def build_list_page(events, site_url="", home_url="index.html"):
             t = f'<a class="t" href="{e(link)}" target="_blank" rel="noopener">{title}</a>' if link else f'<span class="t">{title}</span>'
             out.append(
                 f'<article class="ev" data-k="{kind}"><div class="main">{t}'
-                f'<div class="v">{venue_html(x.get("venue", ""), x.get("address", ""), "#9d8bff")}</div>'
+                f'<div class="v">{venue_html(x.get("venue", ""), x.get("address", ""), "#00b9bc")}</div>'
                 f'<div class="bs">{chips_for(x)}{star}</div></div>'
                 f'<div class="side"><div class="pr">{e(x.get("price", ""))}</div>'
                 f'<div class="lk">{lk}'
@@ -82,14 +82,14 @@ def build_list_page(events, site_url="", home_url="index.html"):
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>LA House Radar</title>
 <style>
-:root{{--bg:#12101a;--fg:#ece9f5;--mut:#9b95ad;--line:#2b2740;--card:#1b1828;--acc:#9d8bff}}
+:root{{--bg:#001515;--fg:#e6fafa;--mut:#00a5a7;--line:#005254;--card:#00292a;--acc:#00b9bc}}
 *{{box-sizing:border-box}}body{{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;font-size:15px;line-height:1.4;margin:0;padding:20px 16px 48px}}
 .wrap{{max-width:820px;margin:0 auto}}h1{{font-weight:800;font-size:clamp(30px,6vw,46px);letter-spacing:-.02em;margin:0 0 6px}}
 .sub{{color:var(--mut);font-size:14px;margin:0 0 18px;max-width:62ch}}.sub a,.nav a{{color:var(--acc)}}
 .nav{{font:12px monospace;margin-bottom:12px}}
 .bar{{position:sticky;top:0;background:var(--bg);padding:10px 0;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line);z-index:5}}
 .bar button{{font:500 13px monospace;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:7px 12px;border-radius:999px;cursor:pointer}}
-.bar button[aria-pressed=true]{{background:var(--acc);border-color:var(--acc);color:#12101a}}
+.bar button[aria-pressed=true]{{background:var(--acc);border-color:var(--acc);color:#001515}}
 .vsec{{margin:18px 0 6px}}.vsec h2{{font:500 13px monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);margin:0 0 6px}}
 .vnote{{color:var(--mut);font-size:13px;margin:0 0 10px}}.vg{{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}}
 .vn{{background:var(--card);border:1px solid var(--acc);border-radius:10px;padding:12px 14px;min-width:0}}.vt{{font-weight:800;display:inline}}

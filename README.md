@@ -3,7 +3,7 @@
 Every Monday GitHub runs the script, builds a web page, and emails you the same page.
 
 What you get: announced-but-not-on-sale shows at your Ticketmaster rooms, shows at your
-watched venues/promoters (starred), all other LA + Phoenix house shows scored by
+watched venues/promoters (starred), all other Los Angeles house shows scored by
 Spotify / RA / SoundCloud, and a "Source health" table showing which sources worked.
 
 ## Setup (about 20 minutes, once)
@@ -45,6 +45,7 @@ does, it stays empty and the table will say so.
 - Venue calendars (Sound, Reframe/Framework, Origin, The Spotlight) are read directly. Every act on them
   is genre-checked (Spotify, then MusicBrainz). Not-house acts are dropped and named in Source health;
   acts that cannot be matched are kept with a "?" for you to judge.
+- Los Angeles only. RA, DICE, Shotgun and SceneStar were rebuilt from saved pages on Nov 4, 2026. If a site blocks GitHub's servers it shows yellow in Source health.
 - AXS is not covered. Its site blocks automated checks.
 - 1001Tracklists is not a source (it has no city listings).
 - Edit `config/config.py` to change watched venues, promoters, Ticketmaster rooms, or cities.

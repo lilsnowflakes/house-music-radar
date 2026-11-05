@@ -20,14 +20,20 @@ from config.config import (
     TICKETMASTER_VENUES, SITE_URL, WATCH_ARTISTS,
 )
 from scrapers.scrapers import SCRAPER_MAP
-from scrapers import ticketmaster, venues
+from scrapers import ticketmaster, venues, la_sources
 import re
 from scoring.scoring import score_events
 from scoring import genre_check
-from digest import render
+from digest import render, list_page
 from digest.email_builder import send_html
 
 SCRAPER_MAP["venue_calendars"] = venues.scrape_venue_calendars
+# Rebuilt Los Angeles readers replace the old guessed ones.
+SCRAPER_MAP["resident_advisor"] = la_sources.scrape_ra
+SCRAPER_MAP["dice"] = la_sources.scrape_dice
+SCRAPER_MAP["shotgun"] = la_sources.scrape_shotgun
+SCRAPER_MAP["scenestar"] = la_sources.scrape_scenestar
+SCRAPER_MAP["heard"] = la_sources.scrape_heard
 
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs")
 
@@ -64,6 +70,9 @@ def collect(cities, sources_map):
                                "0 events (blocked, layout changed, or none listed)"))
             events.extend(found)
 
+    for name, (n, err) in la_sources.LAST.items():
+        if err:
+            health.append((f"{name} / los_angeles detail", "error", err))
     for venue, (n, err) in venues.LAST.items():
         health.append((f"venue calendar / {venue}", "ok" if n else ("error" if err else "empty"),
                        f"{n} shows" if n else (err or "0 shows (page layout changed or blocked)")))
@@ -94,7 +103,7 @@ def demo_data():
              date_str="Fri Nov 13", score=82, watched=True),
         dict(base, artist="DEMO Artist B", venue="Some Other Club", city="los_angeles",
              date_str="Sat Nov 14", score=41, watched=False),
-        dict(base, artist="DEMO Artist C", venue="Walter Studios", city="phoenix",
+        dict(base, artist="DEMO Artist C", venue="Origin", city="los_angeles",
              date_str="Fri Nov 20", score=55, watched=True),
     ]
     announced = [dict(city="los_angeles", artist="DEMO Headliner", title="", venue="The Wiltern",
@@ -135,6 +144,7 @@ def main():
         print("Checking Ticketmaster for announced-not-on-sale shows...")
         announced, tm_notes = ticketmaster.announced_not_on_sale(TICKETMASTER_VENUES)
         health.extend(tm_notes)
+        announced = sorted(announced + la_sources.DICE_ANNOUNCED, key=lambda r: r.get('sort_key', ''))
 
     page = render.build_page(events, announced, health,
                              site_url=SITE_URL, demo=args.demo)
@@ -143,6 +153,9 @@ def main():
     with open(os.path.join(OUT_DIR, "index.html"), "w", encoding="utf-8") as f:
         f.write(page)
     print(f"Wrote {OUT_DIR}/index.html")
+    with open(os.path.join(OUT_DIR, "list.html"), "w", encoding="utf-8") as f:
+        f.write(list_page.build_list_page(events))
+    print(f"Wrote {OUT_DIR}/list.html")
 
     if args.demo or args.no_email:
         print("Email skipped.")

@@ -75,10 +75,10 @@ def build_event_card(ev: dict) -> str:
     # YouTube links
     yt_html = ""
     if yt_set:
-        yt_html += f'<a href="{yt_set}" style="color:#ff6b35;">▶ Watch DJ Set</a>'
+        yt_html += f'<a href="{yt_set}" style="color:#00b9bc;">▶ Watch DJ Set</a>'
     elif yt_tracks:
         links = " &nbsp;|&nbsp; ".join(
-            [f'<a href="{u}" style="color:#ff6b35;">▶ Track {i+1}</a>'
+            [f'<a href="{u}" style="color:#00b9bc;">▶ Track {i+1}</a>'
              for i, u in enumerate(yt_tracks[:2])]
         )
         yt_html = links
@@ -86,23 +86,23 @@ def build_event_card(ev: dict) -> str:
     ticket_html = ""
     if ticket_url:
         price_label = f" — {price}" if price else ""
-        ticket_html = f'<a href="{ticket_url}" style="background:#ff6b35;color:#fff;padding:4px 12px;border-radius:4px;text-decoration:none;font-size:12px;">GET TICKETS{price_label}</a>'
+        ticket_html = f'<a href="{ticket_url}" style="background:#00b9bc;color:#001515;padding:4px 12px;border-radius:4px;text-decoration:none;font-size:12px;">GET TICKETS{price_label}</a>'
 
     return f"""
-    <div style="background:#1a1a1a;border:1px solid #333;border-radius:8px;
+    <div style="background:#00292a;border:1px solid #005254;border-radius:8px;
                 padding:16px;margin-bottom:12px;font-family:monospace;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;">
         <div>
           <span style="font-size:18px;font-weight:bold;color:#fff;">{star}{emoji} {artist}</span>
-          <span style="color:#888;font-size:12px;margin-left:8px;">via {source}</span>
+          <span style="color:#00a5a7;font-size:12px;margin-left:8px;">via {source}</span>
         </div>
-        <div style="text-align:right;color:#ff6b35;font-size:20px;font-weight:bold;">
-          {score:.0f}<span style="font-size:11px;color:#888;">/100</span>
+        <div style="text-align:right;color:#00b9bc;font-size:20px;font-weight:bold;">
+          {score:.0f}<span style="font-size:11px;color:#00a5a7;">/100</span>
         </div>
       </div>
 
       <div style="color:#aaa;font-size:12px;margin:6px 0 2px;">
-        <span style="color:#ff6b35;">{bar}</span>
+        <span style="color:#00b9bc;">{bar}</span>
       </div>
 
       <div style="color:#ccc;font-size:13px;margin:8px 0 4px;">
@@ -110,9 +110,9 @@ def build_event_card(ev: dict) -> str:
       </div>
 
       <div style="margin:8px 0 2px;">{chips_html}</div>
-      {f'<div style="color:#888;font-size:11px;margin:4px 0;">{genres_str}</div>' if genres_str else ''}
+      {f'<div style="color:#00a5a7;font-size:11px;margin:4px 0;">{genres_str}</div>' if genres_str else ''}
 
-      <div style="color:#888;font-size:11px;margin:8px 0;">
+      <div style="color:#00a5a7;font-size:11px;margin:8px 0;">
         {"🎵 Spotify: " + format_number(spotify) if spotify else ""}
         {"&nbsp;·&nbsp; 🎛 RA: " + format_number(ra_f) if ra_f else ""}
         {"&nbsp;·&nbsp; ☁️ SoundCloud: " + format_number(sc_f) if sc_f else ""}
@@ -120,7 +120,7 @@ def build_event_card(ev: dict) -> str:
 
       <div style="margin-top:10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
         {ticket_html}
-        {f'<span style="color:#888;font-size:12px;">{yt_html}</span>' if yt_html else ''}
+        {f'<span style="color:#00a5a7;font-size:12px;">{yt_html}</span>' if yt_html else ''}
       </div>
     </div>
     """
@@ -141,7 +141,7 @@ def build_html(events: list) -> str:
         cards = "".join([build_event_card(ev) for ev in city_events])
         city_sections += f"""
         <div style="margin-bottom:32px;">
-          <h2 style="color:#ff6b35;border-bottom:1px solid #333;
+          <h2 style="color:#00b9bc;border-bottom:1px solid #005254;
                      padding-bottom:8px;font-family:monospace;">
             📍 {label} — {len(city_events)} shows
           </h2>
@@ -151,7 +151,7 @@ def build_html(events: list) -> str:
 
     if not city_sections:
         city_sections = """
-        <p style="color:#888;text-align:center;padding:40px 0;">
+        <p style="color:#00a5a7;text-align:center;padding:40px 0;">
           No house music events found this week. Check back next Monday.
         </p>
         """
@@ -163,22 +163,22 @@ def build_html(events: list) -> str:
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
-    <body style="background:#0d0d0d;color:#fff;font-family:monospace;
+    <body style="background:#001515;color:#fff;font-family:monospace;
                  max-width:680px;margin:0 auto;padding:20px;">
 
       <div style="text-align:center;padding:24px 0 16px;">
-        <div style="font-size:28px;font-weight:bold;color:#ff6b35;
+        <div style="font-size:28px;font-weight:bold;color:#00b9bc;
                     letter-spacing:2px;">🎛 HOUSE MUSIC RADAR</div>
-        <div style="color:#888;font-size:13px;margin-top:4px;">
+        <div style="color:#00a5a7;font-size:13px;margin-top:4px;">
           Weekly drop · {today} · Next 30 days
         </div>
-        <div style="color:#555;font-size:11px;margin-top:4px;">
+        <div style="color:#009092;font-size:11px;margin-top:4px;">
           Sources: RA · 19hz · DICE · Shotgun · Scenestar · EDMtrain · Songkick
         </div>
       </div>
 
-      <div style="background:#111;border:1px solid #222;border-radius:6px;
-                  padding:12px 16px;margin-bottom:24px;font-size:12px;color:#888;">
+      <div style="background:#00292a;border:1px solid #003e3f;border-radius:6px;
+                  padding:12px 16px;margin-bottom:24px;font-size:12px;color:#00a5a7;">
         🔥🔥🔥 = Top tier (80–100) &nbsp;|&nbsp;
         🔥🔥 = Strong (60–80) &nbsp;|&nbsp;
         🔥 = Solid (40–60) &nbsp;|&nbsp;
@@ -188,8 +188,8 @@ def build_html(events: list) -> str:
 
       {city_sections}
 
-      <div style="text-align:center;color:#444;font-size:11px;
-                  padding:24px 0;border-top:1px solid #222;margin-top:16px;">
+      <div style="text-align:center;color:#007c7d;font-size:11px;
+                  padding:24px 0;border-top:1px solid #003e3f;margin-top:16px;">
         House Music Radar · Auto-generated every Monday 8:30am PT<br>
         Scoring: Spotify listeners (50%) + RA followers (30%) + SoundCloud (20%)
       </div>

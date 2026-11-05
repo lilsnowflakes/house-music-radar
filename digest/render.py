@@ -19,7 +19,7 @@ import os
 from digest.dates import bucket, sort_key, day_label, to_date, now_pt
 from digest import theme as _theme
 from digest.artist_links import links_html
-from digest.hero import hero_svg, vapor_svg, console_svg
+from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg
 from config.config import CODE_VERSION
 from digest.colors import legend_html, chips_for
 
@@ -156,8 +156,12 @@ def source_map(events, health):
     return counts + health_table(health)
 
 
+STRIPES = ('<div style="height:8px;border-radius:4px;margin:2px 0 10px;background:linear-gradient(90deg,#b8451f 0 22%,#d9772b 22% 44%,#7d7a2c 44% 66%,#e8d2a6 66% 84%,#6a3418 84%);"></div>')
+
 STYLES = [("classic", "Classic", "index.html", "list.html"), ("outrun", "Outrun", "index-outrun.html", "list-outrun.html"),
-          ("console", "Console", "index-console.html", "list-console.html")]
+          ("console", "Console", "index-console.html", "list-console.html"),
+          ("night", "Night", "index-night.html", "list-night.html"), ("deck", "Deck", "index-deck.html", "list-deck.html"),
+          ("redline", "Redline", "index-redline.html", "list-redline.html")]
 
 
 def style_switcher(active, base, page="index"):
@@ -241,12 +245,22 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
                 f'Yellow or red means that source returned nothing. Check it before trusting the lists above.</div>'
                 f'{source_map(events, health)}</div>')
 
-    how = ("rotates to a new color every run" if th[2] == "auto"
-           else "set by config/theme.txt")
+    how = {"rotate": "rotates every run", "auto": "default for Classic"}.get(th[2], "set by config/theme.txt")
     foot = (f'{run_txt} · last ran {ran} · code v{CODE_VERSION} · color: {th[0]} ({how}). '
-            f'To pick one, edit config/theme.txt (auto, turquoise, violet, magenta, amber, green, blue, red, outrun, console).<br>'
+            f'To pick one, edit config/theme.txt (auto, mahogany, rotate, turquoise, violet, magenta, amber, green, blue, red).<br>'
             f'Updated every Monday morning. Within each day shows are A to Z by artist. '
             f'Scores: Spotify 50% · RA 30% · SoundCloud 20%.')
+
+    from datetime import timedelta
+    day0 = now.date()
+    counts = [sum(1 for x in events if to_date(x.get("date_str", ""), now) == day0 + timedelta(days=i)) for i in range(7)]
+    tl = [f"{(x.get('artist') or x.get('title') or '').upper()} @ {(x.get('venue') or '').upper()}" for x in groups["tonight"]]
+    n_all = sum(len(v) for v in groups.values())
+    hero = {"outrun": lambda: vapor_svg(run_no),
+            "console": lambda: console_svg(run_no, len(groups["tonight"]), n_all),
+            "night": lambda: night_svg(counts),
+            "deck": lambda: deck_svg(tl, run_no),
+            "redline": lambda: radar_svg(len(groups["tonight"]))}.get(th[0], lambda: hero_svg(run_no))()
 
     page = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
@@ -255,11 +269,12 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
 <body data-style="{style}" style="background:#001515;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
   {banner}
   {style_switcher(style, base)}
-  {vapor_svg(run_no) if th[0] == 'outrun' else (console_svg(run_no, len(groups['tonight']), sum(len(v) for v in groups.values())) if th[0] == 'console' else hero_svg(run_no))}
+  {hero}
   <div style="text-align:center;padding:14px 0 6px;">
     <div style="font-size:28px;font-weight:bold;color:{ORANGE};letter-spacing:2px;">🎛 MO'S HOUSE MUSIC RADAR</div>
     <div style="color:#00a5a7;font-size:13px;margin-top:4px;">{stamp} · Los Angeles · {run_txt} · last ran {ran}</div>
   </div>
+  {STRIPES if th[0] == 'mahogany' else ''}
   {nav}
   {legend_html()}
   {s_tonight}{s_week}{s_next}{s_later}{s_ann}{s_spots}

@@ -24,7 +24,7 @@ def spotify_url(ev):
     direct = ev.get("spotify_url")
     if direct:
         return direct, "Spotify"
-    return f"https://open.spotify.com/search/{quote(artist_name(ev))}/artists", "Spotify"
+    return f"https://open.spotify.com/search/{quote(artist_name(ev))}", "Spotify"
 
 
 ICONS = {

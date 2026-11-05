@@ -72,7 +72,7 @@ def get_spotify_listeners(artist_name: str) -> int:
         resp = requests.get(
             "https://api.spotify.com/v1/search",
             headers={"Authorization": f"Bearer {token}"},
-            params={"q": artist_name, "type": "artist", "limit": 1},
+            params={"q": artist_name, "type": "artist", "limit": 5},
             timeout=10,
         )
         items = resp.json().get("artists", {}).get("items", [])
@@ -80,11 +80,17 @@ def get_spotify_listeners(artist_name: str) -> int:
             _cache[cache_key] = 0
             return 0
 
-        imgs = items[0].get("images") or []
-        if imgs:
-            _images[artist_name] = (imgs[-2] if len(imgs) > 1 else imgs[0]).get("url", "")
-        _spotify_urls[artist_name] = (items[0].get("external_urls") or {}).get("spotify", "")
-        artist_id = items[0]["id"]
+        # Pick the result whose name matches the artist (highest popularity if several); never guess.
+        import re as _re
+        want = _re.sub(r"[^a-z0-9]", "", artist_name.lower())
+        match = [i for i in items if _re.sub(r"[^a-z0-9]", "", i.get("name", "").lower()) == want]
+        pick = max(match, key=lambda i: i.get("popularity", 0)) if match else None
+        if pick:
+            imgs = pick.get("images") or []
+            if imgs:
+                _images[artist_name] = (imgs[-2] if len(imgs) > 1 else imgs[0]).get("url", "")
+            _spotify_urls[artist_name] = (pick.get("external_urls") or {}).get("spotify", "")
+        artist_id = (pick or items[0])["id"]
 
         # Get artist details with monthly listeners
         resp2 = requests.get(
@@ -273,7 +279,8 @@ def score_events(events: list) -> list:
 
     # First pass: collect raw numbers for normalization
     for ev in events:
-        artist = ev.get("artist", "").split(",")[0].strip()
+        from digest.artist_links import artist_name
+        artist = artist_name(ev)
         if not artist:
             continue
 

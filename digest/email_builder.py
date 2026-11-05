@@ -45,6 +45,9 @@ def format_number(n: int) -> str:
         return f"{n/1_000:.0f}K"
     return str(n)
 
+from digest.colors import chips_for
+
+
 def build_event_card(ev: dict) -> str:
     score = ev.get("score", 0)
     emoji = get_score_emoji(score)
@@ -54,11 +57,7 @@ def build_event_card(ev: dict) -> str:
     date_str = ev.get("date_str", "")
     genres = ev.get("genres", [])
     genres_str = " · ".join(g.title() for g in genres[:4]) if genres else ""
-    chk = (ev.get("house_check") or {}).get("verdict")
-    if chk == "house":
-        genres_str = "✓ house (" + (ev["house_check"]["by"] or "checked") + "): " + genres_str
-    elif chk == "unverified":
-        genres_str = "? genre not verified, judge by the name"
+    chips_html = chips_for(ev)
     ticket_url = ev.get("ticket_url", "")
     source = ev.get("source", "")
     price = ev.get("price", "")
@@ -110,6 +109,7 @@ def build_event_card(ev: dict) -> str:
         📅 {date_str} &nbsp;|&nbsp; 📍 {venue}
       </div>
 
+      <div style="margin:8px 0 2px;">{chips_html}</div>
       {f'<div style="color:#888;font-size:11px;margin:4px 0;">{genres_str}</div>' if genres_str else ''}
 
       <div style="color:#888;font-size:11px;margin:8px 0;">

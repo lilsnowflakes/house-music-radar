@@ -13,6 +13,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from digest.email_builder import build_event_card, CITY_LABELS
+from digest.colors import legend_html
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 ORANGE = "#ff6b35"
@@ -116,8 +117,9 @@ def build_page(events, announced, health, site_url="", demo=False) -> str:
   {banner}
   <div style="text-align:center;padding:16px 0;">
     <div style="font-size:28px;font-weight:bold;color:{ORANGE};letter-spacing:2px;">🎛 HOUSE MUSIC RADAR</div>
-    <div style="color:#888;font-size:13px;margin-top:4px;">{stamp} · Los Angeles + Phoenix</div>
+    <div style="color:#888;font-size:13px;margin-top:4px;">{stamp} · Los Angeles</div>
   </div>
+  {legend_html()}
   {s1}{s2}{s3}{s4}
   <div style="text-align:center;color:#444;font-size:11px;padding:24px 0;border-top:1px solid #222;">
     Updated every Monday morning. Scores: Spotify 50% · RA 30% · SoundCloud 20%.

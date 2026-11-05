@@ -32,12 +32,11 @@ TM_LOOKAHEAD_DAYS = 180      # announced-not-on-sale: look further out
 YOUTUBE_SET_LOOKBACK_DAYS = 60
 
 # --- CITIES AND SOURCES ----------------------------------------------
-CITIES = ["los_angeles", "phoenix"]
+CITIES = ["los_angeles"]
 
 SOURCES = {
-    "los_angeles": ["resident_advisor", "19hz", "dice", "shotgun",
-                    "scenestar", "songkick", "venue_calendars"],
-    "phoenix": ["resident_advisor", "19hz", "dice", "shotgun", "edmtrain"],
+    "los_angeles": ["19hz", "resident_advisor", "dice", "shotgun", "scenestar",
+                    "venue_calendars"],
 }
 # Note: 1001Tracklists has no city listings, so it is not a source here.
 
@@ -68,7 +67,6 @@ WATCH_VENUES = {
         "El Rey Theatre", "Fonda Theatre", "Greek Theatre", "Peacock Theater",
         "Santa Barbara Bowl",
     ],
-    "phoenix": ["Walter Studios", "Walter Where"],
 }
 
 # Pop-up nights move around, so promoters are watched too.
@@ -92,7 +90,6 @@ TICKETMASTER_VENUES = {
         ("Hollywood Palladium", "CA"), ("Hollywood Bowl", "CA"),
         ("Kia Forum", "CA"), ("The Torch", "CA"),
     ],
-    "phoenix": [],   # add Phoenix rooms here once you pick them
 }
 
 

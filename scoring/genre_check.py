@@ -18,7 +18,7 @@ import requests
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scoring.scoring import get_spotify_token
 
-VENUE_SOURCES = {"DICE venue", "Discotech", "Framework"}
+VENUE_SOURCES = {"DICE venue", "Discotech", "Framework", "RA", "DICE", "SceneStar"}
 UA = {"User-Agent": "HouseMusicRadar/1.0 (personal event digest)"}
 EXTRA_HOUSE = {"nu disco", "nu-disco", "disco", "uk garage", "garage", "minimal", "minimal techno house",
                "deep tech", "organic", "afro tech", "melodic house and techno"}

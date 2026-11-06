@@ -195,7 +195,13 @@ def main():
     for name, (st, note) in moments.LAST.items():
         health.append((name, st, note))
     with open(os.path.join(OUT_DIR, "moments.html"), "w", encoding="utf-8") as f:
-        f.write(moments.timeline_page(photos))
+        f.write(moments.timeline_page(photos, site_url=SITE_URL))
+    from digest import ogimage, highlight as _hlm
+    from digest.dates import bucket as _b, now_pt as _now
+    _n = _now()
+    _hl_ev = _hlm.pick(events, _n)[0]
+    ogimage.build(sum(1 for e in events if _b(e.get("date_str", ""), _n) == "tonight"),
+                  sum(1 for e in events if _b(e.get("date_str", ""), _n) != "past"), _hl_ev, _n)
     page = None
     for style, _label, index_file, list_file in render.STYLES:
         html_ = render.build_page(events, announced, health, site_url=SITE_URL, demo=args.demo,
@@ -205,7 +211,7 @@ def main():
         with open(os.path.join(OUT_DIR, index_file), "w", encoding="utf-8") as f:
             f.write(html_)
         with open(os.path.join(OUT_DIR, list_file), "w", encoding="utf-8") as f:
-            f.write(list_page.build_list_page(events, style=style, home_url=index_file))
+            f.write(list_page.build_list_page(events, site_url=SITE_URL, style=style, home_url=index_file))
         print(f"Wrote {OUT_DIR}/{index_file} and {list_file}")
 
     if args.demo or args.no_email:

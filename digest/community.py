@@ -36,6 +36,11 @@ def build_images(info):
     except ImportError:
         return None
     try:
+        import pillow_heif
+        pillow_heif.register_heif_opener()
+    except ImportError:
+        pass
+    try:
         im = Image.open(os.path.join(SRC, info["photo"]))
         im = ImageOps.exif_transpose(im).convert("RGB")     # keep it upright, then drop all metadata
     except Exception:

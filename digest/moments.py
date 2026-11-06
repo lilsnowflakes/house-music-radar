@@ -39,8 +39,20 @@ def _load_index():
 
 
 def _caption(name, desc):
-    text = (desc or "").strip() or re.sub(r"\.[a-z0-9]+$", "", name or "", flags=re.I).replace("_", " ")
-    cap, _, credit = text.partition("|")
+    """Caption and credit from the Drive description, or else from the file name.
+    'Clinic at Jungle | photo @mo'  or  'Clinic at Jungle - photo @mo'  -> ("Clinic at Jungle", "photo @mo").
+    Camera names like IMG_4821 or PXL_2026... are not used as captions."""
+    text = (desc or "").strip()
+    if not text:
+        text = re.sub(r"\.[a-z0-9]{3,4}$", "", name or "", flags=re.I).replace("_", " ").strip()
+        if re.match(r"(?i)^(img|pxl|dsc|dscn|dji|gopr|photo|image|screenshot|signal|whatsapp image)[\s-]*[\d\s:.-]*$", text) \
+                or re.match(r"^[\d\s:.-]+$", text):
+            text = ""
+    if "|" in text:
+        cap, _, credit = text.partition("|")
+    else:
+        m = re.search(r"\s[-–—~·]\s*((?:photo|pic|📸|ft\.?|feat\.?)\b.*)$", text, re.I)
+        cap, credit = (text[:m.start()], m.group(1)) if m else (text, "")
     return cap.strip(), credit.strip()
 
 
@@ -57,12 +69,17 @@ def _taken(f):
 def _process(raw_bytes, pid):
     from io import BytesIO
     from PIL import Image, ImageOps
+    try:                                   # iPhone photos (HEIC/HEIF)
+        import pillow_heif
+        pillow_heif.register_heif_opener()
+    except ImportError:
+        pass
     im = ImageOps.exif_transpose(Image.open(BytesIO(raw_bytes))).convert("RGB")   # upright, then metadata is dropped
     os.makedirs(STORE, exist_ok=True)
     full = im.copy()
     full.thumbnail((FULL, FULL))
     full.save(os.path.join(STORE, f"{pid}.webp"), "WEBP", quality=78, method=5)
-    th = ImageOps.fit(im, (THUMB, THUMB))
+    th = ImageOps.fit(im, (THUMB, THUMB), centering=(0.5, 0.38))   # square, biased up toward faces
     th.save(os.path.join(STORE, f"{pid}-t.webp"), "WEBP", quality=72, method=5)
     return full.size
 
@@ -160,7 +177,8 @@ def spotlight_html(items, base=""):
     for n, p in enumerate(week):
         when = datetime.fromisoformat(p["taken"]).strftime("%a %b %-d")
         meta = " · ".join(x for x in (when, p.get("credit")) if x)
-        slides += (f'<a class="mslide{" on" if n == 0 else ""}" href="{base}moments.html#{p["id"]}">'
+        slides += (f'<a class="mslide{" on" if n == 0 else ""}" href="{base}moments.html#{p["id"]}" '
+                   f'data-full="{base}moments/{p["id"]}.webp" data-cap="{e(p.get("caption", ""))}" data-meta="{e(meta)}">'
                    f'<img src="{base}moments/{p["id"]}-t.webp" alt="{e(p.get("caption") or "Photo from a recent night")}" '
                    f'width="96" height="96" {"loading=lazy " if n else ""}decoding="async">'
                    f'<span><span class="spotk">📸 FROM THE FLOOR</span><span class="spotc">{e(p.get("caption", ""))}</span>'
@@ -169,6 +187,75 @@ def spotlight_html(items, base=""):
     return (f'<div class="spot mrot" data-n="{len(week)}">{slides}<div class="mdots">{dots}</div>'
             f'<a class="mall" href="{base}moments.html">All moments →</a></div>')
 
+
+def postcard(p, base=""):
+    """One photo between sections: a small picture with its caption, opening the Moments page at that photo."""
+    when = datetime.fromisoformat(p["taken"]).strftime("%a %b %-d")
+    meta = " · ".join(x for x in (when, p.get("credit")) if x)
+    return (f'<a class="spot pcard" href="{base}moments.html#{p["id"]}" data-full="{base}moments/{p["id"]}.webp" '
+            f'data-cap="{e(p.get("caption", ""))}" data-meta="{e(meta)}">'
+            f'<img src="{base}moments/{p["id"]}-t.webp" alt="{e(p.get("caption") or "Photo from a recent night")}" '
+            f'width="96" height="96" loading="lazy" decoding="async">'
+            f'<span><span class="spotk">📸 FROM THE FLOOR</span><span class="spotc">{e(p.get("caption", ""))}</span>'
+            f'<span class="spotm">{e(meta)}</span></span></a>')
+
+
+def page_slots(items, base="", n=6):
+    """Photos placed down the page, newest first: the first break rotates through the last 7 days,
+    the next breaks show the following photos one each. Empty breaks stay empty (nothing shown)."""
+    slots = [""] * n
+    if not items:
+        return slots
+    slots[0] = spotlight_html(items, base)
+    used = {p["id"] for p in recent(items)[:8]} if slots[0] else set()
+    rest = [p for p in items if p["id"] not in used]
+    for i, p in enumerate(rest[: n - 1], start=1):
+        slots[i] = postcard(p, base)
+    return slots
+
+
+FLOAT_CSS = """
+#pf{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;
+ padding:18px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+ opacity:0;pointer-events:none;transition:opacity .22s ease}
+#pf.on{opacity:1;pointer-events:auto}
+#pf figure{margin:0;max-width:min(92vw,900px);transform:translateY(14px) scale(.92);transition:transform .32s cubic-bezier(.2,.9,.25,1.15)}
+#pf.on figure{transform:none}
+#pf img{display:block;max-width:100%;max-height:74vh;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.08);
+ background:#003e3f}
+#pf figcaption{color:#fff;font:15px system-ui,sans-serif;margin-top:12px;text-align:center}
+#pf figcaption small{display:block;color:#bbb;font-size:12px;margin-top:4px}
+#pf figcaption a{color:#00b9bc;font-size:12px;text-decoration:none;display:inline-block;margin-top:8px}
+#pf button{position:absolute;top:14px;right:14px;width:42px;height:42px;border-radius:50%;border:1px solid #fff4;
+ background:#0008;color:#fff;font-size:22px;cursor:pointer}
+@media (prefers-reduced-motion:reduce){#pf,#pf figure{transition:none}}
+"""
+
+FLOAT_JS = r"""<script>
+(function(){
+ var pf=null,y0=null;
+ function close(){if(pf){pf.classList.remove('on');document.documentElement.style.overflow='';}}
+ function open(a){
+  if(!pf){pf=document.createElement('div');pf.id='pf';pf.setAttribute('role','dialog');pf.setAttribute('aria-modal','true');
+   pf.innerHTML='<button type="button" aria-label="Close">×</button><figure><img alt=""><figcaption></figcaption></figure>';
+   document.body.appendChild(pf);
+   pf.addEventListener('click',function(e){if(e.target===pf||e.target.tagName==='BUTTON')close();});
+   pf.addEventListener('touchstart',function(e){y0=e.touches[0].clientY},{passive:true});
+   pf.addEventListener('touchend',function(e){if(y0!==null&&e.changedTouches[0].clientY-y0>70)close();y0=null;});
+   addEventListener('keydown',function(e){if(e.key==='Escape')close();});}
+  var im=pf.querySelector('img'),fc=pf.querySelector('figcaption'),th=a.querySelector('img');
+  im.src=th?th.src:'';                       /* show the thumbnail at once, swap to the sharp one when it arrives */
+  var big=new Image();big.onload=function(){im.src=big.src};big.src=a.dataset.full;
+  im.alt=th?th.alt:'';
+  fc.innerHTML='';var t=document.createElement('div');t.textContent=a.dataset.cap||'';fc.appendChild(t);
+  if(a.dataset.meta){var m=document.createElement('small');m.textContent=a.dataset.meta;fc.appendChild(m);}
+  var l=document.createElement('a');l.href=a.getAttribute('href');l.textContent='All moments →';fc.appendChild(l);
+  document.documentElement.style.overflow='hidden';
+  requestAnimationFrame(function(){pf.classList.add('on')});
+ }
+ document.addEventListener('click',function(e){var a=e.target.closest('a[data-full]');if(!a)return;e.preventDefault();open(a);});
+})();
+</script>"""
 
 ROTATE_JS = r"""<script>
 (function(){var box=document.querySelector('.mrot');if(!box)return;
@@ -190,10 +277,13 @@ SPOT_CSS = """
 .mdots{display:flex;gap:5px;justify-content:center;margin-top:6px;min-height:6px}
 .mdots i{width:6px;height:6px;border-radius:50%;background:#005254}.mdots i.on{background:#00b9bc}
 .mall{position:absolute;right:12px;bottom:6px;font-size:11px;color:#00b9bc;text-decoration:none}
+.pcard{display:flex;gap:14px;align-items:center;text-decoration:none;min-height:0}
+.pcard img{width:96px;height:96px;border-radius:10px;object-fit:cover;display:block;border:1px solid #005254;flex:none}
+.pcard>span{display:flex;flex-direction:column;min-width:0}
 """
 
 
-def timeline_page(items, home="index.html", style="classic"):
+def timeline_page(items, home="index.html", style="classic", site_url=""):
     """moments.html: every photo, newest first, grouped by month, with a swipeable full-screen viewer."""
     from collections import OrderedDict
     from digest import theme as _theme
@@ -216,6 +306,7 @@ def timeline_page(items, home="index.html", style="classic"):
         body = '<p class="empty">No photos yet. Drop one into the shared Drive folder and it shows up after the next run.</p>'
     page = f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Moments · Mo's House Music Radar</title>
+{__import__('digest.ogimage', fromlist=['x']).meta_tags(site_url, "Moments · Mo's House Music Radar", "Photos from the floor at LA house nights.", "moments.html", datetime.now().strftime("%Y%m%d%H"))}
 <style>
 :root{{color-scheme:dark}}
 *{{box-sizing:border-box}}body{{margin:0;background:#001515;color:#fff;font-family:system-ui,-apple-system,sans-serif}}
@@ -231,8 +322,12 @@ figure:hover{{transform:translateY(-2px);border-color:#00b9bc}}
 figure img{{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;background:#003e3f}}
 figcaption{{padding:10px 12px;display:flex;flex-direction:column;gap:4px}}figcaption b{{font-weight:600}}
 figcaption span{{color:#009092;font-size:12px}}.empty{{color:#00a5a7}}
-#lb{{position:fixed;inset:0;background:#000e;display:none;align-items:center;justify-content:center;z-index:9;flex-direction:column;padding:16px}}
-#lb.on{{display:flex}}#lb img{{max-width:100%;max-height:78vh;border-radius:10px;transition:opacity .25s}}
+#lb{{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;opacity:0;pointer-events:none;
+ transition:opacity .22s ease;align-items:center;justify-content:center;z-index:9;flex-direction:column;padding:16px}}
+#lb.on{{opacity:1;pointer-events:auto}}
+#lb img{{max-width:100%;max-height:78vh;border-radius:14px;transition:opacity .25s,transform .32s cubic-bezier(.2,.9,.25,1.15);
+ transform:translateY(14px) scale(.92);box-shadow:0 24px 70px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.08)}}
+#lb.on img{{transform:none}}
 #lb p{{color:#ddd;text-align:center;max-width:680px;margin:12px 0 0}}#lb small{{color:#999}}
 #lb button{{position:absolute;top:50%;background:#0008;color:#fff;border:1px solid #fff3;border-radius:999px;width:44px;height:44px;font-size:22px;cursor:pointer}}
 #lb .p{{left:12px}}#lb .n{{right:12px}}#lb .x{{top:14px;right:14px}}

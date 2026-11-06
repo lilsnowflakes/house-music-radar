@@ -79,6 +79,7 @@ def build_list_page(events, site_url="", home_url="index.html", style="classic")
     ns = sum(1 for x in evs if x.get("watched"))
     page = f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Mo's House Music Radar · Full list</title>
+{__import__('digest.ogimage', fromlist=['x']).meta_tags(site_url, "Mo's House Music Radar · Full list", f"{n} house shows in Los Angeles, night by night.", "list.html", today.strftime("%Y%m%d%H"))}
 <style>
 :root{{--bg:#001515;--fg:#e6fafa;--mut:#00a5a7;--line:#005254;--card:#00292a;--acc:#00b9bc}}
 *{{box-sizing:border-box}}body{{background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;font-size:15px;line-height:1.4;margin:0;padding:20px 16px 48px}}

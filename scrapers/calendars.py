@@ -18,7 +18,7 @@ from scrapers.la_sources import fetch_html
 
 # name, url, robots.txt checked (date)
 CALENDARS = [
-    ("HOUSE·LA", "https://www.housemusicla.com/events/", "2026-11-05: Allow /"),
+    ("HOUSE·LA", "https://www.housemusicla.com/", "2026-11-05: Allow / (the event rows are on the home page)"),
 ]
 LAST = {}
 
@@ -155,6 +155,9 @@ def scrape_calendars(city):
                 r = requests.get(url, timeout=20, headers={"User-Agent": "HouseMusicRadar/1.0 (personal digest)"})
                 r.raise_for_status()
                 evs = parse_house_la(r.text, city)
+                if not evs:   # fall back to the /events/ page, then to the browser
+                    r2 = requests.get(url + "events/", timeout=20, headers={"User-Agent": "HouseMusicRadar/1.0 (personal digest)"})
+                    evs = parse_house_la(r2.text, city) if r2.status_code == 200 else []
                 if not evs:
                     evs = parse_house_la(fetch_html(url, scrolls=1), city)
                 LAST[name] = (len(evs), "" if evs else "page read, but no event rows found (layout may have changed)")

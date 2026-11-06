@@ -21,6 +21,7 @@ from digest import theme as _theme
 from digest.artist_links import links_html
 from digest import highlight as _hl
 from digest import moments as _moments
+from digest import ogimage as _og
 from digest.share import buttons_html, SHARE_JS, sprite
 from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg, holo_svg
 from config.config import CODE_VERSION
@@ -182,7 +183,7 @@ details.sec>summary{cursor:pointer;padding:12px 0;color:#00b9bc;font-weight:bold
 details.sec>summary span{color:#00a5a7;font-weight:normal}
 .secb{padding-bottom:10px}
 .none{color:#00a5a7;font-size:13px;padding:6px 0;font-family:monospace}
-.div{display:block;width:100%;height:18px;margin:6px 0 14px;opacity:.75}
+.div{display:block;width:100%;height:22px;margin:8px 0 16px;opacity:.85}
 .tba{color:#009092}.st{color:#00b9bc;white-space:nowrap}
 .fchip{font:12px monospace;color:#00a5a7;background:#001515;border:1px solid #005254;border-radius:999px;padding:5px 11px;margin:0 6px 8px 0;cursor:pointer}
 .fchip[aria-pressed="true"]{background:#00b9bc;color:#001515;border-color:#00b9bc;font-weight:bold}
@@ -275,14 +276,50 @@ FILTER_JS = r"""<script>
 </script>"""
 
 
-def divider(seed=0):
-    """A thin equalizer line between sections: breaks up the text, drawn in the theme's colors."""
+def divider(kind="eq", seed=0):
+    """Section breaks, each a little piece of DJ gear, drawn in the theme's colors (the theme recolors them).
+    eq = equalizer bars · wave = oscilloscope waveform · kick = 4/4 kick-drum pulse · vinyl = records on a shelf
+    · vu = VU-meter LEDs · pads = drum-pad row."""
+    import math
     import random as _r
     rnd = _r.Random(seed)
-    bars = "".join(f'<rect x="{i * 8}" y="{9 - h / 2:.1f}" width="4" height="{h:.1f}" rx="2"/>'
-                   for i, h in enumerate(2 + 14 * abs(__import__("math").sin(i / 5 + seed)) * rnd.uniform(.4, 1) for i in range(85)))
-    return (f'<svg class="div" viewBox="0 0 680 18" preserveAspectRatio="none" aria-hidden="true">'
-            f'<g fill="#005254">{bars}</g></svg>')
+    W, H = 680, 22
+    mid = H / 2
+    if kind == "wave":
+        pts = " ".join(f"{x},{mid + 8 * math.sin(x / 22 + seed) * math.sin(x / 140) * rnd.uniform(.7, 1):.1f}" for x in range(0, W + 1, 4))
+        body = (f'<polyline points="{pts}" fill="none" stroke="#009092" stroke-width="1.6" stroke-linejoin="round"/>'
+                f'<line x1="0" y1="{mid}" x2="{W}" y2="{mid}" stroke="#003e3f" stroke-width="1"/>')
+    elif kind == "kick":     # a flat line with a sharp beat on every quarter note, accents on the one
+        path, x = f"M0,{mid}", 0
+        for beat in range(16):
+            x0 = beat * (W / 16) + 10
+            amp = 9 if beat % 4 == 0 else 6
+            path += f" L{x0:.0f},{mid} L{x0 + 4:.0f},{mid - amp} L{x0 + 8:.0f},{mid + amp * .6} L{x0 + 12:.0f},{mid}"
+        body = f'<path d="{path} L{W},{mid}" fill="none" stroke="#009092" stroke-width="1.6" stroke-linejoin="round"/>'
+    elif kind == "vinyl":
+        body = f'<line x1="0" y1="{mid}" x2="{W}" y2="{mid}" stroke="#003e3f"/>'
+        for i in range(9):
+            cx = 38 + i * 76
+            body += (f'<circle cx="{cx}" cy="{mid}" r="10" fill="#001515" stroke="#005254"/>'
+                     f'<circle cx="{cx}" cy="{mid}" r="7" fill="none" stroke="#003e3f"/>'
+                     f'<circle cx="{cx}" cy="{mid}" r="3.2" fill="{"#00b9bc" if i % 3 == 0 else "#007c7d"}"/>')
+    elif kind == "vu":
+        body = ""
+        for i in range(56):
+            lit = i < 40 + rnd.randint(-4, 6)
+            col = "#00b9bc" if i > 44 else ("#009092" if i > 30 else "#007c7d")
+            body += f'<rect x="{i * 12.2:.1f}" y="6" width="9" height="10" rx="2" fill="{col if lit else "#003e3f"}"/>'
+    elif kind == "pads":
+        body = ""
+        for i in range(32):
+            on = (i % 4 == 0) or rnd.random() < .18
+            body += (f'<rect x="{i * 21.2 + 1:.1f}" y="3" width="17" height="16" rx="3" fill="{"#007c7d" if on else "none"}" '
+                     f'stroke="{"#00b9bc" if on else "#005254"}" stroke-width="1.2"/>')
+    else:
+        body = '<g fill="#005254">' + "".join(
+            f'<rect x="{i * 8}" y="{mid - h / 2:.1f}" width="4" height="{h:.1f}" rx="2"/>'
+            for i, h in enumerate(2 + 16 * abs(math.sin(i / 5 + seed)) * rnd.uniform(.4, 1) for i in range(85))) + "</g>"
+    return f'<svg class="div" viewBox="0 0 {W} {H}" preserveAspectRatio="none" aria-hidden="true">{body}</svg>'
 
 
 def score_badge(score):
@@ -502,7 +539,7 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
     how = {"rotate": "rotates every run", "auto": "default for Classic"}.get(th[2], "set by config/theme.txt")
     foot = (f'{run_txt} · last ran {ran} · code v{CODE_VERSION} · color: {th[0]} ({how}). '
             f'To pick one, edit config/theme.txt (auto, mahogany, rotate, turquoise, violet, magenta, amber, green, blue, red).<br>'
-            f'Updated every Monday morning. Within each day shows are A to Z by artist. '
+            f'Updated every morning and evening; the email goes out Mondays. Within each day shows are A to Z by artist. '
             f'Scores: Spotify 50% · RA 30% · SoundCloud 20%.')
 
     from datetime import timedelta
@@ -517,11 +554,15 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
             "redline": lambda: radar_svg(len(groups["tonight"])),
             "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no)}.get(th[0], lambda: hero_svg(run_no))()
 
+    slots = _moments.page_slots(photos or [], base, 6)
+    og_desc = (f"{len(groups['tonight'])} house shows tonight in LA, {n_all} upcoming. Tonight, tomorrow, set times, tickets."
+               if groups["tonight"] else f"House music in Los Angeles: {n_all} upcoming shows, set times and tickets.")
     page = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mo's House Music Radar</title>
-<style>{PAGE_CSS}{MOTION_CSS}{_moments.SPOT_CSS}</style></head>
+{_og.meta_tags(site_url, "Mo's House Music Radar", og_desc, dict((s[0], s[2]) for s in STYLES)[style], now.strftime("%Y%m%d%H"))}
+<style>{PAGE_CSS}{MOTION_CSS}{_moments.SPOT_CSS}{_moments.FLOAT_CSS}</style></head>
 <body data-style="{style}" style="background:#001515;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
 {sprite()}
   {banner}
@@ -537,9 +578,17 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
   {highlight_html(events, now)}
   {filter_bar()}
   {s_tonight}
-  {_moments.spotlight_html(photos or [], base)}
-  {s_tomorrow}{divider(1)}{s_week}{s_next}{s_later}{divider(2)}{s_ann}{s_spots}
-  {divider(3)}
+  {slots[0]}
+  {s_tomorrow}
+  {divider("eq", 1)}{slots[1]}
+  {s_week}
+  {divider("wave", 2)}{slots[2]}
+  {s_next}
+  {divider("vinyl", 3)}{slots[3]}
+  {s_later}
+  {divider("kick", 4)}{slots[4]}
+  {s_ann}{s_spots}
+  {divider("vu", 5)}{slots[5]}
   {s_health}
   <div style="text-align:center;color:#009092;font-size:11px;padding:24px 0;border-top:1px solid #003e3f;margin-top:24px;">
     {foot}
@@ -555,6 +604,7 @@ document.addEventListener('click',function(e){{var a=e.target.closest('a[href^="
 {STYLE_JS if site_url else ''}
 {SHARE_JS}
 {_moments.ROTATE_JS}
+{_moments.FLOAT_JS}
 {LAZY_JS}
 {FILTER_JS}
 {stale_js(now)}

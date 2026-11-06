@@ -300,6 +300,13 @@ def spotify_selftest():
     if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
         return ("error", "SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET are empty in this run: check the secret names "
                          "and that radar.yml passes them under env:")
+    from scoring.spotify import _penalty_left
+    if _penalty_left():
+        from datetime import datetime, timedelta
+        from zoneinfo import ZoneInfo
+        end = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(seconds=_penalty_left())
+        return ("empty", f"paused: Spotify asked us to wait (too many requests earlier). Calls resume after about "
+                         f"{end:%a %-I:%M %p} PT; nothing to fix. Remembered answers are used until then.")
     tok = get_spotify_token()
     if not tok:
         return ("error", "could not get a token. " + "; ".join(SPOTIFY_ERRORS[:1]) +
@@ -307,6 +314,16 @@ def spotify_selftest():
     try:
         r = requests.get("https://api.spotify.com/v1/search", headers={"Authorization": f"Bearer {tok}"},
                          params={"q": 'artist:"Peggy Gou"', "type": "artist", "market": "US", "limit": 10}, timeout=10)
+        if r.status_code == 429:
+            from datetime import datetime, timedelta, timezone
+            from scoring import memory
+            from scoring.spotify import STATE
+            ra = int(r.headers.get("Retry-After", "60") or 60)
+            if ra > 30:
+                memory.meta("spotify_blocked_until", (datetime.now(timezone.utc) + timedelta(seconds=ra)).isoformat(timespec="seconds"))
+                STATE.update(blocked=True, retry_after=ra, carried=True)
+            return ("empty", f"paused: Spotify says too many requests (wait {ra // 3600}h {ra % 3600 // 60}m). "
+                             f"No more calls until then; remembered answers are used. Nothing to fix.")
         if r.status_code != 200:
             return ("error", f"search refused: {r.status_code} {r.text[:140]}")
         items = r.json().get("artists", {}).get("items", [])

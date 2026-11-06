@@ -69,8 +69,16 @@ def save():
     os.replace(tmp, PATH)
 
 
+def meta(key, value=None):
+    """Small run-to-run notes that aren't about an artist (e.g. when Spotify's penalty ends)."""
+    m = _load().setdefault("__meta__", {})
+    if value is not None:
+        m[key] = value
+    return m.get(key)
+
+
 def summary():
-    m = _load()
+    m = {k: v for k, v in _load().items() if not k.startswith("__")}
     with_link = sum(1 for r in m.values() if r.get("spotify_url"))
     return (f"{len(m)} artists remembered ({with_link} with a Spotify page) · this run: "
             f"{STATS['refreshed']} looked up, {STATS['reused']} reused from memory, "

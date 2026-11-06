@@ -49,6 +49,17 @@ def _remembered(name, fresh_only):
             "genres": memory.get(name, "sp_genres", False) or [], "found": bool(memory.get(name, "spotify_url", False))}
 
 
+def _penalty_left():
+    """Seconds left on a long Spotify penalty recorded by an earlier run (0 if none)."""
+    from datetime import datetime, timezone
+    from scoring import memory
+    until = memory.meta("spotify_blocked_until")
+    if not until:
+        return 0
+    left = (datetime.fromisoformat(until) - datetime.now(timezone.utc)).total_seconds()
+    return max(0, int(left))
+
+
 def lookup(name):
     """Returns {"url","image","followers","genres","found"} or None if Spotify can't be asked and nothing is remembered."""
     from scoring import memory
@@ -64,6 +75,8 @@ def lookup(name):
         _run[k] = fresh
         return fresh
     old = _remembered(name, fresh_only=False)
+    if not STATE["blocked"] and _penalty_left():
+        STATE.update(blocked=True, retry_after=_penalty_left(), blocked_at=0, carried=True)
     if STATE["calls"] >= MAX_NEW_PER_RUN and not STATE["blocked"]:
         STATE.update(capped=True)
     token = None if (STATE["blocked"] or STATE.get("capped")) else get_spotify_token()
@@ -82,6 +95,9 @@ def lookup(name):
                 r = _get("https://api.spotify.com/v1/search", token, params)
             if r.status_code == 429:
                 STATE.update(blocked=True, retry_after=int(r.headers.get("Retry-After", ra) or ra), blocked_at=STATE["calls"])
+                from datetime import datetime, timedelta, timezone
+                memory.meta("spotify_blocked_until",
+                            (datetime.now(timezone.utc) + timedelta(seconds=STATE["retry_after"])).isoformat(timespec="seconds"))
                 print(f"[Spotify] rate limited (Retry-After {STATE['retry_after']}s); using memory for the rest of this run")
         if r.status_code != 200:
             if len(STATE["errors"]) < 3 and r.status_code != 429:
@@ -119,6 +135,12 @@ def health_note():
     s = f"{STATE['calls']} Spotify calls this run"
     if STATE.get("capped"):
         s += f" · reached this run's limit of {MAX_NEW_PER_RUN} new lookups (soonest shows first); the rest fill in on later runs"
+    if STATE.get("carried"):
+        from datetime import datetime, timedelta
+        from zoneinfo import ZoneInfo
+        end = datetime.now(ZoneInfo("America/Los_Angeles")) + timedelta(seconds=STATE["retry_after"])
+        return (f"0 Spotify calls this run: waiting out Spotify's penalty until about {end:%a %-I:%M %p} PT "
+                f"(asking again earlier would only extend it). Remembered answers were used.")
     if STATE["blocked"]:
         s += (f" · RATE LIMITED after {STATE['blocked_at']} calls (Spotify asked to wait {STATE['retry_after']}s); "
               f"remembered answers were used and the next run continues where this one stopped")

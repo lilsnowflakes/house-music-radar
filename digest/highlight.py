@@ -8,7 +8,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _n(s):
-    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+    from digest.dedupe import _n as n
+    return n(s)
 
 
 def _manual():
@@ -46,7 +47,8 @@ def pick(events, now=None):
 
     def rank(e):
         v = (e.get("house_check") or {}).get("verdict")
+        y, m, d = sort_key(e.get("date_str", ""), now)
         return (3 * bool(e.get("watched")) + 2 * _is_pm(e) + (v == "house") + e.get("score", 0) / 100,
-                -sort_key(e.get("date_str", ""), now)[2])
-    best = max(soon[:60], key=rank)
+                -(y * 400 + m * 32 + d))          # tie: the sooner show wins
+    best = max(soon, key=rank)
     return best, "", "auto pick"

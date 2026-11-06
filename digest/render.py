@@ -20,6 +20,7 @@ from digest.dates import bucket, sort_key, day_label, to_date, now_pt, show_time
 from digest import theme as _theme
 from digest.artist_links import links_html
 from digest import highlight as _hl
+from digest import moments as _moments
 from digest.share import buttons_html, SHARE_JS, sprite
 from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg, holo_svg
 from config.config import CODE_VERSION
@@ -93,6 +94,9 @@ def stale_js(now):
  if(here<='{night}')return;
  var s=document.querySelector('#tonight>summary');
  if(s){{s.firstChild.textContent='🌙 Last night ({label}) ';document.getElementById('tonight').open=false;}}
+ var h1=document.getElementById('highlight'),h2=document.getElementById('highlight-next');
+ if(h1)h1.hidden=true;
+ if(h2&&here==='{tomorrow_iso}')h2.hidden=false;
  var t=document.getElementById('tomorrow');
  if(t&&here==='{tomorrow_iso}'){{t.querySelector('summary').firstChild.textContent='🔥 Tonight ';t.open=true;}}
  var b=document.createElement('div');
@@ -150,6 +154,7 @@ MOTION_JS = r"""<script>
 </script>"""
 
 PAGE_CSS = """
+[hidden]{display:none!important}
 .ic{vertical-align:middle}
 .ml{text-decoration:none;display:inline-block;margin-right:6px;padding:6px 8px 4px 0}
 .sb{color:#00b9bc;text-decoration:none;font-size:12px;border:1px solid #005254;border-radius:999px;padding:3px 10px;
@@ -177,6 +182,7 @@ details.sec>summary{cursor:pointer;padding:12px 0;color:#00b9bc;font-weight:bold
 details.sec>summary span{color:#00a5a7;font-weight:normal}
 .secb{padding-bottom:10px}
 .none{color:#00a5a7;font-size:13px;padding:6px 0;font-family:monospace}
+.div{display:block;width:100%;height:18px;margin:6px 0 14px;opacity:.75}
 .tba{color:#009092}.st{color:#00b9bc;white-space:nowrap}
 .fchip{font:12px monospace;color:#00a5a7;background:#001515;border:1px solid #005254;border-radius:999px;padding:5px 11px;margin:0 6px 8px 0;cursor:pointer}
 .fchip[aria-pressed="true"]{background:#00b9bc;color:#001515;border-color:#00b9bc;font-weight:bold}
@@ -185,7 +191,7 @@ details.sec>summary span{color:#00a5a7;font-weight:normal}
  .evmain{flex-basis:calc(100% - 60px)}
  .evside{flex-basis:100%;display:flex;justify-content:space-between;align-items:center;text-align:left}
  .evside>div{margin-top:0}
- .hlpic{width:60px!important;height:60px!important;font-size:20px!important}
+  .hlpic{width:60px!important;height:60px!important;font-size:20px!important}
  .sb{font-size:11px;padding:3px 8px}
 }
 """
@@ -269,6 +275,16 @@ FILTER_JS = r"""<script>
 </script>"""
 
 
+def divider(seed=0):
+    """A thin equalizer line between sections: breaks up the text, drawn in the theme's colors."""
+    import random as _r
+    rnd = _r.Random(seed)
+    bars = "".join(f'<rect x="{i * 8}" y="{9 - h / 2:.1f}" width="4" height="{h:.1f}" rx="2"/>'
+                   for i, h in enumerate(2 + 14 * abs(__import__("math").sin(i / 5 + seed)) * rnd.uniform(.4, 1) for i in range(85)))
+    return (f'<svg class="div" viewBox="0 0 680 18" preserveAspectRatio="none" aria-hidden="true">'
+            f'<g fill="#005254">{bars}</g></svg>')
+
+
 def score_badge(score):
     """Always shown. A dash means no popularity data came back for this artist (yet)."""
     if score:
@@ -309,6 +325,16 @@ def event_row(ev: dict) -> str:
 
 
 def highlight_html(events, now):
+    """Two cards: the pick for the night this page was built, and the pick for the next night (hidden).
+    If the page is opened after its night is over, the script in stale_js() swaps to the second card."""
+    from datetime import timedelta as _td
+    night = (now - _td(hours=6)).date()
+    a = _one_highlight(events, now, "highlight", night.isoformat(), hidden=False)
+    b = _one_highlight(events, now + _td(days=1), "highlight-next", (night + _td(days=1)).isoformat(), hidden=True)
+    return a + b
+
+
+def _one_highlight(events, now, id_, night_iso, hidden):
     ev, note, how = _hl.pick(events, now)
     if not ev:
         return ""
@@ -322,14 +348,17 @@ def highlight_html(events, now):
     btn = (f'<a href="{esc(link)}" style="background:#00b9bc;color:#001515;padding:8px 16px;border-radius:6px;'
            f'text-decoration:none;font-weight:bold;font-size:13px;display:inline-block;margin-top:10px;">'
            f'Tickets{" · " + esc(ev.get("price")) if ev.get("price") else ""}</a>') if link else ""
-    return (f'<div id="highlight" style="background:linear-gradient(135deg,#00292a,#003e3f);border:2px solid #00b9bc;'
+    venue = (f'📍 {venue_html(ev.get("venue"), ev.get("address", ""))}' if ev.get("venue") else "📍 Venue TBA")
+    tlab = show_time(ev)[0]
+    return (f'<div id="{id_}" class="hlcard" data-night="{night_iso}" {"hidden" if hidden else ""} '
+            f'style="background:linear-gradient(135deg,#00292a,#003e3f);border:2px solid #00b9bc;'
             f'border-radius:14px;padding:16px;margin:0 0 16px;{FONT}">'
             f'<div style="display:flex;justify-content:space-between;align-items:center;"><div style="color:#00b9bc;font-size:11px;'
             f'letter-spacing:2px;font-weight:bold;">★ HIGHLIGHT · {esc(how.upper())}</div>{score_badge(ev.get("score", 0))}</div>'
             f'<div style="display:flex;gap:16px;align-items:center;margin-top:10px;">{pic}<div style="min-width:0;">'
             f'<div style="color:#fff;font-size:22px;font-weight:bold;line-height:1.2;">{esc(artist)}</div>'
             f'<div style="color:#00a5a7;font-size:13px;margin-top:4px;">{esc(day_label(ev.get("date_str", "")))} · '
-            f'📍 {venue_html(ev.get("venue", ""), ev.get("address", ""))}</div>'
+            f'{venue}{(" · 🕘 " + esc(tlab)) if tlab else ""}</div>'
             f'{f"<div style=\"color:#ccc;font-size:13px;margin-top:6px;\">{esc(note)}</div>" if note else ""}'
             f'<div style="margin-top:8px;">{chips_for(ev)}</div>{media_row(ev)}{btn}</div></div></div>')
 
@@ -401,7 +430,7 @@ STYLE_JS = ("<script>try{var k='radarStyle',cur=document.body.dataset.style;"
             "if(l)location.replace(l.getAttribute('href'))}}catch(e){}</script>")
 
 
-def build_page(events, announced, health, site_url="", demo=False, dupes_removed=0, style="classic") -> str:
+def build_page(events, announced, health, site_url="", demo=False, dupes_removed=0, style="classic", photos=None) -> str:
     now = now_pt()
     stamp = now.strftime("%A, %B %-d, %Y")
     th = _theme.choose() if style == "classic" else (style, 0, "set")
@@ -419,7 +448,8 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
                   f'<a href="{esc(site_url)}" style="color:{ORANGE};">Open the live page</a></div>')
     banner += (f'<div style="background:#00292a;border:1px solid #005254;border-radius:6px;padding:10px;'
                f'text-align:center;{FONT}font-size:12px;color:#bbb;margin-bottom:16px;">'
-               f'🎧 <a href="{base}{dict((s[0], s[3]) for s in STYLES)[style]}" style="color:{ORANGE};">Full list by night</a> · tap a venue for Google Maps · '
+               f'🎧 <a href="{base}{dict((s[0], s[3]) for s in STYLES)[style]}" style="color:{ORANGE};">Full list by night</a> · '
+               f'<a href="{base}moments.html" style="color:{ORANGE};">📸 Moments</a> · tap a venue for Google Maps · '
                f'Smaller rooms and tonight\'s live music: <a href="{HEARD_HOME}" style="color:{ORANGE};">Heard (getheard.live)</a></div>')
 
     # bucket the shows
@@ -491,7 +521,7 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
 <html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mo's House Music Radar</title>
-<style>{PAGE_CSS}{MOTION_CSS}</style></head>
+<style>{PAGE_CSS}{MOTION_CSS}{_moments.SPOT_CSS}</style></head>
 <body data-style="{style}" style="background:#001515;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
 {sprite()}
   {banner}
@@ -506,7 +536,10 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
   {legend_html()}
   {highlight_html(events, now)}
   {filter_bar()}
-  {s_tonight}{s_tomorrow}{s_week}{s_next}{s_later}{s_ann}{s_spots}
+  {s_tonight}
+  {_moments.spotlight_html(photos or [], base)}
+  {s_tomorrow}{divider(1)}{s_week}{s_next}{s_later}{divider(2)}{s_ann}{s_spots}
+  {divider(3)}
   {s_health}
   <div style="text-align:center;color:#009092;font-size:11px;padding:24px 0;border-top:1px solid #003e3f;margin-top:24px;">
     {foot}
@@ -521,6 +554,7 @@ document.addEventListener('click',function(e){{var a=e.target.closest('a[href^="
 </script>
 {STYLE_JS if site_url else ''}
 {SHARE_JS}
+{_moments.ROTATE_JS}
 {LAZY_JS}
 {FILTER_JS}
 {stale_js(now)}

@@ -40,6 +40,7 @@ from scrapers import apis
 SCRAPER_MAP["seatgeek"] = apis.scrape_seatgeek
 SCRAPER_MAP["edmtrain"] = apis.scrape_edmtrain
 SCRAPER_MAP["reddit"] = apis.scrape_reddit
+SCRAPER_MAP["ticketmaster_la"] = ticketmaster.scrape_tm_la
 from scrapers import calendars
 SCRAPER_MAP["calendars"] = calendars.scrape_calendars
 
@@ -144,7 +145,11 @@ def main():
         tag_watched(events)
 
         print("Verifying genres for venue-calendar shows...")
+        from digest.dates import sort_key as _sk
+        events.sort(key=lambda e: _sk(e.get("date_str", "")))   # soonest first, so limited lookups go where they matter
         events, dropped = genre_check.filter_venue_events(events)
+        from scoring import memory
+        memory.save()      # keep what we learned even if a later step fails
         n_unv = sum(1 for e in events if e.get("house_check", {}).get("verdict") == "unverified")
         n_ok = sum(1 for e in events if e.get("house_check", {}).get("verdict") == "house")
         names = ", ".join(f"{e['artist']} ({'/'.join(e['house_check']['genres'][:2])})" for e in dropped[:12])
@@ -165,6 +170,11 @@ def main():
             events = score_events(events)
             n_link = sum(1 for e in events if e.get("spotify_url"))
             n_pic = sum(1 for e in events if e.get("image"))
+            from scoring import memory
+            memory.save()
+            health.append(("Artist memory", "ok", memory.summary()))
+            from scoring.spotify import STATE as SP, health_note
+            health.append(("Spotify usage", "empty" if SP["blocked"] else "ok", health_note()))
             health.append(("Spotify matches", "ok" if n_link else "empty",
                            f"{n_link} of {len(events)} shows linked to an artist page, {n_pic} with photos"
                            + (" · errors: " + " | ".join(SPOTIFY_ERRORS[:2]) if SPOTIFY_ERRORS else "")))
@@ -173,13 +183,23 @@ def main():
         print("Checking Ticketmaster for announced-not-on-sale shows...")
         announced, tm_notes = ticketmaster.announced_not_on_sale(TICKETMASTER_VENUES)
         health.extend(tm_notes)
+        seen_a = {(r.get("ticket_url") or r.get("title")) for r in announced}
+        announced += [r for r in ticketmaster.TM_ANNOUNCED if (r.get("ticket_url") or r.get("title")) not in seen_a]
         announced = sorted(announced + la_sources.DICE_ANNOUNCED, key=lambda r: r.get('sort_key', ''))
+        for name, (n, note) in ticketmaster.LAST.items():
+            health.append((name, "error" if note.startswith("error") else ("skipped" if note.startswith("skipped") else "ok"), note))
 
     os.makedirs(OUT_DIR, exist_ok=True)
+    from digest import moments
+    photos = moments.sync()
+    for name, (st, note) in moments.LAST.items():
+        health.append((name, st, note))
+    with open(os.path.join(OUT_DIR, "moments.html"), "w", encoding="utf-8") as f:
+        f.write(moments.timeline_page(photos))
     page = None
     for style, _label, index_file, list_file in render.STYLES:
         html_ = render.build_page(events, announced, health, site_url=SITE_URL, demo=args.demo,
-                                  dupes_removed=dupes_removed, style=style)
+                                  dupes_removed=dupes_removed, style=style, photos=photos)
         if style == "classic":
             page = html_           # the email uses the classic style
         with open(os.path.join(OUT_DIR, index_file), "w", encoding="utf-8") as f:

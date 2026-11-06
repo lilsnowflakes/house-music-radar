@@ -20,4 +20,9 @@ v = {e["artist"]: e.get("house_check", {}).get("verdict") for e in kept}
 assert v["Mystery Act"] == "unverified" and v["Locky"] == "house" and v["Whoever"] is None, v
 assert g.is_house_genre("melodic house and techno") and g.is_house_genre("melodic techno") and not g.is_house_genre("indie rock")
 assert g.split_acts("Clinic Wednesdays: Clinic") == [], "a party/promoter name must not be looked up as a band"
+assert g.split_acts("Bedouin Presents: Saga") == ["Bedouin"], "'X Presents: Y' -> the act is X"
+assert g.split_acts("Only Fire & Friends - Los Angeles") == ["Only Fire"]
+g.genres_for = lambda n: {"nimino": (["electronic", "lidarr"], "MusicBrainz"), "Raw Brigade": (["hardcore punk"], "MusicBrainz")}.get(n, ([], ""))
+assert g.verify(dict(artist="nimino"))["verdict"] == "unverified", "vague tags like 'electronic' must not drop a show"
+assert g.verify(dict(artist="Raw Brigade"))["verdict"] == "not_house"
 print("genre check OK")

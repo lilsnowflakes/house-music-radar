@@ -67,61 +67,30 @@ def get_spotify_token():
         return None
 
 
+def _from_memory(artist_name, fresh_only):
+    from scoring import memory
+    f = memory.get(artist_name, "spotify_followers", fresh_only)
+    if f is None:
+        return None
+    url, img = memory.get(artist_name, "spotify_url", False), memory.get(artist_name, "image", False)
+    if url:
+        _spotify_urls[artist_name] = url
+    if img:
+        _images[artist_name] = img
+    return f
+
+
 def get_spotify_listeners(artist_name: str) -> int:
-    cache_key = f"spotify_{artist_name}"
-    if cache_key in _cache:
-        return _cache[cache_key]
-
-    token = get_spotify_token()
-    if not token:
+    """Followers from the shared Spotify lookup (one call per artist, remembered between runs)."""
+    from scoring.spotify import lookup
+    res = lookup(artist_name)
+    if not res:
         return 0
-
-    try:
-        # Search for artist
-        resp = requests.get(
-            "https://api.spotify.com/v1/search",
-            headers={"Authorization": f"Bearer {token}"},
-            params={"q": f'artist:"{artist_name}"', "type": "artist", "market": "US", "limit": 10},
-            timeout=10,
-        )
-        if resp.status_code != 200:
-            if len(SPOTIFY_ERRORS) < 3:
-                SPOTIFY_ERRORS.append(f"search {resp.status_code}: {resp.text[:120]}")
-            _cache[cache_key] = 0
-            return 0
-        items = resp.json().get("artists", {}).get("items", [])
-        if not items:
-            _cache[cache_key] = 0
-            return 0
-
-        # Pick the result whose name matches the artist (highest popularity if several); never guess.
-        import re as _re
-        want = _re.sub(r"[^a-z0-9]", "", artist_name.lower())
-        match = [i for i in items if _re.sub(r"[^a-z0-9]", "", i.get("name", "").lower()) == want]
-        pick = max(match, key=lambda i: i.get("popularity", 0)) if match else None
-        if pick:
-            imgs = pick.get("images") or []
-            if imgs:
-                _images[artist_name] = (imgs[-2] if len(imgs) > 1 else imgs[0]).get("url", "")
-            _spotify_urls[artist_name] = (pick.get("external_urls") or {}).get("spotify", "")
-        artist_id = (pick or items[0])["id"]
-
-        # Get artist details with monthly listeners
-        resp2 = requests.get(
-            f"https://api.spotify.com/v1/artists/{artist_id}",
-            headers={"Authorization": f"Bearer {token}"},
-            timeout=10,
-        )
-        followers = resp2.json().get("followers", {}).get("total", 0)
-        # Note: Spotify API returns followers, not monthly listeners directly
-        # Monthly listeners require the web scrape workaround below
-        _cache[cache_key] = followers
-        return followers
-
-    except Exception as e:
-        print(f"[Spotify] Error for {artist_name}: {e}")
-        _cache[cache_key] = 0
-        return 0
+    if res.get("url"):
+        _spotify_urls[artist_name] = res["url"]
+    if res.get("image"):
+        _images[artist_name] = res["image"]
+    return res.get("followers", 0) or 0
 
 
 def get_spotify_monthly_listeners(artist_name: str) -> int:

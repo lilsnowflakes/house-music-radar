@@ -10,8 +10,37 @@ import re
 from digest.dates import day_key
 
 
+def _fold(s):
+    """'Christian Löffler' -> 'christian loffler' so accents never block a match."""
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFKD", s or "") if not unicodedata.combining(c)).lower()
+
+
 def _n(s):
-    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+    return re.sub(r"[^a-z0-9]", "", _fold(s))
+
+
+def _known_venues():
+    try:
+        from config.config import WATCH_VENUES, VENUE_CALENDARS
+        names = list(WATCH_VENUES.get("los_angeles", [])) if isinstance(WATCH_VENUES, dict) else list(WATCH_VENUES)
+        names += [v["venue"] for c in VENUE_CALENDARS.values() for v in c]
+        return {_n(x.split("/")[0]): x.split("/")[0].strip() for x in names if x}
+    except Exception:
+        return {}
+
+
+def split_venue_prefix(ev):
+    """'Origin: Christian Loffler' with no venue -> venue 'Origin', artist 'Christian Loffler'."""
+    a = ev.get("artist") or ""
+    m = re.match(r"^\s*([^:]{2,40}):\s+(.+)$", a)
+    if not m:
+        return
+    known = _known_venues()
+    v = known.get(_n(m.group(1)))
+    if v and (not ev.get("venue") or _n(ev.get("venue")) in (_n(v), "")):
+        ev["venue"] = ev.get("venue") or v
+        ev["artist"] = m.group(2).strip()
 
 
 def _richness(ev):
@@ -60,6 +89,8 @@ def _merge(keep, other):
 def dedupe(events):
     """Returns (merged_list, number_removed)."""
     by_day, order = {}, []
+    for ev in events:
+        split_venue_prefix(ev)
     for ev in sorted(events, key=_richness, reverse=True):
         k = day_key(ev.get("date_str", ""))
         kept = by_day.setdefault(k, [])

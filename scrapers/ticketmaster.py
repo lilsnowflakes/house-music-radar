@@ -131,3 +131,87 @@ def announced_not_on_sale(venues_by_city: dict, now: datetime = None):
 
     rows.sort(key=lambda r: (r["sort_key"], r["date_str"]))
     return rows, notes
+
+
+# ----------------------------------------------------------------------------
+# All of LA, not just the watched rooms: every Dance/Electronic event Ticketmaster lists in the
+# Los Angeles market (DMA 324), plus a search for each artist you follow (this replaces the
+# Bandsintown idea: "tell me when my artists play LA").
+# ----------------------------------------------------------------------------
+LA_DMA = "324"
+TM_ANNOUNCED = []   # not-on-sale rows found here; main.py adds them to the announced list
+LAST = {}
+
+
+def _to_event(ev, city, now):
+    from scrapers.scrapers import normalize_event
+    attractions = ev.get("_embedded", {}).get("attractions", [])
+    names = [a.get("name", "") for a in attractions if a.get("name")]
+    v = (ev.get("_embedded", {}).get("venues") or [{}])[0]
+    start = ev.get("dates", {}).get("start", {})
+    try:
+        d = datetime.strptime(start.get("localDate", ""), "%Y-%m-%d")
+    except ValueError:
+        return None
+    date_str = d.strftime("%a %b %-d") + ("" if d.year == now.year else f", {d.year}")
+    genres = [x for c in ev.get("classifications", []) for x in
+              ((c.get("genre") or {}).get("name"), (c.get("subGenre") or {}).get("name")) if x and x != "Undefined"]
+    pr = (ev.get("priceRanges") or [{}])[0]
+    price = f"${pr['min']:.0f}+" if pr.get("min") else ""
+    e = normalize_event(title=ev.get("name", ""), artist=names[0] if names else ev.get("name", ""),
+                        venue=v.get("name", ""), city=city, date_str=date_str, genres=genres,
+                        ticket_url=ev.get("url", ""), price=price, source="Ticketmaster")
+    addr = v.get("address", {}).get("line1", "")
+    e["address"] = ", ".join(x for x in (addr, (v.get("city") or {}).get("name", "")) if x)
+    if start.get("localTime"):
+        e["start_iso"] = f"{start['localDate']}T{start['localTime']}"
+    status, dt = sale_status(ev, now)
+    if status != "ON_SALE":
+        e["ticket_status"] = "announced"
+    return e, status, dt
+
+
+def scrape_tm_la(city):
+    if city != "los_angeles":
+        return []
+    if not TICKETMASTER_API_KEY:
+        LAST["Ticketmaster LA"] = (0, "skipped: no TICKETMASTER_API_KEY")
+        return []
+    from config.config import WATCH_ARTISTS
+    now = datetime.now(timezone.utc)
+    window = {"startDateTime": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "endDateTime": (now + timedelta(days=TM_LOOKAHEAD_DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "dmaId": LA_DMA, "sort": "date,asc"}
+    seen, out = set(), []
+
+    def take(events, why):
+        for ev in events:
+            if ev.get("id") in seen or ev.get("dates", {}).get("status", {}).get("code") in ("cancelled", "canceled", "postponed"):
+                continue
+            seen.add(ev.get("id"))
+            r = _to_event(ev, city, now)
+            if not r:
+                continue
+            e, status, dt = r
+            out.append(e)
+            if status != "ON_SALE":
+                p = parse_event(ev, e["venue"], city, now)
+                if p:
+                    TM_ANNOUNCED.append(p)
+
+    try:
+        for page in range(3):     # up to 600 Dance/Electronic events in the LA market
+            data = _get("events.json", dict(window, classificationName="Dance/Electronic", size=200, page=page))
+            evs = data.get("_embedded", {}).get("events", [])
+            take(evs, "genre")
+            if page + 1 >= data.get("page", {}).get("totalPages", 1):
+                break
+        n_genre = len(out)
+        for artist in dict.fromkeys(WATCH_ARTISTS):   # your artists, any genre label
+            data = _get("events.json", dict(window, keyword=artist, size=20))
+            take(data.get("_embedded", {}).get("events", []), "artist")
+        LAST["Ticketmaster LA"] = (len(out), f"{n_genre} Dance/Electronic in the LA market, "
+                                             f"{len(out) - n_genre} more from your artists")
+    except Exception as ex:
+        LAST["Ticketmaster LA"] = (len(out), f"error: {str(ex)[:100]}")
+    return out

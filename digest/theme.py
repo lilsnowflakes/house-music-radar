@@ -25,9 +25,9 @@ CUSTOM = {
                      ".evrow,details.sec{background:rgba(255,255,255,.035)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);"
                      "border-color:rgba(124,245,255,.16)!important;font-family:inherit!important;border-radius:14px!important}"
                      "details.sec>summary{font-family:inherit!important;letter-spacing:.4px}"
-                     "#highlight{border:1px solid transparent!important;background:linear-gradient(#0b1120,#0b1120) padding-box,"
+                     "#highlight,#highlight-next{border:1px solid transparent!important;background:linear-gradient(#0b1120,#0b1120) padding-box,"
                      "conic-gradient(from 200deg,#7cf5ff,#b58cff,#ff8ad8,#ffd27a,#7cf5ff) border-box!important;font-family:inherit!important}"
-                     ".tix,#highlight a[style*='background:#7cf5ff']{background:linear-gradient(90deg,#7cf5ff,#b58cff)!important;color:#05070d!important;font-weight:600}"
+                     ".tix,.hlcard a[style*='background:#7cf5ff']{background:linear-gradient(90deg,#7cf5ff,#b58cff)!important;color:#05070d!important;font-weight:600}"
                      ".fchip[aria-pressed=true]{background:linear-gradient(90deg,#7cf5ff,#b58cff)!important;border-color:transparent!important}"
                      ".sc{font-variant-numeric:tabular-nums}</style>"),
     # Low-light version modeled on dark app dashboards: navy, soft gradients, rounded panels.

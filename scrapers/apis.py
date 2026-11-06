@@ -61,6 +61,23 @@ def scrape_seatgeek(city):
                 out.append(ev)
             if len(evs) < 100:
                 break
+        # your artists' LA dates whatever genre SeatGeek files them under (also covers shows sold on AXS,
+        # since SeatGeek lists resale tickets for them)
+        from config.config import WATCH_ARTISTS
+        seen = {x["ticket_url"] for x in out}
+        for artist in dict.fromkeys(WATCH_ARTISTS):
+            r = requests.get("https://api.seatgeek.com/2/events", headers=UA, timeout=20, params={
+                "client_id": SEATGEEK_CLIENT_ID, "q": artist, "lat": LA_LAT, "lon": LA_LON, "range": "60mi", "per_page": 10})
+            for e in (r.json().get("events", []) if r.status_code == 200 else []):
+                if e.get("url") in seen:
+                    continue
+                seen.add(e.get("url"))
+                d = datetime.fromisoformat(e["datetime_local"])
+                v = e.get("venue") or {}
+                ev = normalize_event(title=e.get("title", ""), artist=artist, venue=v.get("name", ""), city=city,
+                                     date_str=_fmt(d), genres=[], ticket_url=e.get("url", ""), price="", source="SeatGeek")
+                ev["address"] = ", ".join(x for x in (v.get("address"), v.get("extended_address")) if x)
+                out.append(ev)
         LAST["SeatGeek"] = (len(out), "")
     except Exception as ex:
         LAST["SeatGeek"] = (0, str(ex)[:120])

@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<!-- saved from url=(0029)https://www.housemusicla.com/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Independent guide to house music in Los Angeles and Southern California: headliners, weeklies, day parties and festivals, with venue addresses and ticket links.">
+<meta property="og:title" content="House Music Events in Los Angeles &amp; Southern California">
+<meta property="og:description" content="Every house night in Los Angeles and Southern California in one list: headliners, weeklies, day parties and festivals. Deep, melodic, afro.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://www.housemusicla.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:url" content="https://www.housemusicla.com/">
+<meta property="og:locale" content="en_US">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;%F0%9F%8E%A7&lt;/text&gt;&lt;/svg&gt;">
+<link rel="canonical" href="https://www.housemusicla.com/">
+<link rel="preload" href="https://www.housemusicla.com/assets/archivo-latin.woff2" as="font" type="font/woff2" crossorigin="">
+<link rel="preload" href="https://www.housemusicla.com/assets/film-palms.jpg" as="image">
+<title>House Music Events in Los Angeles &amp; Southern California</title>
+<style>
+  /* ============ TOKENS ============ */
+  :root {
+    --night: #0b0b1a;
+    --ink: #12122a;
+    --coral: #ff5e5b;
+    --sand: #f4e1c1;
+    --acid: #ff5e5b;   /* was neon lime #c6ff00; now the site's own coral so the page stays two-tone (coral + cream on night) */
+    --sand-70: rgba(244, 225, 193, 0.7);
+    --sand-55: rgba(244, 225, 193, 0.55);
+    --sand-35: rgba(244, 225, 193, 0.35);
+    --line: rgba(244, 225, 193, 0.14);
+    --line-soft: rgba(244, 225, 193, 0.08);
+    --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --font: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    color-scheme: dark; /* committed single theme: this page lives at 4 AM */
+  }
+
+  @font-face {
+    font-family: "Archivo";
+    font-style: normal;
+    font-weight: 100 900;
+    font-stretch: 62% 125%;
+    font-display: swap;
+    src: url("/assets/archivo-latin.woff2") format("woff2");
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--night);
+    color: var(--sand);
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: var(--acid); color: var(--night); }
+
+  /* ============ SITE BACKGROUND: LA skyline through the palms ============ */
+  #site-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+  #site-bg .ph {
+    position: absolute; inset: 0;
+    background: url("/assets/film-palms.jpg") center 30% / cover no-repeat;
+    opacity: 0.42;
+    filter: saturate(0.9) contrast(1.05) brightness(0.72);
+  }
+  #site-bg .veil {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg,
+      rgba(11, 11, 26, 0.9) 0%, rgba(11, 11, 26, 0.72) 34%,
+      rgba(11, 11, 26, 0.66) 60%, rgba(11, 11, 26, 0.86) 100%);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--acid);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  button { font: inherit; cursor: pointer; }
+
+  /* CELINE-style type system: neutral grotesque, all caps, medium weights,
+     positive tracking, hierarchy through space instead of weight */
+  .display {
+    font-stretch: 100%;
+    font-weight: 540;
+    letter-spacing: 0.12em;
+    line-height: 1.14;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    font-stretch: 100%;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+  }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); }
+
+  /* ============ SCROLL PROGRESS ============ */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 100%;
+    transform-origin: 0 50%; transform: scaleX(0);
+    background: var(--acid); z-index: 80; pointer-events: none;
+  }
+
+  /* ============ CURSOR ============ */
+  #cursor { position: fixed; top: 0; left: 0; z-index: 90; pointer-events: none; display: none;
+    mix-blend-mode: difference; will-change: transform; }
+  body[data-cursor="on"] { cursor: none; }
+  body[data-cursor="on"] a, body[data-cursor="on"] button,
+  body[data-cursor="on"] input, body[data-cursor="on"] textarea, body[data-cursor="on"] select,
+  body[data-cursor="on"] label { cursor: none; }
+  body[data-cursor="on"] #cursor { display: block; }
+  /* A standard arrow, drawn white and blended with "difference": it always shows the OPPOSITE color of what is behind it
+     (light on dark areas, dark on light areas, teal over coral...). No easing, so it tracks the real mouse exactly. */
+  #cursor svg { display: block; width: 24px; height: 24px; transform-origin: 3px 2px; transition: transform 0.2s var(--ease); }
+  #cursor.hot svg { transform: scale(1.18); }
+
+  /* ============ NAV ============ */
+  header {
+    position: fixed; inset: 0 0 auto 0; z-index: 70;
+    transition: background 0.7s var(--ease), border-color 0.7s var(--ease),
+                backdrop-filter 0.7s var(--ease), transform 1s var(--ease), opacity 1s var(--ease);
+    border-bottom: 1px solid transparent;
+  }
+  body.anim header { transform: translateY(-16px); opacity: 0; }
+  body.anim.booted header { transform: translateY(0); opacity: 1; }
+  header.solid {
+    background: rgba(11, 11, 26, 0.72);
+    border-color: var(--line-soft);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  header nav {
+    max-width: 1160px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 15px clamp(14px, 4vw, 48px);
+  }
+  .wordmark { font-stretch: 100%; font-weight: 700; font-size: 13px; letter-spacing: 0.18em; }
+  .wordmark b { color: var(--coral); font-weight: 860; }
+  /* The dot in the logo is a pair of DJ headphones. */
+  .hp-dot { display: inline-block; }
+  .hp { display: inline-block; width: 1.12em; height: 1.12em; margin: 0 0.16em; vertical-align: -0.2em; color: var(--coral); }
+  .marquee span .hp, footer .big .hp { width: 0.78em; height: 0.78em; margin: 0 0.1em; vertical-align: -0.06em; }
+  header ul { display: flex; gap: clamp(9px, 2.6vw, 40px); list-style: none; margin: 0; padding: 0; }
+  header ul a {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--sand-55); position: relative; padding: 6px 0;
+    transition: color 0.45s;
+  }
+  header ul a::after {
+    content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 1px;
+    background: var(--acid); transform: scaleX(0); transform-origin: 100% 50%;
+    transition: transform 0.6s var(--ease);
+  }
+  header ul a:hover, header ul a.here { color: var(--sand); }
+  header ul a:hover::after, header ul a.here::after { transform: scaleX(1); transform-origin: 0 50%; }
+  @media (min-width: 720px) {
+    header nav { padding-top: 18px; padding-bottom: 18px; }
+    .wordmark { font-size: 15px; }
+    header ul a { font-size: 11px; letter-spacing: 0.22em; }
+  }
+  @media (max-width: 379px) {
+    header nav { gap: 8px; padding-left: 12px; padding-right: 12px; }
+    .wordmark { font-size: 13px; }
+    header ul { gap: 7px; }
+    header ul a { font-size: 8px; letter-spacing: 0.04em; }
+  }
+
+  /* ============ HERO ============ */
+  #hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; overflow: hidden; isolation: isolate; }
+  #hero .fallback {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #0b0b1a 0%, #351327 48%, #ff5e5b 80%, #f4e1c1 100%);
+  }
+  #glsl { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #hero .scrim {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 52%; z-index: 1;
+    background: linear-gradient(to top, rgba(11, 11, 26, 0.42), transparent);
+    pointer-events: none;
+  }
+  #hero .content {
+    position: relative; z-index: 2; width: 100%;
+    max-width: 1160px; margin: 0 auto;
+    padding: 140px clamp(20px, 4vw, 48px) clamp(56px, 9vh, 110px);
+    display: grid; grid-template-areas: "tonight" "main"; grid-template-columns: minmax(0, 1fr);
+    row-gap: clamp(32px, 5vh, 52px);
+  }
+  .hero-main { grid-area: main; min-width: 0; }
+  .hero-tonight { grid-area: tonight; min-width: 0; }
+  .tonight-card { min-width: 0; }
+  @media (min-width: 880px) {
+    #hero .content {
+      grid-template-areas: "main tonight";
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      column-gap: clamp(32px, 5vw, 64px);
+      row-gap: 0;
+      align-items: center;
+    }
+  }
+  /* Tonight cards: always a vertical stack (phones too), so nothing is clipped by a sideways scroller. */
+  .hero-tonight .tonight-reel {
+    margin: 0; padding-inline: 0; overflow: visible;
+    -webkit-mask-image: none; mask-image: none;
+  }
+  .hero-tonight .tonight-reel .track { flex-direction: column; }
+  .hero-tonight .tonight-card { width: 100%; }
+  .hero-tag { font-size: clamp(32px, 6.6vw, 92px); margin: 0; }
+  .hero-tag .row { display: block; overflow: hidden; }
+  .hero-tag .row i { font-style: normal; display: block; }
+  body.anim .hero-tag .row i {
+    transform: translateY(118%);
+    transition: transform 1.5s var(--ease);
+  }
+  body.anim.booted .hero-tag .row:nth-child(1) i { transition-delay: 0.10s; }
+  body.anim.booted .hero-tag .row:nth-child(2) i { transition-delay: 0.24s; }
+  body.anim.booted .hero-tag .row:nth-child(3) i { transition-delay: 0.38s; }
+  body.anim.booted .hero-tag .row i { transform: translateY(0); }
+  .hero-tag .dim { color: var(--sand-55); }
+  #hero .foot {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 26px; margin-top: clamp(30px, 5vh, 54px);
+  }
+  body.anim #hero .foot {
+    opacity: 0; transform: translateY(26px);
+    transition: opacity 1.1s var(--ease) 0.9s, transform 1.1s var(--ease) 0.9s;
+  }
+  body.anim.booted #hero .foot { opacity: 1; transform: none; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 16px;
+    padding: 17px 34px; border-radius: 999px;
+    border: 1px solid rgba(244, 225, 193, 0.32);
+    background: rgba(11, 11, 26, 0.28);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase;
+    transition: border-color 0.6s var(--ease), color 0.6s var(--ease), background 0.6s var(--ease);
+  }
+  .cta .arr { transition: transform 0.6s var(--ease); }
+  .cta:hover { border-color: var(--acid); color: var(--acid); background: rgba(11, 11, 26, 0.45); }
+  .cta:hover .arr { transform: translateY(4px); }
+  .wordmark, header nav ul a { white-space: nowrap; }
+  @media (max-width: 520px) { header nav li.m-hide { display: none; } }
+  #hero h1.coords { margin: 0; font-weight: 540; text-transform: uppercase; }
+  #hero .coords { text-align: right; color: var(--sand-55); font-size: 11px; letter-spacing: 0.18em; line-height: 2; }
+
+  /* ============ TONIGHT (folded into the hero) ============ */
+  .tonight-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+  .tonight-head .label { color: var(--sand); }
+  .tonight-date { margin-left: auto; color: var(--coral); font-size: 12px; font-weight: 600; letter-spacing: 0.2em; }
+  .tonight-pulse {
+    position: relative; width: 9px; height: 9px; border-radius: 50%;
+    background: var(--sand); box-shadow: 0 0 14px rgba(244, 225, 193, 0.6); flex: none;
+  }
+  .tonight-pulse::after {
+    content: ""; position: absolute; inset: -6px; border-radius: 50%;
+    border: 1px solid var(--sand); animation: tonight-ring 2.2s var(--ease) infinite;
+  }
+  @keyframes tonight-ring {
+    0% { transform: scale(0.6); opacity: 0.9; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  .tonight-reel {
+    margin: 0 calc(50% - 50vw);
+    padding-inline: clamp(20px, 4vw, 48px);
+    overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent);
+  }
+  .tonight-reel::-webkit-scrollbar { display: none; }
+  .tonight-reel .track { display: flex; gap: 16px; scroll-snap-type: x proximity; }
+  .tonight-card {
+    scroll-snap-align: start; flex: none; width: clamp(240px, 64vw, 300px);
+    display: flex; gap: 14px; align-items: center;
+    padding: 14px; border-radius: 16px;
+    background: rgba(11, 11, 26, 0.45); border: 1px solid rgba(244, 225, 193, 0.18);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    transition: border-color 0.5s var(--ease), background 0.5s var(--ease), transform 0.5s var(--ease);
+  }
+  .tonight-card:hover { border-color: var(--acid); background: rgba(255, 94, 91, 0.08); transform: translateY(-3px); }
+  .tc-thumb {
+    position: relative; flex: none; width: 72px; height: 72px; border-radius: 12px;
+    overflow: hidden; border: 1px solid var(--line);
+  }
+  .tc-thumb .ph { position: absolute; inset: 0; filter: saturate(0.85) contrast(1.05); }
+  .tc-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .tc-tag {
+    font-size: 9px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--acid);
+  }
+  .tc-body h3 {
+    font-stretch: 100%; font-weight: 540; font-size: 14px; letter-spacing: 0.04em;
+    margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+  .tc-body p {
+    margin: 0; font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--sand-55); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tc-price {
+    margin-top: 2px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--sand-70);
+  }
+  .tc-price.free { color: var(--sand); }
+  .tc-price.soldout { color: var(--coral); }
+  .tc-go { display: none; margin-left: auto; color: var(--sand-35); transition: transform 0.6s var(--ease), color 0.5s; }
+  .tonight-card:hover .tc-go { transform: translate(3px, -3px); color: var(--acid); }
+  @media (min-width: 560px) { .tc-go { display: block; } }
+  @media (max-width: 559px) { .tc-body p { white-space: normal; line-height: 1.5; } }
+  .tonight-empty { color: var(--sand-70); font-size: 13px; letter-spacing: 0.04em; }
+  .tonight-empty a { color: var(--acid); text-decoration: underline; text-underline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    .tonight-pulse::after { animation: none; opacity: 0.4; transform: scale(1.4); }
+  }
+
+  /* ============ MARQUEE ============ */
+  .marquee {
+    border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+    padding: 17px 0; overflow: hidden; white-space: nowrap;
+    background: rgba(18, 18, 42, 0.35);
+  }
+  .marquee .track { display: inline-flex; gap: 0; animation: slide 46s linear infinite; will-change: transform; }
+  .marquee span {
+    font-stretch: 100%; font-weight: 600; font-size: 11px;
+    letter-spacing: 0.34em; text-transform: uppercase; color: var(--sand-55);
+    padding-right: 8px;
+  }
+  .marquee span b { color: var(--coral); font-weight: 700; padding: 0 18px 0 10px; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+
+  /* ============ SECTION SHELL ============ */
+  section { position: relative; }
+  .sec { padding: clamp(90px, 14vh, 170px) 0; }
+  .sechead { display: grid; gap: 18px; margin-bottom: clamp(44px, 7vh, 84px); }
+  .sechead .label { color: var(--coral); display: flex; align-items: center; gap: 14px; }
+  .sechead .label::after { content: ""; height: 1px; width: 72px; background: var(--coral); opacity: 0.5; }
+  .sechead h2 { font-size: clamp(20px, 3vw, 38px); letter-spacing: 0.16em; margin: 0; max-width: 32ch; }
+  .sechead .side {
+    color: var(--sand-55); max-width: 44ch;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; line-height: 2;
+  }
+  @media (min-width: 880px) {
+    .sechead { grid-template-columns: 1fr auto; align-items: end; }
+    .sechead .side { text-align: right; justify-self: end; }
+    .sechead .label { grid-column: 1 / -1; }
+  }
+
+  /* ============ REVEALS (hidden states only when JS + motion are on) ============ */
+  body.anim .rv {
+    opacity: 0; transform: translateY(46px); filter: blur(6px);
+    transition: opacity 1.2s var(--ease), transform 1.2s var(--ease), filter 1.2s var(--ease);
+    transition-delay: var(--d, 0s);
+  }
+  body.anim .rv.in { opacity: 1; transform: none; filter: none; }
+
+  /* ============ SCENE REEL: last nights, by room ============ */
+  .reel {
+    margin-inline: calc(50% - 50vw);
+    padding-inline: clamp(20px, 4vw, 48px);
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+    cursor: grab; user-select: none; -webkit-user-select: none;
+  }
+  .reel::-webkit-scrollbar { display: none; }
+  .reel.grabbing { cursor: grabbing; }
+  body.anim .reel { overflow: hidden; }
+  .reel .track { display: flex; gap: 16px; width: max-content; padding: 4px 0; will-change: transform; }
+  .shotcard {
+    position: relative; flex: none;
+    width: clamp(230px, 26vw, 330px); aspect-ratio: 3 / 4;
+    border-radius: 18px; overflow: hidden; isolation: isolate;
+    border: 1px solid var(--line); margin: 0;
+  }
+  .shotcard:nth-child(even) { width: clamp(280px, 34vw, 420px); aspect-ratio: 4 / 3; align-self: center; }
+  .shotcard .ph {
+    position: absolute; inset: 0; z-index: -1;
+    transform: scale(1.05);
+    filter: saturate(0.78) contrast(1.06) brightness(0.88);
+    transition: transform 1.3s var(--ease), filter 1s;
+  }
+  .shotcard:hover .ph { transform: scale(1.13); filter: saturate(1.05) contrast(1.05) brightness(1); }
+  .shotcard::after {
+    content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: linear-gradient(200deg, rgba(11, 11, 26, 0.4), transparent 40%, transparent 55%, rgba(11, 11, 26, 0.78) 100%);
+  }
+  .shotcard .type {
+    position: absolute; top: 16px; left: 16px; z-index: 1;
+    font-size: 9px; color: var(--coral);
+    background: rgba(11, 11, 26, 0.55); padding: 6px 12px; border-radius: 999px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  .shotcard .type.air { color: var(--acid); }
+  .shotcard .meta {
+    position: absolute; left: 16px; right: 16px; bottom: 14px; z-index: 1;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .shotcard .meta strong {
+    font-weight: 540; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .shotcard .meta span {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sand-55);
+  }
+  .reel-note .allv { color: var(--coral); border-bottom: 1px solid var(--coral); }
+  .reel-note { margin-top: 18px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sand-35); }
+  /* whole-card venue link (opens in a new tab) */
+  .shotcard .card-link { position: absolute; inset: 0; z-index: 3; border-radius: inherit; cursor: pointer; }
+  .shotcard .card-link:focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
+  .reel.grabbing .card-link { cursor: grabbing; }
+
+  #joinlist {
+    border-radius: 999px; padding: 15px 26px;
+    background: rgba(11, 11, 26, 0.3); color: var(--sand);
+    border: 1px solid rgba(244, 225, 193, 0.32);
+    font-weight: 600; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: border-color 0.6s var(--ease), color 0.6s var(--ease), opacity 0.4s;
+  }
+  #joinlist { display: inline-block; }
+  #joinlist:hover { border-color: var(--acid); color: var(--acid); }
+  #joinlist.dead { opacity: 0.35; pointer-events: none; }
+
+  /* ============ LISTEN / RESIDENT MIX ============ */
+  #listen .player-card {
+    position: relative; border-radius: 24px; padding: clamp(20px, 3vw, 30px);
+    background: rgba(244, 225, 193, 0.035);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    max-width: 720px; overflow: hidden;
+  }
+  #listen .player-card::before {
+    content: ""; position: absolute; top: -160px; left: -140px; width: 320px; height: 320px;
+    border-radius: 50%; background: rgba(255, 94, 91, 0.16); filter: blur(80px); pointer-events: none;
+  }
+  #listen .player-top {
+    position: relative; display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; margin-bottom: 18px;
+  }
+  #listen .player-eyebrow {
+    font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--sand-55);
+  }
+  #listen .player-credit {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--coral); white-space: nowrap; text-decoration: none;
+    transition: color 0.5s var(--ease);
+  }
+  #listen .player-credit:hover { color: var(--acid); }
+  #listen .player-frame {
+    position: relative; border-radius: 14px; overflow: hidden;
+    border: 1px solid var(--line-soft); background: rgba(11, 11, 26, 0.4);
+  }
+  #listen .sc-frame { display: block; width: 100%; height: 340px; border: 0; }
+  #listen .player-fallback {
+    display: flex; align-items: center; gap: 16px; padding: 22px;
+    text-decoration: none; color: var(--sand);
+    transition: background 0.5s var(--ease);
+  }
+  #listen .player-fallback:hover { background: rgba(244, 225, 193, 0.05); }
+  #listen .pf-mark {
+    flex: none; width: 46px; height: 46px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 14px;
+    color: var(--night); background: var(--acid);
+    padding-left: 2px;
+  }
+  #listen .pf-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  #listen .pf-text strong { font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; }
+  #listen .pf-text span { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sand-55); }
+  #listen .pf-go { margin-left: auto; padding-left: 8px; color: var(--sand-35); font-size: 18px; }
+  #listen .player-note {
+    margin-top: 16px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sand-35);
+  }
+
+  /* Player source switcher: appears only when featured.json lists extra sources */
+  #listen .player-switch { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; position: relative; }
+  #listen .player-switch[hidden] { display: none; }
+  #listen .player-switch button { font: inherit; font-size: 10px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase;
+    padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--sand-35); cursor: pointer; }
+  #listen .player-switch button[aria-pressed="true"] { color: var(--coral); border-color: var(--coral); }
+  #listen .player-feat { margin: 14px 0 0; font-size: 12px; letter-spacing: 0.08em; color: var(--sand-70); position: relative; }
+  #listen .player-feat[hidden] { display: none; }
+
+  /* DJ submit card, under the player */
+  #listen .submit-card { position: relative; margin-top: 18px; border-radius: 24px; padding: clamp(20px, 3vw, 28px);
+    background: rgba(244, 225, 193, 0.035); border: 1px solid var(--line);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); max-width: 720px; overflow: hidden; overflow: clip; }
+  #listen .submit-card::before { content: ""; position: absolute; bottom: -170px; right: -140px; width: 320px; height: 320px;
+    border-radius: 50%; background: rgba(255, 94, 91, 0.2); filter: blur(80px); pointer-events: none; }
+  #listen .sc-head { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  #listen .sc-eyebrow { margin: 0 0 8px; font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--coral); }
+  #listen .sc-title { margin: 0; font-size: clamp(15px, 1.8vw, 19px); letter-spacing: 0.12em; text-transform: uppercase; font-weight: 560; }
+  #listen .sc-sub { margin: 8px 0 0; color: var(--sand-70); font-size: 13px; line-height: 1.7; max-width: 46ch; }
+  #listen .sc-btn { position: relative; font: inherit; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 14px 22px; border-radius: 999px; border: 1px solid var(--coral); background: transparent; color: var(--coral); cursor: pointer;
+    transition: background 0.5s var(--ease), color 0.5s var(--ease); }
+  #listen .sc-btn:hover { background: var(--coral); color: #0b0b1a; }
+  #listen .sc-btn:disabled { opacity: 0.5; cursor: default; }
+  #listen .sc-form { position: relative; display: none; gap: 18px; margin-top: 24px; }
+  #listen .submit-card.open .sc-form { display: grid; }
+  #listen .sc-grid { display: grid; gap: 16px; }
+  @media (min-width: 720px) { #listen .sc-grid { grid-template-columns: 1fr 1fr; } }
+  #listen .sc-f { display: grid; gap: 8px; }
+  #listen .sc-f.full { grid-column: 1 / -1; }
+  #listen .sc-f label { font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--sand-55); }
+  #listen .sc-f input, #listen .sc-f select { width: 100%; padding: 14px 16px; border-radius: 13px;
+    background: rgba(244, 225, 193, 0.05); border: 1px solid rgba(244, 225, 193, 0.15); color: var(--sand); font: inherit; font-size: 14px; }
+  #listen .sc-f input::placeholder { color: var(--sand-35); }
+  #listen .sc-f input[aria-invalid="true"] { border-color: var(--coral); }
+  #listen .sc-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  #listen .sc-check { display: flex; gap: 12px; align-items: flex-start; font-size: 12px; line-height: 1.6; color: var(--sand-70); }
+  #listen .sc-check input { margin-top: 3px; accent-color: var(--coral); }
+  #listen .sc-fine { margin: 0; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sand-35); line-height: 1.8; }
+  #listen .sc-status { margin: 0; font-size: 13px; color: var(--sand-70); min-height: 1.4em; }
+  #listen .sc-status .ok { color: var(--sand); }
+
+  /* featured-artist bio beside the player */
+  #listen .listen-grid { display: grid; gap: clamp(30px, 5vw, 48px); }
+  @media (min-width: 880px) {
+    #listen .listen-grid { grid-template-columns: 1.7fr 1fr; align-items: start; }
+  }
+  #listen .artist-bio { display: flex; flex-direction: column; gap: 14px; }
+  #listen .bio-eyebrow {
+    margin: 0; font-size: 10px; font-weight: 500; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--coral);
+  }
+  #listen .bio-name {
+    margin: 0; font-size: clamp(18px, 2.2vw, 24px); letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 560;
+  }
+  #listen .bio-body {
+    margin: 0; color: var(--sand-70); font-size: 13.5px; line-height: 1.75; max-width: 44ch;
+  }
+  #listen .bio-long { display: none; }
+  #listen .bio-short { display: block; }
+  @media (min-width: 880px) {
+    #listen .bio-long { display: block; }
+    #listen .bio-short { display: none; }
+  }
+  #listen .bio-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 0; padding: 0; list-style: none; }
+  #listen .bio-tags li {
+    font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sand-70);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+  }
+  #listen .bio-meta { margin: 0; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sand-55); }
+  #listen .bio-links { display: flex; flex-wrap: wrap; gap: 18px; margin: 2px 0 0; }
+  #listen .bio-links a {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--sand-55); text-decoration: none; transition: color 0.5s var(--ease);
+  }
+  #listen .bio-links a:hover { color: var(--acid); }
+  #listen .bio-sig {
+    margin: 6px 0 0; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--coral); font-weight: 540;
+  }
+
+  /* ============ EVENTS ============ */
+  /* photo refs: each data URI embedded exactly once */
+  .ph { background-size: cover; background-position: center; }
+  .ph-holly { background-image: url("/assets/ev-hollywood.jpg"); }
+  .ph-mars { background-image: url("/assets/ev-mars.jpg"); }
+  .ph-roof { background-image: url("/assets/ev-rooftop.jpg"); }
+  .ph-crowd { background-image: url("/assets/film-crowd.jpg"); }
+  .ph-decks { background-image: url("/assets/film-decks.jpg"); }
+  .ph-stage { background-image: url("/assets/ph-stage.jpg"); }
+  .ph-conf { background-image: url("/assets/ph-conf.jpg"); }
+  .ph-lift { background-image: url("/assets/ph-lift.jpg"); }
+  .ph-bar { background-image: url("/assets/ph-bar.jpg"); }
+
+  /* Region filter: built by JS only when a non-LA (secondary-region) row exists, so the page is unchanged until then. */
+  .geo-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+  .geo-filter[hidden] { display: none; }
+  .geo-filter button { font: inherit; font-size: 10px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase;
+    padding: 9px 14px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--sand-35); cursor: pointer; }
+  .geo-filter button[aria-pressed="true"] { color: var(--coral); border-color: var(--coral); }
+  .row-ev.geo-off, .rows-group.geo-off { display: none !important; }
+  /* Phones: one swipeable row instead of a tall stack of pills (region filter + player tabs) */
+  @media (max-width: 720px) {
+    .geo-filter, #listen .player-switch { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; margin-left: -4px; margin-right: -4px; padding: 2px 4px 6px;
+      -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+    .geo-filter::-webkit-scrollbar, #listen .player-switch::-webkit-scrollbar { display: none; }
+    .geo-filter button, #listen .player-switch button { flex: 0 0 auto; white-space: nowrap; padding: 8px 12px; }
+  }
+  /* Grid children may shrink below their content width; without this the swipeable pill row
+     (and anything wide inside the player) stretches the whole column past the screen on phones. */
+  #listen .listen-grid > *, #listen .player, #listen .player-card, #listen .submit-card, #listen .player-frame { min-width: 0; max-width: 100%; }
+  #listen .listen-grid { grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 880px) { #listen .listen-grid { grid-template-columns: 1.7fr 1fr; } }
+  .rows { border-top: 1px solid var(--line); }
+  .rows-group { display: flex; align-items: baseline; gap: 14px; margin: 0; padding: 40px 0 14px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: var(--coral); }
+  .rows-group::after { content: ""; height: 1px; flex: 1; background: var(--line); transform: translateY(-3px); }
+  .rows-group small { font-size: 10px; font-weight: 500; letter-spacing: 0.22em; color: var(--sand-35); white-space: nowrap; }
+  .rows > .rows-group:first-child { padding-top: 26px; }
+  .rows-note { margin-top: 16px; display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sand-35); }
+  .row-ev .who.hot { color: var(--coral); }
+  .row-ev {
+    position: relative; display: grid; align-items: center;
+    grid-template-columns: 1fr 92px;
+    grid-template-areas: "date thumb" "what thumb" "price thumb";
+    column-gap: 18px; row-gap: 8px; padding: 22px 6px;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.6s var(--ease), padding 0.6s var(--ease);
+  }
+  .row-ev .date { grid-area: date; }
+  .row-ev .what { grid-area: what; }
+  .row-ev .who, .row-ev .price { grid-area: who; }
+  .row-ev .thumb { grid-area: thumb; }
+  .row-ev .go { grid-area: go; }
+  @media (min-width: 880px) {
+    .row-ev {
+      grid-template-columns: 130px 1fr auto 150px 40px;
+      grid-template-areas: "date what who thumb go";
+      gap: 30px; padding: 30px 10px;
+    }
+    .row-ev .price { justify-self: end; font-size: 12px; }
+  }
+  .row-ev:hover { background: rgba(244, 225, 193, 0.03); }
+  .row-ev .date { font-stretch: 100%; font-weight: 540; font-size: clamp(15px, 1.6vw, 20px);
+    letter-spacing: 0.1em; color: var(--coral);
+    display: flex; align-items: baseline; gap: 10px; }
+  .row-ev .date small { font-size: 10px; font-weight: 600; letter-spacing: 0.26em; color: var(--sand-35); }
+  @media (min-width: 880px) {
+    .row-ev .date { display: block; }
+    .row-ev .date small { display: block; margin-top: 4px; }
+  }
+  .row-ev .what h3 { font-stretch: 100%; font-weight: 540; font-size: clamp(13px, 1.6vw, 18px);
+    letter-spacing: 0.1em; text-transform: uppercase; margin: 0;
+    transition: transform 0.7s var(--ease), color 0.5s; }
+  .row-ev:hover .what h3 { transform: translateX(10px); color: var(--sand); }
+  .row-ev .what p { margin: 5px 0 0; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--sand-55); }
+  .row-ev .who { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sand-55);
+    transition: color 0.5s; display: none; }
+  .row-ev .price { justify-self: start; font-size: 11px; font-weight: 540; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--sand-70); white-space: nowrap; }
+  .row-ev .price.free { color: var(--sand); }
+  .row-ev .price.soldout { color: var(--coral); }
+  .row-ev:hover .who { color: var(--acid); }
+  .row-ev .thumb {
+    width: 92px; height: 60px; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  @media (min-width: 880px) {
+    .row-ev .who { display: block; }
+    .row-ev .thumb { width: 150px; height: 88px; border-radius: 10px; }
+  }
+  .row-ev .thumb { position: relative; }
+  .row-ev .thumb .ph { position: absolute; inset: 0; display: block;
+    filter: saturate(0.85) contrast(1.05);
+    transform: scale(1.02);
+    transition: transform 1.1s var(--ease), filter 0.8s; }
+  .row-ev:hover .thumb .ph { transform: scale(1.12); filter: saturate(1.05) contrast(1.05); }
+  .row-ev .go { display: none; font-size: 20px; color: var(--sand-35);
+    transition: transform 0.7s var(--ease), color 0.5s; }
+  @media (min-width: 880px) { .row-ev .go { display: block; } }
+  .row-ev:hover .go { transform: translateX(6px); color: var(--acid); }
+  /* floating preview */
+  #peek {
+    position: fixed; z-index: 60; width: 300px; height: 190px; border-radius: 14px;
+    overflow: hidden; pointer-events: none; opacity: 0;
+    border: 1px solid rgba(244, 225, 193, 0.25);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    transform: scale(0.86);
+    transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  }
+  #peek.on { opacity: 1; transform: scale(1); }
+  #peek .ph { position: absolute; inset: 0; opacity: 0; transition: opacity 0.4s; }
+  #peek .ph.on { opacity: 1; }
+
+  /* ============ ABOUT ============ */
+  #about { overflow: hidden; }
+  #about .wrap { position: relative; z-index: 1; }
+  #about .glow { z-index: 1; }
+  #about .glow {
+    position: absolute; left: 50%; bottom: -300px; width: 900px; height: 560px;
+    transform: translateX(-50%); border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 94, 91, 0.16), transparent);
+    filter: blur(50px); pointer-events: none;
+  }
+  #about .statement {
+    font-size: clamp(16px, 2.4vw, 30px);
+    font-stretch: 100%; font-weight: 540; letter-spacing: 0.1em; line-height: 1.7;
+    text-transform: uppercase;
+    max-width: 40ch; margin: 0; text-wrap: balance;
+  }
+  #about .statement em { font-style: normal; }
+  #about .statement .w { display: inline-block; }
+  body.anim #about .statement .w {
+    opacity: 0.12; transform: translateY(0.35em); filter: blur(4px);
+    transition: opacity 0.9s var(--ease), transform 0.9s var(--ease), filter 0.9s var(--ease);
+    transition-delay: calc(var(--i) * 55ms);
+  }
+  body.anim #about .statement.in .w { opacity: 1; transform: none; filter: none; }
+  #about .statement .warm { color: var(--coral); }
+  #about .statement .mean { color: var(--acid); }
+  #about .support {
+    margin-top: 42px; color: var(--sand-55); max-width: 62ch;
+    font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; line-height: 2.1;
+  }
+
+  /* ============ CONTACT ============ */
+  #contact .panel {
+    position: relative; border-radius: 24px; padding: clamp(26px, 4vw, 46px);
+    background: rgba(244, 225, 193, 0.035);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    max-width: 720px; overflow: hidden;
+  }
+  #contact .panel::before {
+    content: ""; position: absolute; top: -160px; right: -140px; width: 320px; height: 320px;
+    border-radius: 50%; background: rgba(255, 94, 91, 0.22); filter: blur(80px); pointer-events: none;
+  }
+  #contact .grid2 { display: grid; gap: 20px; position: relative; }
+  @media (min-width: 720px) { #contact .grid2 { grid-template-columns: 1fr 1fr; } }
+  #contact .field { display: grid; gap: 9px; position: relative; }
+  #contact .field.full { grid-column: 1 / -1; }
+  #contact label { font-size: 10px; font-weight: 500; letter-spacing: 0.3em; text-transform: uppercase; color: var(--sand-55); }
+  #contact input, #contact textarea {
+    width: 100%; padding: 15px 18px; border-radius: 13px;
+    background: rgba(244, 225, 193, 0.05);
+    border: 1px solid rgba(244, 225, 193, 0.15);
+    color: var(--sand); font: inherit; font-size: 15px;
+    transition: border-color 0.5s, background 0.5s, box-shadow 0.5s;
+  }
+  #contact input::placeholder, #contact textarea::placeholder { color: var(--sand-35); }
+  #contact input:focus, #contact textarea:focus {
+    outline: none; border-color: rgba(255, 94, 91, 0.6);
+    background: rgba(244, 225, 193, 0.08);
+    box-shadow: 0 0 0 3px rgba(255, 94, 91, 0.12);
+  }
+  #contact input[aria-invalid="true"], #contact textarea[aria-invalid="true"] {
+    border-color: rgba(255, 94, 91, 0.65);
+    box-shadow: 0 0 0 3px rgba(255, 94, 91, 0.12);
+  }
+  #contact textarea { min-height: 130px; resize: vertical; }
+  #contact .actions { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 26px; position: relative; }
+  #send, #mk {
+    border: none; border-radius: 999px; padding: 17px 38px;
+    background: var(--acid); color: var(--night);
+    font-weight: 650; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase;
+    transition: background 0.6s var(--ease), transform 0.6s var(--ease), opacity 0.4s;
+  }
+  #send:hover, #mk:hover { background: var(--sand); }
+  #send:disabled, #mk:disabled { opacity: 0.5; cursor: wait; }
+  #status { font-size: 14px; min-height: 20px; }
+  #status .ok { color: var(--sand); }
+  #status a { color: var(--sand); text-decoration: none; border-bottom: 1px solid var(--acid); padding-bottom: 1px; }
+  #status a:hover { color: var(--acid); }
+  #contact .demo { margin-top: 20px; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sand-35); }
+
+  /* ============ FOOTER ============ */
+  footer { border-top: 1px solid var(--line-soft); padding: 40px 0 34px; overflow: hidden; }
+  footer .big { white-space: nowrap; overflow: hidden; margin-bottom: 30px; }
+  footer .big .track { display: inline-flex; animation: slide 30s linear infinite; will-change: transform; }
+  footer .big span {
+    font-stretch: 100%; font-weight: 540; font-size: clamp(38px, 7vw, 92px); line-height: 1;
+    letter-spacing: 0.18em;
+    color: transparent; -webkit-text-stroke: 1px rgba(244, 225, 193, 0.22);
+    padding-right: 46px;
+  }
+  footer .big span b { color: transparent; -webkit-text-stroke: 1px rgba(255, 94, 91, 0.55); font-weight: 540; }
+  footer .base { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: baseline; }
+  footer .base p { margin: 0; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sand-35); }
+  footer .base a { color: var(--sand-55); transition: color 0.4s; }
+  footer .base a:hover { color: var(--acid); }
+
+  /* ============ REDUCED MOTION ============ */
+  @media (prefers-reduced-motion: reduce) {
+    .marquee .track, footer .big .track, .card .orb { animation: none !important; }
+    .rv { opacity: 1; transform: none; filter: none; }
+    #about .statement .w { opacity: 1 !important; transform: none !important; filter: none !important; }
+  }
+</style>
+<script async="" src="./House Music Events in Los Angeles &amp; Southern California_files/clarity.js.download"></script><script async="" src="./House Music Events in Los Angeles &amp; Southern California_files/ywedzgy5oh"></script><script async="" src="./House Music Events in Los Angeles &amp; Southern California_files/js"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-9D7CEXZH62', { anonymize_ip: true });
+</script>
+<script>(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","ywedzgy5oh");</script>
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebSite", "name": "HOUSE·LA", "alternateName": "House Music LA", "url": "https://www.housemusicla.com/", "description": "Every house set in Los Angeles: headliners, weeklies, open air and the festivals on our radar."}, {"@context": "https://schema.org", "@type": "Organization", "name": "HOUSE·LA", "url": "https://www.housemusicla.com/", "logo": "https://www.housemusicla.com/og.jpg"}, {"@context": "https://schema.org", "@type": "ItemList", "name": "House music events in Los Angeles", "itemListElement": [{"@type": "ListItem", "position": 1, "url": "https://www.housemusicla.com/events/prospa-3rd-show-added-2026-10-14", "name": "Prospa (3rd Show Added)"}, {"@type": "ListItem", "position": 2, "url": "https://www.housemusicla.com/events/prospa-2026-10-15", "name": "Prospa"}, {"@type": "ListItem", "position": 3, "url": "https://www.housemusicla.com/events/prospa-2nd-show-added-2026-10-16", "name": "Prospa (2nd Show Added)"}, {"@type": "ListItem", "position": 4, "url": "https://www.housemusicla.com/events/carl-craig-and-octave-one-live-2026-10-17", "name": "Carl Craig & Octave One (Live)"}, {"@type": "ListItem", "position": 5, "url": "https://www.housemusicla.com/events/clarion-w-lady-radiator-blossom-2026-10-17", "name": "Clarion w/ Lady Radiator, Blossom"}, {"@type": "ListItem", "position": 6, "url": "https://www.housemusicla.com/events/day-trip-festival-norcal-debut-2026-10-17", "name": "Day Trip Festival: NorCal Debut"}, {"@type": "ListItem", "position": 7, "url": "https://www.housemusicla.com/events/moon-boots-2026-10-17", "name": "Moon Boots"}, {"@type": "ListItem", "position": 8, "url": "https://www.housemusicla.com/events/pawsa-2026-10-17", "name": "PAWSA"}, {"@type": "ListItem", "position": 9, "url": "https://www.housemusicla.com/events/petit-biscuit-forester-2026-10-17", "name": "Petit Biscuit, Forester"}, {"@type": "ListItem", "position": 10, "url": "https://www.housemusicla.com/events/samm-juno-2026-10-17", "name": "Samm, Juno"}, {"@type": "ListItem", "position": 11, "url": "https://www.housemusicla.com/events/chus-and-ceballos-cielo-du-sol-2026-10-18", "name": "Chus & Ceballos: Cielo du Sol"}, {"@type": "ListItem", "position": 12, "url": "https://www.housemusicla.com/events/actress-2026-10-19", "name": "Actress"}, {"@type": "ListItem", "position": 13, "url": "https://www.housemusicla.com/events/space-taco-x-spoon-fed-records-release-party-2026-10-20", "name": "Space Taco x Spoon Fed Records Release Party"}, {"@type": "ListItem", "position": 14, "url": "https://www.housemusicla.com/events/channel-tres-fifi-2026-10-23", "name": "Channel Tres, Fifi"}, {"@type": "ListItem", "position": 15, "url": "https://www.housemusicla.com/events/eli-and-fur-2026-10-23", "name": "Eli & Fur"}, {"@type": "ListItem", "position": 16, "url": "https://www.housemusicla.com/events/diz-colette-lisa-shaw-and-others-2026-10-24", "name": "Diz, Colette, Lisa Shaw & others"}, {"@type": "ListItem", "position": 17, "url": "https://www.housemusicla.com/events/dr-gabba-2026-10-24", "name": "Dr. Gabba"}, {"@type": "ListItem", "position": 18, "url": "https://www.housemusicla.com/events/hugel-2026-10-24", "name": "Hugel"}, {"@type": "ListItem", "position": 19, "url": "https://www.housemusicla.com/events/mutate-charlie-sparks-yonkers-2026-10-24", "name": "Mutate: Charlie Sparks, Yonkers"}, {"@type": "ListItem", "position": 20, "url": "https://www.housemusicla.com/events/deep-dish-2026-10-30", "name": "Deep Dish"}]}]</script>
+</head>
+<body class="anim booted" data-cursor="on">
+<div id="progress" role="presentation" style="transform: scaleX(0);"></div>
+
+<div id="site-bg" aria-hidden="true"><div class="ph"></div><div class="veil"></div></div>
+
+<div id="cursor" aria-hidden="true" style="transform: translate(-83px, -82px);" class=""><svg viewBox="0 0 24 24"><path d="M3 2v17.2l4.5-4.1 3.1 7 3.2-1.4-3.1-6.9H17.5z" fill="#fff"></path></svg></div>
+
+<header class="">
+  <nav aria-label="Main">
+    <a class="wordmark" href="https://www.housemusicla.com/#hero" aria-label="HOUSE LA, home">HOUSE<b class="hp-dot"><svg class="hp" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.2 14.2v-2.4a7.8 7.8 0 0 1 15.6 0v2.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path><rect x="2.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect><rect x="16.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect></svg></b>LA</a>
+    <ul>
+      <li class="m-hide"><a href="https://www.housemusicla.com/#scene" class="here">Scene</a></li>
+      <li class="m-hide"><a href="https://www.housemusicla.com/#listen" class="">Listen</a></li>
+      <li><a href="https://www.housemusicla.com/#events" class="">Events</a></li>
+      <li><a href="https://www.housemusicla.com/this-weekend/">Weekend</a></li>
+      <li><a href="https://www.housemusicla.com/venues/">Venues</a></li>
+      <li><a href="https://www.housemusicla.com/#about" class="">About</a></li>
+      <li><a href="https://www.housemusicla.com/#contact" class="">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <!-- ================= HERO + TONIGHT (first thing you see) ================= -->
+  <section id="hero" aria-label="House never sleeps, tonight in Los Angeles">
+    <div class="fallback" aria-hidden="true"></div>
+    <canvas id="glsl" aria-hidden="true" width="3818" height="1907"></canvas>
+    <div class="scrim" aria-hidden="true"></div>
+    <div class="content">
+      <div class="hero-main">
+        <p class="display hero-tag">
+          <span class="row"><i>HOUSE</i></span>
+          <span class="row"><i class="dim">NEVER</i></span>
+          <span class="row"><i>SLEEPS</i></span>
+        </p>
+        <div class="foot">
+          <a class="cta magnetic" href="https://www.housemusicla.com/#scene">Enter the scene <span class="arr" aria-hidden="true">↓</span></a>
+          <h1 class="coords tnum">House music events in<br>Los Angeles &amp; Southern California</h1>
+        </div>
+      </div>
+      <div class="hero-tonight">
+        <div class="tonight-head">
+          <span class="tonight-pulse" aria-hidden="true"></span>
+          <span class="label">Tonight in Los Angeles</span>
+          <span class="tonight-date tnum">SUN 10.11</span>
+        </div>
+        <div class="tonight-reel" id="tonight-reel">
+          <div class="track">
+<!-- TONIGHT:CARDS:START --><a class="tonight-card" href="https://shotgun.live/en/events/nightshift-afterhours-697" rel="noopener"><span class="tc-thumb"><i class="ph ph-holly" aria-hidden="true"></i></span><span class="tc-body"><span class="tc-tag">RESIDENCY</span><h3>Nightshift After Hours</h3><p>The Lexington · DTLA · 11 PM to 6 AM</p><span class="tc-price free">Free RSVP</span></span><span class="tc-go" aria-hidden="true">↗</span></a><a class="tonight-card" href="https://shotgun.live/events/sunday-sessions-la-08-24-82" rel="noopener"><span class="tc-thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span><span class="tc-body"><span class="tc-tag">RESIDENCY</span><h3>Sunday Sessions: Vinyl Open Air</h3><p>LA Center Studios · DTLA · 6 PM to 12 AM</p><span class="tc-price free">Free early</span></span><span class="tc-go" aria-hidden="true">↗</span></a><!-- TONIGHT:CARDS:END -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MARQUEE ================= -->
+  <div class="marquee" aria-hidden="true">
+    <div class="track">
+      <span>House music<b>·</b>Los Angeles<b>·</b>Southern California<b>·</b>Deep<b>·</b>Melodic<b>·</b>Afro<b>·</b>Tech<b>·</b></span>
+      <span>House music<b>·</b>Los Angeles<b>·</b>Southern California<b>·</b>Deep<b>·</b>Melodic<b>·</b>Afro<b>·</b>Tech<b>·</b></span>
+    </div>
+  </div>
+
+  <!-- ================= SCENE ================= -->
+  <section id="scene" class="sec">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="label rv in">The Scene</p>
+        <h2 class="display rv in" style="--d:.08s">Last nights in Los Angeles.</h2>
+        <p class="side rv in" style="--d:.16s">The clubs, rooftops and warehouses where Los Angeles house music lives.</p>
+      </div>
+      <div class="reel rv in" id="reel" aria-label="Photos from recent Los Angeles nights">
+        <div class="track" style="transform: translateX(-1758.3px);">
+        <figure class="shotcard">
+          <i class="ph ph-crowd" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Sound Nightclub</strong><span>Hollywood · 07.10</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#sound-nightclub" aria-label="Sound Nightclub: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-roof" aria-hidden="true"></i>
+          <span class="type label air">Rooftop</span>
+          <figcaption class="meta"><strong>Level 8</strong><span>DTLA · 07.10</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#level-8" aria-label="Level 8: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-stage" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Exchange</strong><span>DTLA · 07.03</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#exchange-la" aria-label="Exchange LA: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-bar" aria-hidden="true"></i>
+          <span class="type label">Bar</span>
+          <figcaption class="meta"><strong>El Prado</strong><span>Echo Park · 06.26</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#el-prado" aria-label="El Prado: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-holly" aria-hidden="true"></i>
+          <span class="type label">Warehouse</span>
+          <figcaption class="meta"><strong>1720</strong><span>DTLA · 07.10</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#1720" aria-label="1720: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-conf" aria-hidden="true"></i>
+          <span class="type label air">Open Air</span>
+          <figcaption class="meta"><strong>LA State Historic Park</strong><span>Day Trip · 07.12</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#la-state-historic-park" aria-label="LA State Historic Park: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-lift" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Academy</strong><span>Hollywood · 07.03</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#academy-la" aria-label="Academy LA: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-decks" aria-hidden="true"></i>
+          <span class="type label">Booth</span>
+          <figcaption class="meta"><strong>The Spotlight</strong><span>Hollywood · 07.11</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#the-spotlight" aria-label="The Spotlight: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-mars" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Mars Night Club</strong><span>Deep and melodic · 07.04</span></figcaption>
+          <a class="card-link" href="https://www.instagram.com/marshollywood/" rel="noopener" aria-label="Mars Hollywood on Instagram, opens in a new tab"></a>
+        </figure>
+        
+        <figure class="shotcard">
+          <i class="ph ph-crowd" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Sound Nightclub</strong><span>Hollywood · 07.10</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#sound-nightclub" aria-label="Sound Nightclub: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-roof" aria-hidden="true"></i>
+          <span class="type label air">Rooftop</span>
+          <figcaption class="meta"><strong>Level 8</strong><span>DTLA · 07.10</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#level-8" aria-label="Level 8: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-stage" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Exchange</strong><span>DTLA · 07.03</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#exchange-la" aria-label="Exchange LA: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-bar" aria-hidden="true"></i>
+          <span class="type label">Bar</span>
+          <figcaption class="meta"><strong>El Prado</strong><span>Echo Park · 06.26</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#el-prado" aria-label="El Prado: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-holly" aria-hidden="true"></i>
+          <span class="type label">Warehouse</span>
+          <figcaption class="meta"><strong>1720</strong><span>DTLA · 07.10</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#1720" aria-label="1720: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-conf" aria-hidden="true"></i>
+          <span class="type label air">Open Air</span>
+          <figcaption class="meta"><strong>LA State Historic Park</strong><span>Day Trip · 07.12</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#la-state-historic-park" aria-label="LA State Historic Park: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-lift" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Academy</strong><span>Hollywood · 07.03</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#academy-la" aria-label="Academy LA: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-decks" aria-hidden="true"></i>
+          <span class="type label">Booth</span>
+          <figcaption class="meta"><strong>The Spotlight</strong><span>Hollywood · 07.11</span></figcaption>
+          <a class="card-link" href="https://www.housemusicla.com/venues/#the-spotlight" aria-label="The Spotlight: address, map and what's on"></a>
+        </figure>
+        <figure class="shotcard">
+          <i class="ph ph-mars" aria-hidden="true"></i>
+          <span class="type label">Club</span>
+          <figcaption class="meta"><strong>Mars Night Club</strong><span>Deep and melodic · 07.04</span></figcaption>
+          <a class="card-link" href="https://www.instagram.com/marshollywood/" rel="noopener" aria-label="Mars Hollywood on Instagram, opens in a new tab"></a>
+        </figure>
+        </div>
+      </div>
+      <p class="reel-note rv in">Swipe or drag to browse · tap a venue for its address, map and what's on · <a class="allv" href="https://www.housemusicla.com/venues/">See all venues →</a></p>
+    </div>
+  </section>
+
+  <!-- ================= LISTEN / RESIDENT MIX ================= -->
+  <section id="listen" class="sec">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="label rv in">Resident Mix</p>
+        <h2 class="display rv in" style="--d:.08s">Press play on LA house.</h2>
+        <p class="side rv in" style="--d:.16s">Paul Johnson classics, One Love Records picks and new music from LA artists, all in one player.</p>
+      </div>
+      <div class="listen-grid">
+        <div class="player rv in" id="player">
+          <div class="player-card">
+            <div class="player-top">
+              <span class="player-eyebrow">Now spinning</span>
+              <a class="player-credit" href="https://soundcloud.com/deeptechla" rel="noopener">Redux Saints · Deep Tech LA ↗</a>
+            </div>
+            <div class="player-switch" id="playerSwitch" role="group" aria-label="Choose what to listen to"><button type="button" aria-pressed="true">Redux Saints</button><button type="button" aria-pressed="false">Paul Johnson</button><button type="button" aria-pressed="false">Paul Johnson DJ Sets</button><button type="button" aria-pressed="false">Afro Acid (ADE)</button><button type="button" aria-pressed="false">Latest releases</button></div>
+            <div class="player-frame" id="scwrap"><iframe class="sc-frame" title="Redux Saints on SoundCloud" allow="autoplay" loading="lazy" scrolling="no" frameborder="0" src="./House Music Events in Los Angeles &amp; Southern California_files/saved_resource.html" style="height: 166px;"></iframe></div>
+            <p class="player-feat" id="playerFeat">Featured: Redux Saints · Los Angeles</p>
+            <p class="player-note">Pick a tab to change the music · nothing plays until you press play</p>
+          </div>
+
+          <div class="submit-card rv in" id="submitCard">
+            <div class="sc-head">
+              <div>
+                <p class="sc-eyebrow">For DJs &amp; producers</p>
+                <h3 class="sc-title">Want your house music featured here?</h3>
+                <p class="sc-sub">Send us a SoundCloud link. If it fits the floor, we'll feature it, with your name on it.</p>
+              </div>
+              <button class="sc-btn" type="button" id="scToggle" aria-expanded="false" aria-controls="scForm">Submit a track</button>
+            </div>
+            <form class="sc-form" id="scForm" novalidate="">
+              <div class="sc-grid">
+                <div class="sc-f"><label for="sc-name">DJ / artist name</label><input id="sc-name" name="name" placeholder="Your name" maxlength="80" autocomplete="name"></div>
+                <div class="sc-f"><label for="sc-region">City / region</label>
+                  <select id="sc-region" name="region">
+                    <option>Los Angeles</option><option>Palm Springs / Coachella Valley</option><option>Joshua Tree / Pioneertown</option>
+                    <option>Orange County</option><option>Inland Empire</option><option>Ventura County</option><option>San Diego</option><option>Elsewhere</option>
+                  </select></div>
+                <div class="sc-f full"><label for="sc-link">SoundCloud link</label><input id="sc-link" name="link" placeholder="https://soundcloud.com/you/your-track" maxlength="300" inputmode="url"></div>
+                <div class="sc-f full"><label for="sc-email">Your email (not added to any list)</label><input id="sc-email" name="email" type="email" placeholder="you@example.com" maxlength="120" autocomplete="email"></div>
+                <div class="sc-hp" aria-hidden="true"><label for="sc-web">Website</label><input id="sc-web" name="website" tabindex="-1" autocomplete="off"></div>
+              </div>
+              <label class="sc-check"><input type="checkbox" id="sc-agree"><span>This is my own music (original production, edit or mix), and I'm OK with HOUSE·LA featuring it.</span></label>
+              <button class="sc-btn" type="submit" id="scSend" style="justify-self:start">Send for review</button>
+              <p class="sc-status" id="scStatus" role="status" aria-live="polite"></p>
+              <p class="sc-fine">Every track is reviewed before it plays · we reply by email either way</p>
+            </form>
+          </div>
+        </div>
+        <aside class="artist-bio rv in" style="--d:.2s" aria-label="About One Love Records">
+          <p class="bio-eyebrow">Featured label</p>
+          <h3 class="bio-name">One Love Records</h3>
+          <p class="bio-body bio-long">One Love Records was founded by the late Chicago legend Paul Johnson, the producer behind "Get Get Down," and Dutch producer Alex Pi, built on a 20 year friendship and one shared love, the music. The label puts out authentic house, rhythmic tech house and bass heavy techno from artists rooted in the genres' birthplaces.</p>
+          <p class="bio-body bio-short">Founded by the late Paul Johnson ("Get Get Down") and Dutch producer Alex Pi, One Love Records champions authentic house, tech house and bass heavy techno from the genres' birthplaces.</p>
+          <ul class="bio-tags">
+            <li>House</li>
+            <li>Tech House</li>
+            <li>Techno</li>
+          </ul>
+          <p class="bio-meta">Vlaardingen, Netherlands, by way of Chicago</p>
+          <p class="bio-links">
+            <a href="https://soundcloud.com/onelove-records" rel="noopener">SoundCloud</a>
+            <a href="https://www.instagram.com/1loverecords/" rel="noopener">Instagram</a>
+            <a href="https://www.onelove-records.com/" rel="noopener">Website</a>
+          </p>
+          <p class="bio-sig">"It dont stop"</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EVENTS ================= -->
+  <section id="events" class="sec">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="label rv in">Events</p>
+        <h2 class="display rv in" style="--d:.08s">On the floor.</h2>
+        <p class="side rv in" style="--d:.16s">Every house night in Los Angeles and Southern California in one place: headliners, weeklies, day parties and festivals.</p>
+      </div>
+      <div class="geo-filter rv in" id="geoFilter" role="group" aria-label="Filter events by region"><button type="button" data-id="los-angeles" aria-pressed="true">Los Angeles</button><button type="button" data-id="coachella-valley" aria-pressed="false">Palm Springs / Coachella Valley</button><button type="button" data-id="joshua-tree-pioneertown" aria-pressed="false">Joshua Tree / Pioneertown</button><button type="button" data-id="orange-county" aria-pressed="false">Orange County</button><button type="button" data-id="inland-empire" aria-pressed="false">Inland Empire</button><button type="button" data-id="ventura-county" aria-pressed="false">Ventura County</button><button type="button" data-id="san-diego" aria-pressed="false">San Diego</button><button type="button" data-id="all" aria-pressed="false">All Southern California</button></div>
+      <div class="rows rv in">
+        <p class="rows-group">Headliners <small>Ticketed shows</small></p>
+        <a class="row-ev" href="https://www.housemusicla.com/events/prospa-3rd-show-added-2026-10-14" data-peek="2">
+          <span class="date tnum">10.14<small>WED</small></span>
+          <span class="what"><h3>Prospa (3rd Show Added)</h3><p>Shrine Expo Hall · Exposition Park · One Night</p></span>
+          <span class="price soldout">Sold out</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/prospa-2026-10-15" data-peek="3">
+          <span class="date tnum">10.15<small>THU</small></span>
+          <span class="what"><h3>Prospa</h3><p>Shrine Expo Hall · Exposition Park · One Night</p></span>
+          <span class="price soldout">Sold out</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/prospa-2nd-show-added-2026-10-16" data-peek="4">
+          <span class="date tnum">10.16<small>FRI</small></span>
+          <span class="what"><h3>Prospa (2nd Show Added)</h3><p>Shrine Expo Hall · Exposition Park · One Night</p></span>
+          <span class="price soldout">Sold out</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/clarion-w-lady-radiator-blossom-2026-10-17" data-peek="0">
+          <span class="date tnum">10.17<small>SAT</small></span>
+          <span class="what"><h3>Clarion w/ Lady Radiator, Blossom</h3><p>The Regent · DTLA · 8 PM</p></span>
+          <span class="price tnum">$39+</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/pawsa-2026-10-17" data-peek="1">
+          <span class="date tnum">10.17<small>SAT</small></span>
+          <span class="what"><h3>PAWSA</h3><p>Rio Vista Lot, Historic Sears Building · East LA · One Night</p></span>
+          <span class="price soldout">Sold out</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/petit-biscuit-forester-2026-10-17" data-peek="1">
+          <span class="date tnum">10.17<small>SAT</small></span>
+          <span class="what"><h3>Petit Biscuit, Forester</h3><p>Avalon Hollywood · Hollywood · 10 PM to 2 AM</p></span>
+          <span class="price tnum">$44+</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/moon-boots-2026-10-17" data-peek="2">
+          <span class="date tnum">10.17<small>SAT</small></span>
+          <span class="what"><h3>Moon Boots</h3><p>The Spotlight · Hollywood · 10 PM to 3 AM</p></span>
+          <span class="price tnum">$25+</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/samm-juno-2026-10-17" data-peek="3">
+          <span class="date tnum">10.17<small>SAT</small></span>
+          <span class="what"><h3>Samm, Juno</h3><p>Sound Nightclub · Hollywood · 10 PM to 3 AM</p></span>
+          <span class="price tnum">$25</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/carl-craig-and-octave-one-live-2026-10-17" data-peek="4">
+          <span class="date tnum">10.17<small>SAT</small></span>
+          <span class="what"><h3>Carl Craig &amp; Octave One (Live)</h3><p>Secret Location · Los Angeles · 11 PM to 5 AM</p></span>
+          <span class="price tnum">$35+</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/actress-2026-10-19" data-peek="0">
+          <span class="date tnum">10.19<small>MON</small></span>
+          <span class="what"><h3>Actress</h3><p>Echoplex · Echo Park · 7 PM</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://www.housemusicla.com/events/space-taco-x-spoon-fed-records-release-party-2026-10-20" data-peek="2" data-region="inland-empire">
+          <span class="date tnum">10.20<small>TUE</small></span>
+          <span class="what"><h3>Space Taco x Spoon Fed Records Release Party</h3><p>The Basement · Pomona · 9:30 PM to 2 AM</p></span>
+          <span class="price free">Free RSVP</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/channel-tres-fifi-2026-10-23" data-peek="0">
+          <span class="date tnum">10.23<small>FRI</small></span>
+          <span class="what"><h3>Channel Tres, Fifi</h3><p>Shrine Expo Hall · Exposition Park · 9 PM</p></span>
+          <span class="price tnum">$51+</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://www.housemusicla.com/events/eli-and-fur-2026-10-23" data-peek="1" data-region="orange-county">
+          <span class="date tnum">10.23<small>FRI</small></span>
+          <span class="what"><h3>Eli &amp; Fur</h3><p>TIME Nightclub · Costa Mesa · 21+</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/mutate-charlie-sparks-yonkers-2026-10-24" data-peek="1">
+          <span class="date tnum">10.24<small>SAT</small></span>
+          <span class="what"><h3>Mutate: Charlie Sparks, Yonkers</h3><p>Exchange LA · DTLA · 10 PM to 3 AM</p></span>
+          <span class="price tnum">$15+</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/hugel-2026-10-24" data-peek="2">
+          <span class="date tnum">10.24<small>SAT</small></span>
+          <span class="what"><h3>Hugel</h3><p>Reframe Studios · Atwater Village · 6 PM to 12 AM</p></span>
+          <span class="price tnum">$79+</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/dr-gabba-2026-10-24" data-peek="3">
+          <span class="date tnum">10.24<small>SAT</small></span>
+          <span class="what"><h3>Dr. Gabba</h3><p>Casita Hollywood · Hollywood · 9 PM to 2 AM</p></span>
+          <span class="price tnum">$29+</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/w-ness-anotr-2026-10-30" data-peek="4">
+          <span class="date tnum">10.30<small>FRI</small></span>
+          <span class="what"><h3>w/ness: Anotr</h3><p>Ace*Mission Studios · Arts District · 6 PM to 2 AM</p></span>
+          <span class="price tnum">$105+</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/deep-dish-2026-10-30" data-peek="0">
+          <span class="date tnum">10.30<small>FRI</small></span>
+          <span class="what"><h3>Deep Dish</h3><p>Sound Nightclub · Hollywood · 10 PM to 3 AM</p></span>
+          <span class="price tnum">$36+</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/neil-frances-2026-10-31" data-peek="1">
+          <span class="date tnum">10.31<small>SAT</small></span>
+          <span class="what"><h3>Neil Frances</h3><p>Sound Nightclub · Hollywood · 10 PM to 3 AM</p></span>
+          <span class="price tnum">$48+</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/carl-cox-2026-11-06" data-peek="2">
+          <span class="date tnum">11.06<small>FRI</small></span>
+          <span class="what"><h3>Carl Cox</h3><p>Hollywood Palladium · Hollywood · 7 PM</p></span>
+          <span class="price tnum">$59+</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/indo-warehouse-2026-11-06" data-peek="3">
+          <span class="date tnum">11.06<small>FRI</small></span>
+          <span class="what"><h3>Indo Warehouse</h3><p>Sound Nightclub · Hollywood · 10 PM</p></span>
+          <span class="price tnum">$56+</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/mixmag-lab-sam-divine-s-555-la-debut-2026-11-07" data-peek="3">
+          <span class="date tnum">11.07<small>SAT</small></span>
+          <span class="what"><h3>Mixmag LAB: Sam Divine's 555 (LA Debut)</h3><p>1720 · DTLA · 9 PM</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/adriatique-2026-11-07" data-peek="4">
+          <span class="date tnum">11.07<small>SAT</small></span>
+          <span class="what"><h3>Adriatique</h3><p>Reframe Studios · Atwater Village · 6 PM to 12 AM</p></span>
+          <span class="price tnum">$79+</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/i-hate-models-disco-inferno-2026-11-07" data-peek="0">
+          <span class="date tnum">11.07<small>SAT</small></span>
+          <span class="what"><h3>I Hate Models: Disco Inferno</h3><p>City Market · DTLA · 5 PM</p></span>
+          <span class="price tnum">$74+</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://www.housemusicla.com/events/locker-room-barker-eddie-martinez-2026-11-07" data-peek="3" data-region="coachella-valley">
+          <span class="date tnum">11.07<small>SAT</small></span>
+          <span class="what"><h3>Locker Room: Barker, Eddie Martinez</h3><p>Ace Event Center · Palm Springs · 10 PM to 4 AM</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/joss-dean-2026-11-13" data-peek="1">
+          <span class="date tnum">11.13<small>FRI</small></span>
+          <span class="what"><h3>Joss Dean</h3><p>Sound Nightclub · Hollywood · 10 PM</p></span>
+          <span class="price tnum">$163+</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://www.housemusicla.com/events/mark-farina-2026-11-13" data-peek="0" data-region="ventura-county">
+          <span class="date tnum">11.13<small>FRI</small></span>
+          <span class="what"><h3>Mark Farina</h3><p>Ventura Music Hall · Ventura · 9 PM</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/massano-w-township-rebellion-360-set-2026-11-14" data-peek="0">
+          <span class="date tnum">11.14<small>SAT</small></span>
+          <span class="what"><h3>Massano w/ Township Rebellion (360° Set)</h3><p>Exchange LA · DTLA</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/bolo-2026-11-19" data-peek="1">
+          <span class="date tnum">11.19<small>THU</small></span>
+          <span class="what"><h3>BOLO</h3><p>Hollywood Palladium · Hollywood · Nov 19, 21 &amp; 22</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/josh-baker-2026-11-21" data-peek="4">
+          <span class="date tnum">11.21<small>SAT</small></span>
+          <span class="what"><h3>Josh Baker</h3><p>The Dock, Historic Sears Building · East LA · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/felix-da-housecat-pre-thanksgiving-jam-2026-11-26" data-peek="2">
+          <span class="date tnum">11.26<small>THU</small></span>
+          <span class="what"><h3>Felix Da Housecat: Pre-Thanksgiving Jam</h3><p>Sound Nightclub · Hollywood · 10 PM</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+<p class="rows-group">Weeklies &amp; After Hours <small>Recurring</small></p>
+        <a class="row-ev" href="https://shotgun.live/en/events/nightshift-afterhours-697" rel="noopener" data-peek="0">
+          <span class="date tnum">DAILY<small>ALL WEEK</small></span>
+          <span class="what"><h3>Nightshift After Hours</h3><p>The Lexington · DTLA · 11 PM to 6 AM</p></span>
+          <span class="price free">Free RSVP</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.eventbrite.com/e/paris-at-night-house-tuesdays-at-the-iconic-keys-los-angeles-tickets-1993012065739" rel="noopener" data-peek="1">
+          <span class="date tnum">TUES<small>WEEKLY</small></span>
+          <span class="what"><h3>Paris at Night: House Tuesdays</h3><p>Keys · West Hollywood · 11 PM to 2 AM</p></span>
+          <span class="price free">Free RSVP</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.facebook.com/clinicwednesdays/events" rel="noopener" data-peek="2">
+          <span class="date tnum">WEDS<small>WEEKLY</small></span>
+          <span class="what"><h3>Clinic</h3><p>Jungle · Hollywood · 10 PM to 2:30 AM</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://ma.to/venue/theofficebarsd" rel="noopener" data-peek="2" data-region="san-diego">
+          <span class="date tnum">WEDS<small>WEEKLY</small></span>
+          <span class="what"><h3>Dance Klassique</h3><p>The Office Bar · North Park · 21+</p></span>
+          <span class="price">$5</span>
+          <span class="thumb"><i class="ph ph-lift" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://airconditionedlounge.com/events-calendar/house-music-fridays-2/" rel="noopener" data-peek="3" data-region="san-diego">
+          <span class="date tnum">FRI<small>WEEKLY</small></span>
+          <span class="what"><h3>House Music Fridays</h3><p>The AC Lounge · San Diego · 9 PM to 2 AM</p></span>
+          <span class="price">$10</span>
+          <span class="thumb"><i class="ph ph-bar" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://ma.to/venue/theofficebarsd" rel="noopener" data-peek="1" data-region="san-diego">
+          <span class="date tnum">FRI<small>WEEKLY</small></span>
+          <span class="what"><h3>DISCOTHEQUE</h3><p>The Office Bar · North Park · House &amp; disco</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://shotgun.live/events/sunday-sessions-la-08-24-82" rel="noopener" data-peek="3">
+          <span class="date tnum">SUN<small>WEEKLY</small></span>
+          <span class="what"><h3>Sunday Sessions: Vinyl Open Air</h3><p>LA Center Studios · DTLA · 6 PM to 12 AM</p></span>
+          <span class="price free">Free early</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+                <p class="rows-group">Day Parties &amp; Open Air <small>Sun out, sound on</small></p>
+        <a class="row-ev" href="https://www.housemusicla.com/events/chus-and-ceballos-cielo-du-sol-2026-10-18" data-peek="1">
+          <span class="date tnum">10.18<small>SUN</small></span>
+          <span class="what"><h3>Chus &amp; Ceballos: Cielo du Sol</h3><p>Cielo Farms · Malibu · 3 PM to 1 AM</p></span>
+          <span class="price tnum">$57+</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/diz-colette-lisa-shaw-and-others-2026-10-24" data-peek="2">
+          <span class="date tnum">10.24<small>SAT</small></span>
+          <span class="what"><h3>Diz, Colette, Lisa Shaw &amp; others</h3><p>Jungle Hollywood · Hollywood · 3 to 9 PM</p></span>
+          <span class="price tnum">$17+</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/rodriguez-jr-cielo-du-sol-halloween-2026-10-31" data-peek="3">
+          <span class="date tnum">10.31<small>SAT</small></span>
+          <span class="what"><h3>Rodriguez Jr.: Cielo du Sol Halloween</h3><p>Cielo Farms · Malibu · 12 PM to 10 PM</p></span>
+          <span class="price tnum">$85+</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/sunset-service-halloween-rooftop-party-2026-10-31" data-peek="4">
+          <span class="date tnum">10.31<small>SAT</small></span>
+          <span class="what"><h3>Sunset Service Halloween Rooftop Party</h3><p>Somewhere Special · Los Angeles · 3 to 9 PM</p></span>
+          <span class="price free">Free</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://www.housemusicla.com/events/desert-groove-day-party-dj-trance-2026-11-07" data-peek="4" data-region="joshua-tree-pioneertown">
+          <span class="date tnum">11.07<small>SAT</small></span>
+          <span class="what"><h3>Desert Groove Day Party: DJ Trance</h3><p>Más o Menos · Joshua Tree · 1 PM to 1 AM</p></span>
+          <span class="price free">Free</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://www.housemusicla.com/events/refresh-pool-party-pride-massive-2026-11-08" data-peek="4" data-region="coachella-valley">
+          <span class="date tnum">11.08<small>SUN</small></span>
+          <span class="what"><h3>Refresh Pool Party: Pride Massive</h3><p>Ace Hotel &amp; Swim Club · Palm Springs · 12 to 6 PM</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/eli-brown-2026-11-14" data-peek="0">
+          <span class="date tnum">11.14<small>SAT</small></span>
+          <span class="what"><h3>Eli Brown</h3><p>City Market Social House · DTLA · 5 to 11 PM</p></span>
+          <span class="price tnum">$71+</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/m-stiza-sacro-2026-11-14" data-peek="1">
+          <span class="date tnum">11.14<small>SAT</small></span>
+          <span class="what"><h3>Mëstiza: Sacro</h3><p>Gloria Molina Grand Park · DTLA · Afternoon</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/creatures-at-sea-sacha-robotti-2026-11-14" data-peek="2">
+          <span class="date tnum">11.14<small>SAT</small></span>
+          <span class="what"><h3>Creatures at Sea: Sacha Robotti</h3><p>Dock 3 · Long Beach · 4 to 8 PM</p></span>
+          <span class="price">At venue</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <p class="rows-group">Festival Radar <small>Worth the drive</small></p>
+        <a class="row-ev" href="https://www.housemusicla.com/events/day-trip-festival-norcal-debut-2026-10-17" data-peek="1">
+          <span class="date tnum">10.17<small>SAT</small></span>
+          <span class="what"><h3>Day Trip Festival: NorCal Debut</h3><p>Discovery Meadow · San Jose · Oct 17 to 18</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/desert-hearts-justin-martin-all-night-long-2026-11-14" data-peek="2">
+          <span class="date tnum">11.14<small>SAT</small></span>
+          <span class="what"><h3>Desert Hearts: Justin Martin All Night Long</h3><p>Academy LA · Hollywood · Nov 14 to 15</p></span>
+          <span class="price tnum">$40</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/afrojack-control-2026-11-27" data-peek="3">
+          <span class="date tnum">11.27<small>FRI</small></span>
+          <span class="what"><h3>Afrojack: CONTROL</h3><p>Shrine Expo Hall · Exposition Park · 8 PM</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/time-warp-los-angeles-debut-2026-11-27" data-peek="4">
+          <span class="date tnum">11.27<small>FRI</small></span>
+          <span class="what"><h3>Time Warp: Los Angeles Debut</h3><p>Ace*Mission Studios · Arts District · Nov 27 to 28, 3 Stages</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/solomun-on-hollywood-boulevard-2026-11-28" data-peek="4">
+          <span class="date tnum">11.28<small>SAT</small></span>
+          <span class="what"><h3>Solomun on Hollywood Boulevard</h3><p>Framework · Hollywood · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/zhu-2026-12-04" data-peek="0">
+          <span class="date tnum">12.04<small>FRI</small></span>
+          <span class="what"><h3>ZHU</h3><p>Reframe Studios · Atwater Village · Two Nights</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/black-book-records-untitled-2026-12-10" data-peek="4">
+          <span class="date tnum">12.10<small>THU</small></span>
+          <span class="what"><h3>Black Book Records: Untitled</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-stage" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/drumcode-la-adam-beyer-2026-12-11" data-peek="1">
+          <span class="date tnum">12.11<small>FRI</small></span>
+          <span class="what"><h3>Drumcode LA: Adam Beyer</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/bedouin-presents-saga-2026-12-12" data-peek="2">
+          <span class="date tnum">12.12<small>SAT</small></span>
+          <span class="what"><h3>Bedouin Presents: Saga</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/nimino-2026-12-18" data-peek="3">
+          <span class="date tnum">12.18<small>FRI</small></span>
+          <span class="what"><h3>nimino</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/nora-en-pure-2026-12-19" data-peek="4">
+          <span class="date tnum">12.19<small>SAT</small></span>
+          <span class="what"><h3>Nora En Pure</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/forever-midnight-nye-tiesto-jamie-jones-chris-lake-and-more-2026-12-31" data-peek="3">
+          <span class="date tnum">12.31<small>THU</small></span>
+          <span class="what"><h3>Forever Midnight NYE: Tiesto, Jamie Jones, Chris Lake &amp; more</h3><p>LA Convention Center · DTLA · 3 Stages, 4 PM to 4 AM</p></span>
+          <span class="price">$10+ deposit</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/duke-dumont-new-year-s-eve-2026-12-31" data-peek="4">
+          <span class="date tnum">12.31<small>THU</small></span>
+          <span class="what"><h3>Duke Dumont: New Year's Eve</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev geo-off" href="https://www.housemusicla.com/events/proper-nye-nyd-cloonee-kettama-green-velvet-2026-12-31" data-peek="3" data-region="san-diego">
+          <span class="date tnum">12.31<small>THU</small></span>
+          <span class="what"><h3>PROPER NYE/NYD: Cloonee, KETTAMA, Green Velvet</h3><p>Petco Park · San Diego · Dec 31 to Jan 1</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/chasewest-new-year-s-day-2027-01-01" data-peek="0">
+          <span class="date tnum">01.01<small>FRI</small></span>
+          <span class="what"><h3>ChaseWest: New Year's Day</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/green-velvet-2027-01-02" data-peek="2">
+          <span class="date tnum">01.02<small>SAT</small></span>
+          <span class="what"><h3>Green Velvet</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/sasha-and-john-digweed-2027-01-08" data-peek="3">
+          <span class="date tnum">01.08<small>FRI</small></span>
+          <span class="what"><h3>Sasha &amp; John Digweed</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/deadmau5-birthday-show-2027-01-09" data-peek="1">
+          <span class="date tnum">01.09<small>SAT</small></span>
+          <span class="what"><h3>deadmau5: Birthday Show</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/nic-fanciulli-and-paco-osuna-2027-01-15" data-peek="2">
+          <span class="date tnum">01.15<small>FRI</small></span>
+          <span class="what"><h3>Nic Fanciulli &amp; Paco Osuna</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/layton-giordani-4-hour-set-2027-01-22" data-peek="4">
+          <span class="date tnum">01.22<small>FRI</small></span>
+          <span class="what"><h3>Layton Giordani (4 Hour Set)</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-holly" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/dennis-cruz-2027-01-23" data-peek="0">
+          <span class="date tnum">01.23<small>SAT</small></span>
+          <span class="what"><h3>Dennis Cruz</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-mars" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/cassian-2027-01-29" data-peek="1">
+          <span class="date tnum">01.29<small>FRI</small></span>
+          <span class="what"><h3>Cassian</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-roof" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/ayybo-2027-01-29" data-peek="2">
+          <span class="date tnum">01.29<small>FRI</small></span>
+          <span class="what"><h3>AYYBO</h3><p>Shrine Expo Hall · Exposition Park · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-crowd" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+        <a class="row-ev" href="https://www.housemusicla.com/events/mahmut-orhan-2027-01-30" data-peek="3">
+          <span class="date tnum">01.30<small>SAT</small></span>
+          <span class="what"><h3>Mahmut Orhan</h3><p>Reframe Studios · Atwater Village · One Night</p></span>
+          <span class="price">On sale</span>
+          <span class="thumb"><i class="ph ph-decks" aria-hidden="true"></i></span>
+          <span class="go" aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <p class="rows-note rv in">
+        <span>Updated daily · tap a row for tickets or RSVP · prices as listed by the venue</span>
+        <span class="tnum">Sources: venue and promoter calendars, RA, 19hz, Dice, Ticketmaster</span>
+      </p>
+    </div>
+  </section>
+
+  <div id="peek" aria-hidden="true" style="transform: translate(608.891px, -80.9217px) rotate(-0.413462deg) scale(0.86);" class="">
+    <i class="ph ph-holly"></i>
+    <i class="ph ph-mars"></i>
+    <i class="ph ph-roof"></i>
+    <i class="ph ph-crowd on"></i>
+    <i class="ph ph-decks"></i>
+  </div>
+
+  <!-- ================= ABOUT ================= -->
+  <section id="about" class="sec">
+    <div class="glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="sechead"><p class="label rv in">About</p></div>
+      <p class="statement display in" id="statement"><span class="w" style="--i: 0;">House</span> <span class="w" style="--i: 1;">music</span> <span class="w" style="--i: 2;">is</span> <span class="w" style="--i: 3;">made</span> <span class="w" style="--i: 4;">on</span> <span class="w" style="--i: 5;">the</span> <span class="w" style="--i: 6;">floor.</span> <span class="w" style="--i: 7;">We</span> <span class="w" style="--i: 8;">follow</span> <span class="w" style="--i: 9;">the</span> <em class="warm"><span class="w" style="--i: 10;">DJs,</span> <span class="w" style="--i: 11;">labels</span> <span class="w" style="--i: 12;">and</span> <span class="w" style="--i: 13;">rooms</span> </em><span class="w" style="--i: 14;">shaping</span> <span class="w" style="--i: 15;">it</span> <span class="w" style="--i: 16;">across</span> <span class="w" style="--i: 17;">Los</span> <span class="w" style="--i: 18;">Angeles</span> <span class="w" style="--i: 19;">and</span> <span class="w" style="--i: 20;">Southern</span> <span class="w" style="--i: 21;">California,</span> <span class="w" style="--i: 22;">so</span> <span class="w" style="--i: 23;">you</span> <span class="w" style="--i: 24;">always</span> <span class="w" style="--i: 25;">know</span> <em class="mean"><span class="w" style="--i: 26;">where</span> <span class="w" style="--i: 27;">to</span> <span class="w" style="--i: 28;">be.</span> </em></p>
+      <p class="support rv in">HOUSE·LA is an independent guide to house music in Los Angeles and Southern California.
+        Headliners, weeklies, day parties and festivals in one list, checked against venue and
+        promoter calendars, plus new music from local DJs and labels. Deep, melodic, afro, tech.</p>
+    </div>
+  </section>
+
+  <!-- ================= CONTACT ================= -->
+  <section id="contact" class="sec">
+    <div class="wrap">
+      <div class="sechead">
+        <p class="label rv in">Contact</p>
+        <h2 class="display rv in" style="--d:.08s">Get on the list.</h2>
+        <p class="side rv in" style="--d:.16s">Bookings, collaborations, or a night we should know about.</p>
+      </div>
+      <form class="panel rv in" id="form" novalidate="" data-gtm-form-interact-id="0">
+        <div class="grid2">
+          <div class="field">
+            <label for="f-name">Name</label>
+            <input id="f-name" name="name" type="text" required="" maxlength="100" placeholder="Your name" autocomplete="name" data-gtm-form-interact-field-id="0">
+          </div>
+          <div class="field">
+            <label for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" required="" maxlength="200" placeholder="you@night.club" autocomplete="email" data-gtm-form-interact-field-id="1">
+          </div>
+          <div class="field full">
+            <label for="f-msg">Message</label>
+            <textarea id="f-msg" name="message" required="" maxlength="5000" placeholder="Tell us about it"></textarea>
+          </div>
+        </div>
+        <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label>Leave this empty<input type="text" id="f-web" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <div class="actions">
+          <button id="send" class="magnetic" type="submit" style="">Send it</button>
+          <a id="joinlist" href="https://035df5bd.sibforms.com/v2/serve/MUIFAJ1dtBaAP5U7XQWEuUzUoGayntJ8aR5CKIixfdn64Xn-fe2i6D-x4TFke3SuoGsnkH-2gZWmDjvzeh27A6P8iPVcdPFc058E6dTyFyd3pwN-lNYgNjYwPZleNAsnXYKTfonb1wb9mLFFLI2TTcq0EfUNF1kEZLh41Bk0rHIdv0sY2vHiv6gg-HRCx7RApMIlQflfT2TRJelx" rel="noopener">Join the email list ↗</a>
+          <p id="status" role="status" aria-live="polite"></p>
+        </div>
+        <p class="demo">Your message goes straight to our inbox and your email joins the HOUSE·LA list.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="big" aria-hidden="true">
+    <div class="track">
+      <span>HOUSE<b class="hp-dot"><svg class="hp" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.2 14.2v-2.4a7.8 7.8 0 0 1 15.6 0v2.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path><rect x="2.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect><rect x="16.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect></svg></b>LA&nbsp;HOUSE<b class="hp-dot"><svg class="hp" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.2 14.2v-2.4a7.8 7.8 0 0 1 15.6 0v2.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path><rect x="2.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect><rect x="16.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect></svg></b>LA&nbsp;HOUSE<b class="hp-dot"><svg class="hp" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.2 14.2v-2.4a7.8 7.8 0 0 1 15.6 0v2.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path><rect x="2.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect><rect x="16.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect></svg></b>LA&nbsp;</span>
+      <span>HOUSE<b class="hp-dot"><svg class="hp" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.2 14.2v-2.4a7.8 7.8 0 0 1 15.6 0v2.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path><rect x="2.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect><rect x="16.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect></svg></b>LA&nbsp;HOUSE<b class="hp-dot"><svg class="hp" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.2 14.2v-2.4a7.8 7.8 0 0 1 15.6 0v2.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path><rect x="2.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect><rect x="16.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect></svg></b>LA&nbsp;HOUSE<b class="hp-dot"><svg class="hp" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.2 14.2v-2.4a7.8 7.8 0 0 1 15.6 0v2.4" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"></path><rect x="2.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect><rect x="16.4" y="12.6" width="5.2" height="8.6" rx="2.2" fill="currentColor"></rect></svg></b>LA&nbsp;</span>
+    </div>
+  </div>
+  <div class="wrap base">
+    <p>© 2026 HOUSE·LA. House never sleeps.</p>
+    <p><a href="https://www.housemusicla.com/this-weekend/">This weekend</a> · <a href="https://www.housemusicla.com/tonight/">Tonight</a> · <a href="https://www.housemusicla.com/free/">Free</a> · <a href="https://www.housemusicla.com/day-parties/">Day parties</a> · <a href="https://www.housemusicla.com/weeklies/">Weeklies</a> · <a href="https://www.housemusicla.com/venues/">Venues &amp; map</a> · <a href="https://www.housemusicla.com/regions/los-angeles/">Los Angeles</a> · <a href="https://www.housemusicla.com/regions/san-diego/">San Diego</a> · <a href="https://www.housemusicla.com/data/">Data</a> · <a href="https://www.housemusicla.com/about/">About</a> · More LA nights: <a href="https://www.rockbandsla.com/" rel="noopener">ROCKBANDS·LA</a> · <a href="https://www.latheaterevents.com/" rel="noopener">LA THEATER EVENTS</a> · <a href="https://laactingschools.com/" rel="noopener">LA ACTING SCHOOLS</a></p>
+    <p>Updated daily · Los Angeles</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const finePointer = matchMedia("(pointer: fine)").matches;
+  const $ = (s, c) => (c || document).querySelector(s);
+  const $$ = (s, c) => Array.from((c || document).querySelectorAll(s));
+  if (!reduced) document.body.classList.add("anim");
+
+  /* ============ REGION FILTER (LA default; other Southern California regions on request) ============ */
+  (() => {
+    const REGIONS = [{"id": "los-angeles", "label": "Los Angeles", "scope": "primary"}, {"id": "coachella-valley", "label": "Palm Springs / Coachella Valley", "scope": "secondary"}, {"id": "joshua-tree-pioneertown", "label": "Joshua Tree / Pioneertown", "scope": "secondary"}, {"id": "orange-county", "label": "Orange County", "scope": "secondary"}, {"id": "inland-empire", "label": "Inland Empire", "scope": "secondary"}, {"id": "ventura-county", "label": "Ventura County", "scope": "secondary"}, {"id": "san-diego", "label": "San Diego", "scope": "secondary"}, {"id": "northern-california", "label": "Elsewhere in California", "scope": "incidental"}];
+    const bar = $("#geoFilter"), rows = $(".rows");
+    if (!bar || !rows) return;
+    const present = new Set($$(".row-ev[data-region]", rows).map(r => r.dataset.region));
+    const extra = REGIONS.filter(r => r.scope === "secondary" && present.has(r.id));
+    if (!extra.length) return;                       /* nothing outside LA yet: leave the page untouched */
+    const la = REGIONS.find(r => r.scope === "primary");
+    const options = [{ id: la.id, label: la.label }, ...extra.map(r => ({ id: r.id, label: r.label })),
+                     { id: "all", label: "All Southern California" }];
+    const apply = (sel) => {
+      const nodes = $$(".rows-group, .row-ev", rows);
+      nodes.forEach(n => n.classList.remove("geo-off"));
+      const secondary = new Set(extra.map(r => r.id));
+      nodes.forEach(n => {
+        if (!n.classList.contains("row-ev")) return;
+        const reg = n.dataset.region || la.id;
+        /* LA view = LA + incidental Festival Radar rows; a region view = that region only; "all" = everything */
+        const show = sel === "all" || reg === sel || (sel === la.id && !secondary.has(reg));
+        if (!show) n.classList.add("geo-off");
+      });
+      let hdr = null, live = 0;
+      nodes.forEach(n => {
+        if (!n.classList.contains("row-ev")) {
+          if (hdr && !live) hdr.classList.add("geo-off");
+          hdr = n; live = 0;
+        } else if (!n.classList.contains("geo-off")) live++;
+      });
+      if (hdr && !live) hdr.classList.add("geo-off");
+      $$("button", bar).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.id === sel)));
+    };
+    options.forEach(o => {
+      const b = document.createElement("button");
+      b.type = "button"; b.dataset.id = o.id; b.textContent = o.label;
+      b.addEventListener("click", () => apply(o.id));
+      bar.appendChild(b);
+    });
+    bar.hidden = false;
+    apply(la.id);
+  })();
+
+  /* ============ BOOT: trigger the header/hero entrance animations ============ */
+  const boot = () => document.body.classList.add("booted");
+  boot();
+
+  /* ============ NAV: solid on scroll + active section ============ */
+  const header = $("header");
+  const onScroll = () => {
+    header.classList.toggle("solid", scrollY > 40);
+    const doc = document.documentElement;
+    const p = scrollY / Math.max(1, doc.scrollHeight - innerHeight);
+    $("#progress").style.transform = "scaleX(" + p + ")";
+  };
+  addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  const navLinks = $$("header ul a");
+  const secObs = new IntersectionObserver((es) => {
+    es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      navLinks.forEach((a) => a.classList.toggle("here", a.hash === "#" + e.target.id));
+    });
+  }, { rootMargin: "-45% 0px -50% 0px" });
+  ["scene", "listen", "events", "about", "contact"].forEach((id) => secObs.observe($("#" + id)));
+
+  /* ============ REVEALS ============ */
+  const rvObs = new IntersectionObserver((es) => {
+    es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); rvObs.unobserve(e.target); } });
+  }, { rootMargin: "-60px 0px" });
+  $$(".rv").forEach((el) => rvObs.observe(el));
+
+  /* ============ ABOUT word stagger ============ */
+  const st = $("#statement");
+  (function splitWords() {
+    const walk = (node) => {
+      Array.from(node.childNodes).forEach((n) => {
+        if (n.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          n.textContent.split(/\s+/).filter(Boolean).forEach((w) => {
+            const s = document.createElement("span");
+            s.className = "w"; s.textContent = w;
+            frag.appendChild(s); frag.appendChild(document.createTextNode(" "));
+          });
+          node.replaceChild(frag, n);
+        } else if (n.nodeType === 1) walk(n);
+      });
+    };
+    walk(st);
+    $$(".w", st).forEach((w, i) => w.style.setProperty("--i", i));
+  })();
+  const stObs = new IntersectionObserver((es) => {
+    es.forEach((e) => { if (e.isIntersecting) { st.classList.add("in"); stObs.disconnect(); } });
+  }, { rootMargin: "-15% 0px" });
+  stObs.observe(st);
+
+  /* ============ CURSOR + MAGNETIC ============ */
+  if (finePointer && !reduced) {
+    document.body.dataset.cursor = "on";
+    const cur = $("#cursor");
+    let x = -80, y = -80, raf = 0;
+    const draw = () => { raf = 0; cur.style.transform = "translate(" + (x - 3) + "px," + (y - 2) + "px)"; };
+    addEventListener("mousemove", (e) => {
+      x = e.clientX; y = e.clientY;
+      cur.classList.toggle("hot", !!(e.target.closest && e.target.closest("a, button, input, textarea, select, label")));
+      if (!raf) raf = requestAnimationFrame(draw);
+    }, { passive: true });
+    document.addEventListener("mouseleave", () => { x = -80; y = -80; draw(); });
+
+    $$(".magnetic").forEach((el) => {
+      let raf = 0;
+      el.addEventListener("mousemove", (e) => {
+        const r = el.getBoundingClientRect();
+        const mx = (e.clientX - r.left - r.width / 2) * 0.32;
+        const my = (e.clientY - r.top - r.height / 2) * 0.32;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => { el.style.transform = "translate(" + mx + "px," + my + "px)"; });
+      });
+      el.addEventListener("mouseleave", () => {
+        cancelAnimationFrame(raf);
+        el.style.transition = "transform .8s cubic-bezier(.16,1,.3,1)";
+        el.style.transform = "";
+        setTimeout(() => (el.style.transition = ""), 800);
+      });
+    });
+
+    /* card tilt */
+    $$(".tilt").forEach((el) => {
+      let raf = 0;
+      el.addEventListener("mousemove", (e) => {
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          el.style.transform = "perspective(900px) rotateX(" + (-py * 5) + "deg) rotateY(" + (px * 6) + "deg) translateY(-6px)";
+        });
+      });
+      el.addEventListener("mouseleave", () => {
+        cancelAnimationFrame(raf);
+        el.style.transition = "transform .9s cubic-bezier(.16,1,.3,1)";
+        el.style.transform = "";
+        setTimeout(() => (el.style.transition = ""), 900);
+      });
+    });
+  }
+
+  /* ============ EVENT PEEK (image follows cursor) ============ */
+  if (finePointer && !reduced) {
+    const peek = $("#peek"), imgs = $$("#peek .ph");
+    let px = 0, py = 0, tx = 0, ty = 0, active = false;
+    addEventListener("mousemove", (e) => { tx = e.clientX; ty = e.clientY; }, { passive: true });
+    (function follow() {
+      px += (tx - px) * 0.11; py += (ty - py) * 0.11;
+      const rot = Math.max(-6, Math.min(6, (tx - px) * 0.06));
+      peek.style.transform = "translate(" + (px + 26) + "px," + (py - 95) + "px) rotate(" + rot + "deg)" + (active ? " scale(1)" : " scale(.86)");
+      requestAnimationFrame(follow);
+    })();
+    $$(".row-ev").forEach((row) => {
+      row.addEventListener("mouseenter", () => {
+        active = true; peek.classList.add("on");
+        imgs.forEach((im, i) => im.classList.toggle("on", i === +row.dataset.peek));
+      });
+      row.addEventListener("mouseleave", () => { active = false; peek.classList.remove("on"); });
+    });
+  }
+
+  /* ============ FORM (demo) ============ */
+  const form = $("#form"), send = $("#send"), status = $("#status");
+  /* anti-bot: signed single-use token fetched when the visitor first touches the form (see contact.php) */
+  let cToken = "";
+  const getToken = async () => {
+    try { const r = await fetch("/contact.php?token=1", { cache: "no-store" }); const j = await r.json(); cToken = j.token || ""; cTokenAt = Date.now(); } catch (err) { cToken = ""; }
+  };
+  let cTokenAt = 0;
+  form.addEventListener("focusin", () => { if (!cToken) getToken(); }, { once: true });
+  if (window.top === window.self) setTimeout(getToken, 1500);   /* ready well before anyone can finish typing */
+
+  const BREVO_POST = "https://035df5bd.sibforms.com/serve/MUIFAJ1dtBaAP5U7XQWEuUzUoGayntJ8aR5CKIixfdn64Xn-fe2i6D-x4TFke3SuoGsnkH-2gZWmDjvzeh27A6P8iPVcdPFc058E6dTyFyd3pwN-lNYgNjYwPZleNAsnXYKTfonb1wb9mLFFLI2TTcq0EfUNF1kEZLh41Bk0rHIdv0sY2vHiv6gg-HRCx7RApMIlQflfT2TRJelx";
+  const BREVO_PAGE = "https://035df5bd.sibforms.com/v2/serve/MUIFAJ1dtBaAP5U7XQWEuUzUoGayntJ8aR5CKIixfdn64Xn-fe2i6D-x4TFke3SuoGsnkH-2gZWmDjvzeh27A6P8iPVcdPFc058E6dTyFyd3pwN-lNYgNjYwPZleNAsnXYKTfonb1wb9mLFFLI2TTcq0EfUNF1kEZLh41Bk0rHIdv0sY2vHiv6gg-HRCx7RApMIlQflfT2TRJelx";
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nameEl = $("#f-name"), emailEl = $("#f-email"), msgEl = $("#f-msg");
+    const name = nameEl.value.trim(), email = emailEl.value.trim(), msg = msgEl.value.trim();
+    const okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    nameEl.setAttribute("aria-invalid", String(!name));
+    emailEl.setAttribute("aria-invalid", String(!email || !okEmail));
+    msgEl.setAttribute("aria-invalid", String(!msg));
+    if (!name || !email || !msg) { status.innerHTML = '<span style="color:var(--coral)">All fields are required.</span>'; return; }
+    if (!okEmail) { status.innerHTML = '<span style="color:var(--coral)">Please enter a valid email address.</span>'; return; }
+    if (window.top !== window.self) {
+      /* artifact sandbox: outbound POST is blocked, hand off to the hosted form */
+      status.innerHTML = '<a href="' + BREVO_PAGE + '" target="_blank" rel="noopener">Finish on our signup page &nearr;</a>'; return;
+    }
+    send.disabled = true; status.textContent = "Sending…";
+    if (!cToken || Date.now() - cTokenAt > 6900000) await getToken();
+    const wait = 5000 - (Date.now() - cTokenAt);   /* server needs the token to be >= 4s old */
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    const body = new FormData();
+    body.append("name", name); body.append("email", email); body.append("message", msg);
+    body.append("website", $("#f-web").value); body.append("token", cToken);
+    let res = null;
+    try { const r = await fetch("/contact.php", { method: "POST", body }); res = await r.json(); } catch (err) { res = null; }
+    cToken = "";   /* tokens are single use */
+    if (!res || !res.ok) {
+      send.disabled = false;
+      const m = (res && res.error) ? res.error : "Could not send right now. Please try again in a little while.";
+      status.innerHTML = '<span style="color:var(--coral)"></span>'; status.firstChild.textContent = m;
+      if (res && /reload/i.test(m)) getToken();
+      return;
+    }
+    /* message accepted by the server: now subscribe the email to the Brevo list via hidden iframe POST */
+    let sink = document.getElementById("brevo-sink");
+    if (!sink) {
+      sink = document.createElement("iframe");
+      sink.id = "brevo-sink"; sink.name = "brevo-sink"; sink.style.display = "none";
+      document.body.appendChild(sink);
+    }
+    const f = document.createElement("form");
+    f.action = BREVO_POST; f.method = "POST"; f.target = "brevo-sink"; f.style.display = "none";
+    [["EMAIL", email], ["email_address_check", ""], ["locale", "en"]].forEach(([k, v]) => {
+      const i = document.createElement("input"); i.type = "hidden"; i.name = k; i.value = v; f.appendChild(i);
+    });
+    document.body.appendChild(f); f.submit();
+    setTimeout(() => f.remove(), 4000);
+    send.disabled = false; form.reset();
+    [nameEl, emailEl, msgEl].forEach((el) => el.removeAttribute("aria-invalid"));
+    status.innerHTML = '<span class="ok">Message sent. You are on the list.</span>';
+    getToken();
+  });
+
+  /* ============ DJ SUBMISSIONS ============ */
+  (() => {
+    const card = $("#submitCard"), toggle = $("#scToggle"), f = $("#scForm");
+    if (!card || !toggle || !f) return;
+    const send = $("#scSend"), st = $("#scStatus");
+    let token = "";
+    const getToken = async () => {              /* single-use signed token; a bot POSTing blind has none */
+      try { const r = await fetch("/submit.php?token=1", { cache: "no-store" }); const j = await r.json(); token = j.token || ""; }
+      catch (e) { token = ""; }
+    };
+    toggle.addEventListener("click", () => {
+      const open = card.classList.toggle("open");
+      toggle.setAttribute("aria-expanded", String(open));
+      if (open && window.top === window.self) getToken();
+    });
+    const say = (msg, ok) => { st.innerHTML = ok ? '<span class="ok">' + msg + '</span>' : '<span style="color:var(--coral)">' + msg + '</span>'; };
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const v = (id) => $(id).value.trim();
+      const name = v("#sc-name"), link = v("#sc-link"), email = v("#sc-email"), region = v("#sc-region");
+      const okLink = /^https:\/\/((www|m|on)\.)?soundcloud\.com\//i.test(link);
+      const okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      $("#sc-name").setAttribute("aria-invalid", String(!name));
+      $("#sc-link").setAttribute("aria-invalid", String(!okLink));
+      $("#sc-email").setAttribute("aria-invalid", String(!okEmail));
+      if (!name || !link || !email) { say("Please fill in every field.", false); return; }
+      if (!okLink) { say("Please paste a https://soundcloud.com link.", false); return; }
+      if (!okEmail) { say("Please enter a valid email address.", false); return; }
+      if (!$("#sc-agree").checked) { say("Please confirm the music is yours.", false); return; }
+      if (window.top !== window.self) {            /* artifact sandbox: no outbound POST, hand off by email */
+        say('Open <a href="https://www.housemusicla.com/#listen" target="_blank" rel="noopener">housemusicla.com</a> to submit your track.', true); return;
+      }
+      send.disabled = true; say("Sending…", true);
+      if (!token) await getToken();
+      const body = new URLSearchParams({ name, link, email, region, agree: "1", website: $("#sc-web").value, token });
+      try {
+        const r = await fetch("/submit.php", { method: "POST", body });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok && j.ok) { f.reset(); say("Got it. We review every track and will email you either way.", true); }
+        else { say(j.error || "Something went wrong. Please try again.", false); }
+      } catch (err) { say("Could not send right now. Please try again in a little while.", false); }
+      token = "";                                /* tokens are single-use: get a fresh one for the next try */
+      getToken();
+      send.disabled = false;
+    });
+  })();
+
+  /* ============ RESIDENT MIX: SoundCloud popular-tracks widget ============ */
+  /* Standalone site only. In the artifact sandbox the widget iframe cannot load,
+     so we keep the graceful "Listen on SoundCloud" link (same rule as the Brevo form).
+     auto_play=false: nothing plays until the visitor presses play. */
+  const scwrap = $("#scwrap");
+  if (scwrap && window.top === window.self) {
+    const sc = document.createElement("iframe");
+    sc.className = "sc-frame";
+    sc.title = "One Love Records on SoundCloud";
+    sc.allow = "autoplay"; /* permits playback AFTER a click; does not auto-start */
+    sc.loading = "lazy";
+    sc.setAttribute("scrolling", "no");
+    sc.setAttribute("frameborder", "0");
+    const widget = (u) => "https://w.soundcloud.com/player/?url=" + encodeURIComponent(u) +
+      "&color=%23ff5e5b&auto_play=false&hide_related=true&show_comments=false" +
+      "&show_user=true&show_reposts=false&show_teaser=false&visual=false";
+    /* The widget resolves a track / set / profile URL. A profile URL shows the label's
+       LATEST uploads (changes with every release); a /sets/ URL shows a fixed playlist.
+       Default = the Paul Johnson playlist; "Latest releases" is one tab away. */
+    const OL = "https://soundcloud.com/onelove-records";
+    const mk = (label, url, title) => ({ label, title: title || ("One Love Records: " + label), url,
+      credit: "One Love Records \u2197", creditUrl: OL, feat: "" });
+    const base = [
+      mk("Paul Johnson", OL + "/sets/paul-johnson"),
+      mk("Paul Johnson DJ Sets", OL + "/sets/paul-johnson-dj-sets"),
+      mk("Afro Acid (ADE)", OL + "/sets/ade-mvdz-presents-afro-acid-x"),
+      mk("Latest releases", OL, "One Love Records on SoundCloud"),
+    ];
+    const SC = /^https:\/\/soundcloud\.com\//i;
+    const sw = $("#playerSwitch"), feat = $("#playerFeat"), credit = $(".player-credit");
+
+    /* a single track needs a short player; playlists and profiles need the tall list view */
+    const isTrack = (u) => { try { const a = new URL(u).pathname.split("/").filter(Boolean); return a.length === 2 && a[1] !== "sets"; } catch (e) { return false; } };
+    const show = (src, i) => {
+      sc.style.height = isTrack(src.url) ? "166px" : "";
+      sc.src = widget(src.url); sc.title = src.title;
+      credit.textContent = src.credit; credit.href = src.creditUrl;
+      feat.textContent = src.feat; feat.hidden = !src.feat;
+      $$("button", sw).forEach((x, k) => x.setAttribute("aria-pressed", String(k === i)));
+    };
+    const render = (list) => {
+      list.forEach((src, i) => {
+        const b = document.createElement("button");
+        b.type = "button"; b.textContent = src.label; b.setAttribute("aria-pressed", String(i === 0));
+        b.addEventListener("click", () => show(src, i));
+        sw.appendChild(b);
+      });
+      sw.hidden = false;
+      show(list[0], 0);
+    };
+
+    /* /featured.json (hand-edited on the server, no rebuild): extra DJ/label tracks.
+       An entry with "first": true leads the tab row AND plays first; the rest follow the One Love tabs.
+       Only soundcloud.com URLs are accepted. If the file can't be read, One Love plays as before. */
+    scwrap.textContent = "";
+    scwrap.appendChild(sc);
+    fetch("/featured.json", { cache: "no-cache" }).then((r) => r.ok ? r.json() : null).catch(() => null).then((j) => {
+      const extra = ((j && j.sources) || []).filter((x) => x && SC.test(x.url || "") && x.label).map((x) => ({
+        first: x.first === true,
+        label: String(x.label).slice(0, 28), title: (x.name || x.label) + " on SoundCloud", url: x.url,
+        credit: (x.credit || x.name || x.label) + " \u2197", creditUrl: SC.test(x.creditUrl || "") ? x.creditUrl : x.url,
+        feat: x.name ? "Featured: " + x.name + (x.region ? " \u00b7 " + x.region : "") : "" }));
+      render([...extra.filter((x) => x.first), ...base, ...extra.filter((x) => !x.first)]);
+    });
+  }
+
+  /* ============ SCENE REEL: drift + drag ============ */
+  const reel = $("#reel");
+  if (reel) {
+    const track = reel.querySelector(".track");
+    if (!reduced) {
+      track.innerHTML += track.innerHTML; /* seamless loop */
+      let x = 0, half = 0, dragging = false, lastX = 0, paused = false, downX = 0, moved = false;
+      const measure = () => { half = track.scrollWidth / 2; };
+      measure();
+      addEventListener("resize", measure, { passive: true });
+      reel.addEventListener("mouseenter", () => { paused = true; });
+      reel.addEventListener("mouseleave", () => { paused = false; });
+      /* Capture the pointer ONLY once the press turns into a real drag. Capturing on pointerdown
+         re-targets the following click to the reel itself, so venue links never opened. */
+      let captured = false;
+      reel.addEventListener("pointerdown", (e) => {
+        dragging = true; lastX = e.clientX; downX = e.clientX; moved = false; captured = false;
+      });
+      reel.addEventListener("pointermove", (e) => {
+        if (dragging) {
+          x -= e.clientX - lastX; lastX = e.clientX;
+          if (!moved && Math.abs(e.clientX - downX) > 8) {
+            moved = true; reel.classList.add("grabbing");
+            if (!captured) { try { reel.setPointerCapture(e.pointerId); captured = true; } catch (err) {} }
+          }
+        }
+      });
+      const drop = () => { dragging = false; captured = false; reel.classList.remove("grabbing"); };
+      reel.addEventListener("pointerup", drop);
+      reel.addEventListener("pointercancel", drop);
+      /* a drag should not open a venue link: swallow the click that follows a drag */
+      reel.addEventListener("click", (e) => {
+        if (moved) { e.preventDefault(); e.stopPropagation(); }
+      }, true);
+      (function drift() {
+        if (!dragging && !paused) x += 0.55;
+        if (half > 0) { if (x >= half) x -= half; if (x < 0) x += half; }
+        track.style.transform = "translateX(" + (-x).toFixed(1) + "px)";
+        requestAnimationFrame(drift);
+      })();
+    }
+  }
+
+  /* ============ WEBGL LIQUID GLASS ============ */
+  const canvas = $("#glsl");
+  const gl = canvas.getContext("webgl", { antialias: false, depth: false, stencil: false, powerPreference: "high-performance" });
+  if (gl) {
+    const VS = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+    const FS = `
+precision highp float;
+uniform float uT;
+uniform vec2 uR;
+uniform vec2 uM;
+uniform float uMv;
+
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  vec2 u=f*f*(3.-2.*f);
+  return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),
+             mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);
+}
+float fbm(vec2 p){
+  float v=0.,a=.5;
+  for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.05+vec2(13.7,7.3);a*=.5;}
+  return v;
+}
+vec3 grade(float h){
+  vec3 night=vec3(.043,.043,.102);
+  vec3 coral=vec3(1.,.369,.357);
+  vec3 sand=vec3(.957,.882,.757);
+  vec3 c=mix(sand,coral,smoothstep(-.06,.36,h));
+  c=mix(c,night,smoothstep(.34,.9,h));
+  return c;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/uR;
+  float aspect=uR.x/max(uR.y,1.);
+  vec2 p=vec2(uv.x*aspect,uv.y);
+  float t=uT*.05;
+
+  vec2 q=vec2(fbm(p*1.6+vec2(t,-t*.7)),fbm(p*1.6+vec2(-t*.8,t*.5)+4.2));
+  vec2 r=vec2(fbm(p*1.9+q*1.4+vec2(t*.6,1.3)),fbm(p*1.9+q*1.4+vec2(5.1,-t*.4)));
+  float flow=fbm(p*1.3+r*1.6);
+
+  /* pointer ripple: rings radiating from the smoothed mouse */
+  vec2 m=vec2(uM.x*aspect,uM.y);
+  float md=length(p-m);
+  float ripple=sin(md*34.-uT*2.6)*exp(-md*3.4)*(.06+uMv*.55);
+
+  float glassy=sin((uv.y+flow)*22.-uT*.34)*.012+sin((uv.x-flow)*17.+uT*.2)*.010;
+  float field=flow+glassy+ripple;
+
+  float horizon=uv.y+(field-.5)*.58;
+  /* chromatic split across the liquid crests */
+  float ca=.028*(abs(ripple)*8.+.35);
+  vec3 col=vec3(grade(horizon+ca).r,grade(horizon).g,grade(horizon-ca).b);
+
+  /* coral bloom breathing inside the liquid */
+  float bloom=smoothstep(.55,.95,fbm(p*2.2+r+t));
+  col+=vec3(1.,.369,.357)*bloom*.2*(1.-horizon);
+
+  /* drifting specular streak */
+  float spec=pow(clamp(1.-abs(field-fract(t*.9)*1.4+.2)*6.,0.,1.),3.);
+  col+=vec3(1.,.96,.9)*spec*.16;
+
+  /* caustic filaments */
+  float caus=pow(clamp(sin((field*2.4+uv.x*1.2)*20.+uT*.4),0.,1.),18.);
+  col+=vec3(.96,.88,.76)*caus*.10;
+
+  /* acid glints on the sharpest crests */
+  float glint=pow(clamp(sin((field+uv.x)*40.+uT*.5),0.,1.),26.);
+  col+=vec3(.776,1.,0.)*glint*.06;
+
+  /* vignette + grain */
+  float vig=smoothstep(1.3,.34,length(uv-vec2(.5,.44)));
+  col=mix(vec3(.04,.04,.09),col,vig);
+  col+=(hash(uv*uR+fract(uT))-.5)*.05;
+
+  gl_FragColor=vec4(col,1.);
+}`;
+    const sh = (type, src) => {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src); gl.compileShader(s);
+      return s;
+    };
+    const prog = gl.createProgram();
+    gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+    gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog); gl.useProgram(prog);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, "p");
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const uT = gl.getUniformLocation(prog, "uT");
+    const uR = gl.getUniformLocation(prog, "uR");
+    const uM = gl.getUniformLocation(prog, "uM");
+    const uMv = gl.getUniformLocation(prog, "uMv");
+
+    const dpr = Math.min(1.5, devicePixelRatio || 1);
+    const size = () => {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    };
+    size();
+    addEventListener("resize", size, { passive: true });
+
+    let mx = 0.5, my = 0.4, smx = 0.5, smy = 0.4, mvel = 0;
+    addEventListener("mousemove", (e) => {
+      const r = canvas.getBoundingClientRect();
+      if (e.clientY < r.bottom && e.clientY > r.top) {
+        mx = (e.clientX - r.left) / r.width;
+        my = 1 - (e.clientY - r.top) / r.height;
+      }
+    }, { passive: true });
+
+    let visible = true, t0 = performance.now();
+    new IntersectionObserver((es) => { visible = es[0].isIntersecting; }).observe(canvas);
+
+    const frame = (now) => {
+      if (visible && !document.hidden) {
+        const dx = mx - smx, dy = my - smy;
+        smx += dx * 0.06; smy += dy * 0.06;
+        mvel += (Math.min(1, Math.hypot(dx, dy) * 6) - mvel) * 0.08;
+        gl.uniform1f(uT, (now - t0) / 1000);
+        gl.uniform2f(uR, canvas.width, canvas.height);
+        gl.uniform2f(uM, smx, smy);
+        gl.uniform1f(uMv, mvel);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      }
+      if (!reduced) requestAnimationFrame(frame);
+    };
+    /* reduced motion: render exactly one still frame */
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+
+
+</body></html>

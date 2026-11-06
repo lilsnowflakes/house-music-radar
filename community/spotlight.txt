@@ -1,0 +1,9 @@
+# Community spotlight: one small photo from a recent night, shown on the website.
+# 1. Upload the photo into this "community" folder (jpg or png).
+# 2. Fill in the lines below (remove the # in front) and commit.
+# Only post people who said yes to being on a public page. Location data (GPS) is removed automatically.
+#
+# photo: my-photo.jpg
+# caption: Clinic Wednesdays at Jungle, Dia de los Muertos edition
+# credit: photo @yourhandle · featuring @friendhandle
+# date: Nov 4

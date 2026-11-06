@@ -142,6 +142,7 @@ def parse_dice(html, city="los_angeles"):
         date_str = _fmt(int(start.group(2)), int(start.group(3)), int(start.group(1)))
         ev = normalize_event(title=e["name"], artist=e["name"], venue=venue, city=city,
                              date_str=date_str, genres=[], ticket_url=url, price=price, source="DICE")
+        ev["start_iso"] = dt.get("event_start_date") or ""
         ev["address"] = address
         sale = dt.get("sale_start_date") or dt.get("pre_sale_start_date")
         try:
@@ -253,6 +254,7 @@ def parse_heard(html, city="los_angeles"):
                 title=f"{title} ({time_})", artist=acts[0] if acts else title, venue=venue, city=city,
                 date_str=date_str, genres=[g.strip() for g in genre.split(",") if g.strip()],
                 ticket_url=a.get("href") or HEARD_URL, price="", source="Heard"))
+            out[-1]["time_text"] = time_
     return out
 
 

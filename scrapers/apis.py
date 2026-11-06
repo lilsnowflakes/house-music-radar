@@ -105,3 +105,106 @@ def scrape_edmtrain(city):
     except Exception as ex:
         LAST["Edmtrain"] = (0, str(ex)[:120])
     return out
+
+
+# ----------------------------------------------------------------------------
+# Reddit: one user's posts (u/liverichly posts LA shows to r/avesLA), via Reddit's official API.
+# Titles look like:  "Carl Cox at The Living Room - Thurs Nov 5"
+#                    "Stranger Than; Polo & Pan NYE - Thurs Dec 31"
+#                    "Theo Parrish In Conversation - Thurs Nov 12"
+# and updates like:  "Solomun moved from Hollywood Blvd to Reframe Studios Outdoors"
+# ----------------------------------------------------------------------------
+import re as _re
+from config.config import env as _env
+
+REDDIT_USERS = ["liverichly"]
+REDDIT_UPDATES = []   # (artist, old venue, new venue) from "X moved from A to B" posts; applied in main.py
+
+_TITLE = _re.compile(
+    r"^(?P<what>.+?)\s+[-–—]\s+(?:mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun)[a-z]*\.?,?\s+"
+    r"(?P<mon>[a-z]{3,9})\.?\s+(?P<day>\d{1,2})(?:,?\s*(?P<year>\d{4}))?\s*$", _re.I)
+_MOVE = _re.compile(r"^(?P<who>.+?)\s+(?:has\s+)?moved\s+from\s+(?P<old>.+?)\s+to\s+(?P<new>.+?)\s*$", _re.I)
+_MON = {m: i + 1 for i, m in enumerate("jan feb mar apr may jun jul aug sep oct nov dec".split())}
+
+
+def parse_reddit_title(title, permalink="", city="los_angeles"):
+    """Returns ("event", ev) or ("move", (who, old, new)) or (None, None)."""
+    t = title.strip()
+    m = _MOVE.match(t)
+    if m:
+        return "move", (m["who"], m["old"], m["new"])
+    m = _TITLE.match(t)
+    if not m or m["mon"][:3].lower() not in _MON:
+        return None, None
+    what = m["what"].strip()
+    venue = ""
+    if _re.search(r"\s+at\s+", what):
+        what, venue = _re.split(r"\s+at\s+(?=[^@]*$)", what, maxsplit=1) if " at " in what else (what, "")
+    promoter = ""
+    if ";" in what:
+        promoter, what = [x.strip() for x in what.split(";", 1)]
+    artist = _re.sub(r"\s+(NYE|NYD|live|dj set)$", "", what, flags=_re.I).strip()
+    mon, day = _MON[m["mon"][:3].lower()], int(m["day"])
+    now = datetime.now()
+    year = int(m["year"]) if m["year"] else now.year + (1 if mon < now.month - 1 else 0)
+    try:
+        d = datetime(year, mon, day)
+    except ValueError:
+        return None, None
+    ev = normalize_event(title=t.split(" - ")[0], artist=artist, venue=venue, city=city, date_str=_fmt(d),
+                         genres=[], ticket_url="", price="", source="Reddit")
+    ev["reddit_url"] = permalink
+    if promoter:
+        ev["promoter"] = promoter
+    return "event", ev
+
+
+def scrape_reddit(city):
+    if city != "los_angeles":
+        return []
+    cid, secret = _env("REDDIT_CLIENT_ID"), _env("REDDIT_CLIENT_SECRET")
+    if not cid or not secret:
+        LAST["Reddit"] = (0, "skipped: add REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET secrets")
+        return []
+    ua = {"User-Agent": f"python:mos-house-music-radar:v1.0 (by /u/{_env('REDDIT_USERNAME') or 'house-music-radar'})"}
+    out = []
+    try:
+        t = requests.post("https://www.reddit.com/api/v1/access_token", auth=(cid, secret), headers=ua,
+                          data={"grant_type": "client_credentials"}, timeout=20)
+        if t.status_code != 200:
+            raise RuntimeError(f"token {t.status_code}: {t.text[:100]}")
+        h = dict(ua, Authorization=f"bearer {t.json()['access_token']}")
+        for user in REDDIT_USERS:
+            r = requests.get(f"https://oauth.reddit.com/user/{user}/submitted", headers=h,
+                             params={"sort": "new", "limit": 50, "raw_json": 1}, timeout=20)
+            if r.status_code != 200:
+                raise RuntimeError(f"{user}: {r.status_code} {r.text[:100]}")
+            for child in r.json().get("data", {}).get("children", []):
+                p = child.get("data", {})
+                kind, val = parse_reddit_title(p.get("title", ""), "https://www.reddit.com" + p.get("permalink", ""), city)
+                if kind == "event":
+                    url = p.get("url_overridden_by_dest") or ""
+                    if url and not _re.search(r"redd\.it|reddit\.com|imgur", url):
+                        val["ticket_url"] = url     # a link post pointing at tickets
+                    out.append(val)
+                elif kind == "move":
+                    REDDIT_UPDATES.append(val)
+        LAST["Reddit"] = (len(out), "")
+    except Exception as ex:
+        LAST["Reddit"] = (0, str(ex)[:120])
+    return out
+
+
+def apply_moves(events):
+    """'Solomun moved from Hollywood Blvd to Reframe Studios Outdoors': fix the venue on matching shows."""
+    n = 0
+    for who, old, new in REDDIT_UPDATES:
+        k = _re.sub(r"[^a-z0-9]", "", who.lower())
+        for ev in events:
+            a = _re.sub(r"[^a-z0-9]", "", (ev.get("artist") or ev.get("title") or "").lower())
+            o = _re.sub(r"[^a-z0-9]", "", old.lower())[:8]
+            v = _re.sub(r"[^a-z0-9]", "", ev.get("venue", "").lower())
+            if k and k in a and (not v or o in v) and ev.get("venue") != new:
+                ev["moved_from"], ev["venue"], ev["address"] = ev.get("venue", ""), new, ""
+                n += 1
+    return n

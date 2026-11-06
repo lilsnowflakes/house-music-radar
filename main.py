@@ -39,6 +39,7 @@ SCRAPER_MAP["heard"] = la_sources.scrape_heard
 from scrapers import apis
 SCRAPER_MAP["seatgeek"] = apis.scrape_seatgeek
 SCRAPER_MAP["edmtrain"] = apis.scrape_edmtrain
+SCRAPER_MAP["reddit"] = apis.scrape_reddit
 from scrapers import calendars
 SCRAPER_MAP["calendars"] = calendars.scrape_calendars
 
@@ -153,6 +154,10 @@ def main():
 
         events, dupes_removed = dedupe(events)
         print(f"  merged {dupes_removed} duplicate listings")
+        moved = apis.apply_moves(events)
+        if moved:
+            health.append(("Reddit venue changes", "ok", f"{moved} show(s) moved to a new venue: " +
+                           "; ".join(f"{w} → {n}" for w, _o, n in apis.REDDIT_UPDATES)))
 
         st, detail = spotify_selftest()
         health.append(("Spotify connection", st, detail))
@@ -188,8 +193,9 @@ def main():
         return
     # The site refreshes on every run (daily); the email goes out Mondays, or whenever you press Run workflow.
     manual = os.environ.get("GITHUB_EVENT_NAME", "") == "workflow_dispatch"
-    if not manual and datetime.now(ZoneInfo("America/Los_Angeles")).weekday() != 0 and os.environ.get("GITHUB_ACTIONS"):
-        print("Not Monday and not a manual run: website updated, email skipped.")
+    pt = datetime.now(ZoneInfo("America/Los_Angeles"))
+    if not manual and os.environ.get("GITHUB_ACTIONS") and not (pt.weekday() == 0 and pt.hour < 12):
+        print("Scheduled run that isn't Monday morning: website updated, email skipped.")
         return
     subject = (f"🎛 Mo's House Music Radar — {datetime.now().strftime('%b %-d')} "
                f"({len(announced)} announced, {sum(1 for e in events if e.get('watched'))} at your spots)")

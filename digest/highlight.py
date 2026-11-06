@@ -40,7 +40,7 @@ def pick(events, now=None):
         for e in upcoming:
             if k and (k in _n(e.get("artist")) or k in _n(e.get("title")) or key in e.get("ticket_url", "")):
                 return e, note, "picked by you"
-    soon = [e for e in upcoming if bucket(e.get("date_str", ""), now) in ("tonight", "week", "next")][:200]
+    soon = [e for e in upcoming if bucket(e.get("date_str", ""), now) in ("tonight", "tomorrow", "week", "next")][:200]
     if not soon:
         return None, "", ""
 

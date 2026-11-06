@@ -11,7 +11,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from digest.colors import chips_for, legend_html
-from digest.dates import sort_key, day_label, bucket
+from digest.dates import sort_key, day_label, bucket, show_time
 from digest import theme as _theme
 from digest.artist_links import links_html
 from digest.share import buttons_html, SHARE_JS, sprite
@@ -61,7 +61,8 @@ def build_list_page(events, site_url="", home_url="index.html", style="classic")
             t = f'<a class="t" href="{e(link)}" target="_blank" rel="noopener">{title}</a>' if link else f'<span class="t">{title}</span>'
             out.append(
                 f'<article class="ev" data-k="{kind}"><div class="main">{t}'
-                f'<div class="v">{venue_html(x.get("venue", ""), x.get("address", ""), "#00b9bc")}</div>'
+                f'<div class="v">{venue_html(x.get("venue", ""), x.get("address", ""), "#00b9bc") if x.get("venue") else "Venue TBA"}'
+                f'{(" · 🕘 " + e(show_time(x)[0])) if show_time(x)[0] else ""}</div>'
                 f'<div class="bs">{chips_for(x)}{star}</div>'
                 f'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px"><div>{links_html(x, "#00b9bc", "12px")}</div>'
                 f'<div style="margin-left:auto;text-align:right">{buttons_html(x)}</div></div></div>'

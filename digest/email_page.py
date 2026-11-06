@@ -10,7 +10,7 @@ from config.config import CODE_VERSION, HEARD_HOME
 from digest.artist_links import links_html
 from digest.share import email_links
 from digest.colors import chips_for
-from digest.dates import bucket, day_label, now_pt, sort_key
+from digest.dates import bucket, day_label, now_pt, sort_key, show_time
 from digest.venue_links import maps_url
 from digest import theme as _theme
 from digest import highlight as _hl
@@ -48,7 +48,7 @@ def _row(ev, base):
 <tr><td width="44" valign="top" style="padding:14px 0 14px 14px;">{pic}</td>
 <td valign="top" style="padding:14px 12px;{F}">
 <div style="font-size:16px;font-weight:700;color:{INK};line-height:1.25;">{star}{name}</div>
-<div style="font-size:13px;color:{MUTED};margin-top:3px;">📍 <a href="{e(maps_url(venue, ev.get('address', '')))}" style="color:{ACC_DK};text-decoration:underline;">{e(venue)}</a></div>
+<div style="font-size:13px;color:{MUTED};margin-top:3px;">{(f'📍 <a href="{e(maps_url(venue, ev.get("address", "")))}" style="color:{ACC_DK};text-decoration:underline;">{e(venue)}</a>') if venue else "📍 Venue TBA"}{(" · 🕘 " + e(show_time(ev)[0])) if show_time(ev)[0] else ""}</div>
 <div style="margin-top:8px;line-height:1.9;">{chips_for(ev, light=True)}</div>
 <div style="margin-top:6px;">{links_html(ev, mode="email", base=base)}</div>
 <div style="margin-top:6px;">{email_links(ev)}</div>
@@ -93,7 +93,7 @@ def build_email(events, announced, health, site_url="", dupes_removed=0):
     base = site_url if site_url.endswith("/") or not site_url else site_url + "/"
     run_no = _theme.run_number()
     run_txt = f"Run #{run_no}" if run_no else "Local build"
-    groups = {k: [] for k in ("tonight", "week", "next", "later", "unknown")}
+    groups = {k: [] for k in ("tonight", "tomorrow", "week", "next", "later", "unknown")}
     # Edmtrain's terms: their data must not be shown older than 24h, and an email can sit unread for days.
     events = [x for x in events if (x.get("sources") or [x.get("source")]) != ["Edmtrain"]]
     for x in events:
@@ -103,8 +103,8 @@ def build_email(events, announced, health, site_url="", dupes_removed=0):
     later = groups["later"] + groups["unknown"]
     spots = sum(1 for x in events if x.get("watched") and bucket(x.get("date_str", ""), now) != "past")
 
-    stats = [(len(groups["tonight"]), "tonight"), (len(groups["week"]), "this week"),
-             (len(groups["next"]), "next week"), (spots, "at your spots"), (len(announced), "announced")]
+    stats = [(len(groups["tonight"]), "tonight"), (len(groups["tomorrow"]), "tomorrow"), (len(groups["week"]), "this week"),
+             (len(groups["next"]), "next week"), (spots, "your spots")]
     cells = "".join(
         f'<td align="center" style="padding:10px 4px;{F}"><div style="font-size:22px;font-weight:800;color:#ffffff;">{n}</div>'
         f'<div style="font-size:11px;color:#bfe9e5;">{lab}</div></td>' for n, lab in stats)
@@ -116,7 +116,7 @@ def build_email(events, announced, health, site_url="", dupes_removed=0):
         body += (f'<tr><td style="padding:22px 0 8px;{F}font-size:12px;font-weight:800;letter-spacing:2px;color:{ACC_DK};">'
                  f'★ HIGHLIGHT · {e(how.upper())}</td></tr>'
                  + (f'<tr><td style="{F}">{n_html}</td></tr>' if note else "") + _row(hl, base))
-    for key, title in (("tonight", "🔥 Tonight"), ("week", "This week"), ("next", "Next week")):
+    for key, title in (("tonight", "🔥 Tonight"), ("tomorrow", "🌅 Tomorrow"), ("week", "This week"), ("next", "Next week")):
         if groups[key] or key == "tonight":
             inner = _days(groups[key], base, now) if groups[key] else \
                 f'<tr><td style="padding:14px 0;{F}color:{MUTED};font-size:14px;">Nothing listed.</td></tr>'

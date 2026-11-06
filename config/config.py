@@ -38,7 +38,7 @@ CITIES = ["los_angeles"]
 
 SOURCES = {
     "los_angeles": ["19hz", "resident_advisor", "dice", "shotgun", "scenestar",
-                    "venue_calendars", "heard", "seatgeek", "edmtrain", "calendars"],
+                    "venue_calendars", "heard", "seatgeek", "edmtrain", "calendars", "reddit"],
 }
 # Note: 1001Tracklists has no city listings, so it is not a source here.
 

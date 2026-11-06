@@ -185,3 +185,37 @@ def radar_svg(n=0):
 <animateTransform attributeName="transform" type="rotate" from="0 {cx} {cy}" to="360 {cx} {cy}" dur="5s" repeatCount="indefinite"/></g><g data-d="5">{blips}</g>
 <text x="16" y="24" font-family="monospace" font-size="12" fill="#00a5a7" letter-spacing="3">SCANNING LOS ANGELES</text>
 <text x="664" y="24" text-anchor="end" font-family="monospace" font-size="12" fill="#00a5a7" letter-spacing="2">{n} TONIGHT</text></svg>'''
+
+
+def holo_svg(tonight=0, total=0, seed=0):
+    """'Holo' hero (2026 futuristic): a rotating wireframe globe in an iridescent gradient, an orbiting
+    satellite, a live waveform and HUD readouts."""
+    rnd = random.Random(seed)
+    W, H, cx, cy, R = 680, 210, 520, 108, 78
+    mer = ""
+    for i in range(6):   # meridians: ellipses whose width sweeps, which reads as rotation
+        ph = i / 6
+        mer += (f'<ellipse cx="{cx}" cy="{cy}" rx="{R}" ry="{R}" fill="none" stroke="url(#hg)" stroke-width="1" opacity=".75">'
+                f'<animate attributeName="rx" values="{R};0;{R}" keyTimes="0;.5;1" dur="9s" begin="-{ph * 9:.2f}s" repeatCount="indefinite"/></ellipse>')
+    lat = "".join(f'<ellipse cx="{cx}" cy="{cy + y}" rx="{(R * R - y * y) ** .5:.1f}" ry="{max(2, ((R * R - y * y) ** .5) * .18):.1f}" '
+                  f'fill="none" stroke="url(#hg)" stroke-width=".8" opacity=".55"/>' for y in (-52, -26, 0, 26, 52))
+    pts = []
+    for k in range(3):
+        pts.append(" ".join(f"{x},{150 + 18 * __import__('math').sin(x / (18 + k * 6) + k) * rnd.uniform(.5, 1):.1f}" for x in range(20, 380, 8)))
+    wave = (f'<polyline fill="none" stroke="url(#hg)" stroke-width="2" points="{pts[0]}">'
+            f'<animate attributeName="points" values="{pts[0]};{pts[1]};{pts[2]};{pts[0]}" dur="4s" repeatCount="indefinite"/></polyline>')
+    dots = "".join(f'<circle cx="{rnd.randint(10, 670)}" cy="{rnd.randint(8, 200)}" r=".9" fill="#cfe9ff" opacity="{rnd.choice([.25, .5, .8])}"/>' for _ in range(40))
+    hud = 'font-family="ui-monospace,monospace" font-size="10" fill="#a9bbe0" letter-spacing="1.5"'
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Wireframe globe and live waveform"
+ style="display:block;border-radius:16px;border:1px solid #22304f;background:radial-gradient(120% 140% at 80% 40%,#111a30 0%,#05070d 60%)">
+<defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5ff"/><stop offset=".35" stop-color="#b58cff"/>
+<stop offset=".7" stop-color="#ff8ad8"/><stop offset="1" stop-color="#ffd27a"/></linearGradient>
+<filter id="hglow"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<g data-d="2">{dots}</g>
+<g data-d="8" filter="url(#hglow)">{mer}{lat}
+<ellipse cx="{cx}" cy="{cy}" rx="{R + 30}" ry="20" fill="none" stroke="#7cf5ff" stroke-width=".8" opacity=".5" transform="rotate(-14 {cx} {cy})"/>
+<circle r="4" fill="#ffffff"><animateMotion dur="6s" repeatCount="indefinite" path="M{cx - R - 30},{cy} a{R + 30},20 0 1,0 {2 * (R + 30)},0 a{R + 30},20 0 1,0 -{2 * (R + 30)},0" rotate="auto"/></circle></g>
+<g data-d="3" filter="url(#hglow)">{wave}</g>
+<g data-d="1"><text x="20" y="28" {hud}>LOS ANGELES · 34.05°N 118.24°W</text>
+<text x="20" y="46" {hud} fill="#7cf5ff">● LIVE · {tonight} TONIGHT · {total} UPCOMING</text>
+<text x="20" y="196" {hud}>MO'S HOUSE MUSIC RADAR · 2026</text></g></svg>'''

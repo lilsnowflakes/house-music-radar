@@ -16,12 +16,12 @@ from zoneinfo import ZoneInfo
 
 from collections import Counter, OrderedDict
 import os
-from digest.dates import bucket, sort_key, day_label, to_date, now_pt
+from digest.dates import bucket, sort_key, day_label, to_date, now_pt, show_time
 from digest import theme as _theme
 from digest.artist_links import links_html
 from digest import highlight as _hl
 from digest.share import buttons_html, SHARE_JS, sprite
-from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg
+from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg, holo_svg
 from config.config import CODE_VERSION
 from digest.colors import legend_html, chips_for
 
@@ -80,6 +80,26 @@ FONT = "font-family:monospace;"
 def _initials(name):
     w = [x for x in (name or "?").replace("&", " ").split() if x[:1].isalnum()]
     return ("".join(x[0] for x in w[:2]) or "?").upper()
+
+
+def stale_js(now):
+    """If someone opens the page after the night it was built for, say so instead of showing an old 'Tonight'."""
+    night = (now - __import__("datetime").timedelta(hours=6)).strftime("%Y-%m-%d")
+    label = (now - __import__("datetime").timedelta(hours=6)).strftime("%a %b %-d")
+    tomorrow_iso = (now - __import__("datetime").timedelta(hours=6) + __import__("datetime").timedelta(days=1)).strftime("%Y-%m-%d")
+    return f"""<script>
+(function(){{var n=new Date(Date.now()-6*3600e3),
+ here=n.toLocaleDateString('en-CA',{{timeZone:'America/Los_Angeles'}});
+ if(here<='{night}')return;
+ var s=document.querySelector('#tonight>summary');
+ if(s){{s.firstChild.textContent='🌙 Last night ({label}) ';document.getElementById('tonight').open=false;}}
+ var t=document.getElementById('tomorrow');
+ if(t&&here==='{tomorrow_iso}'){{t.querySelector('summary').firstChild.textContent='🔥 Tonight ';t.open=true;}}
+ var b=document.createElement('div');
+ b.style.cssText='background:#3a2a00;color:#ffd27a;border:1px solid #7a5b00;border-radius:8px;padding:8px 12px;margin:0 0 12px;font:13px monospace;text-align:center';
+ b.textContent='Built for {label}. The next refresh is on its way; "This week" below is still current.';
+ var h=document.getElementById('highlight')||document.getElementById('tonight');h.parentNode.insertBefore(b,h);}})();
+</script>"""
 
 
 LAZY_JS = """<script>
@@ -157,6 +177,9 @@ details.sec>summary{cursor:pointer;padding:12px 0;color:#00b9bc;font-weight:bold
 details.sec>summary span{color:#00a5a7;font-weight:normal}
 .secb{padding-bottom:10px}
 .none{color:#00a5a7;font-size:13px;padding:6px 0;font-family:monospace}
+.tba{color:#009092}.st{color:#00b9bc;white-space:nowrap}
+.fchip{font:12px monospace;color:#00a5a7;background:#001515;border:1px solid #005254;border-radius:999px;padding:5px 11px;margin:0 6px 8px 0;cursor:pointer}
+.fchip[aria-pressed="true"]{background:#00b9bc;color:#001515;border-color:#00b9bc;font-weight:bold}
 @media (max-width:560px){
  .evrow{flex-wrap:wrap}
  .evmain{flex-basis:calc(100% - 60px)}
@@ -166,6 +189,84 @@ details.sec>summary span{color:#00a5a7;font-weight:normal}
  .sb{font-size:11px;padding:3px 8px}
 }
 """
+
+
+def _price_num(p):
+    import re as _r
+    m = _r.search(r"\$\s*(\d+)", p or "")
+    return int(m.group(1)) if m else (0 if "free" in (p or "").lower() else None)
+
+
+def filter_tokens(ev):
+    """Words the filter bar checks: pm, spot, conf, ok18, cheap, big, tix, sold, late."""
+    t = []
+    g = (" ".join(ev.get("genres") or []) + " " + ev.get("title", "")).lower()
+    if "progressive" in g or "melodic" in g:
+        t.append("pm")
+    if ev.get("watched"):
+        t.append("spot")
+    if (ev.get("house_check") or {}).get("verdict") == "house":
+        t.append("conf")
+    if ev.get("age") != "21+":
+        t.append("ok18")
+    n = _price_num(ev.get("price"))
+    if n is not None and n < 30:
+        t.append("cheap")
+    if ev.get("score", 0) >= 50:
+        t.append("big")
+    sold = ev.get("ticket_status") == "sold out" or "sold out" in (ev.get("price", "") + ev.get("title", "")).lower()
+    if sold:
+        t.append("sold")
+    elif ev.get("ticket_url"):
+        t.append("tix")
+    start = show_time(ev)[1]
+    if start and (start >= "21:00" or start < "06:00"):
+        t.append("late")
+    return " ".join(t)
+
+
+FILTERS = [("pm", "Progressive / melodic"), ("spot", "★ Your spots"), ("conf", "✓ Confirmed house"),
+           ("tix", "Tickets available"), ("nosold", "Hide sold out"), ("ok18", "18+ / all ages"),
+           ("cheap", "Under $30"), ("big", "Big names 50+"), ("late", "Late (9pm+)")]
+
+
+def filter_bar():
+    chips = "".join(f'<button type="button" class="fchip" data-k="{k}" aria-pressed="false">{esc(lab)}</button>'
+                    for k, lab in FILTERS)
+    return (f'<details class="sec" id="filters"><summary style="font-size:14px">⚙ Filters <span id="fcount"></span></summary>'
+            f'<div class="secb">{chips}<button type="button" class="fchip" id="fclear">Clear</button>'
+            f'<div class="none" style="font-size:11px">Filters stack (show only shows that match all of them) and are remembered on this device.</div>'
+            f'</div></details>')
+
+
+FILTER_JS = r"""<script>
+(function(){
+ var K='radarFilters',on={};try{on=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
+ function apply(){
+  var act=Object.keys(on).filter(function(k){return on[k]});
+  document.querySelectorAll('.evrow[data-f]').forEach(function(r){
+   var f=' '+r.dataset.f+' ',show=act.every(function(k){return k==='nosold'?f.indexOf(' sold ')<0:f.indexOf(' '+k+' ')>=0});
+   r.style.display=show?'':'none';});
+  document.querySelectorAll('.dl').forEach(function(d){var n=d.nextElementSibling,any=false;
+   while(n&&!n.classList.contains('dl')){if(n.classList.contains('evrow')&&n.style.display!=='none')any=true;n=n.nextElementSibling;}
+   d.style.display=any?'':'none';});
+  document.querySelectorAll('.fchip[data-k]').forEach(function(b){b.setAttribute('aria-pressed',!!on[b.dataset.k])});
+  document.querySelectorAll('details.sec>.secb').forEach(function(b){
+   var rows=[].filter.call(b.children,function(x){return x.classList.contains('evrow')||x.classList.contains('dl')}),
+       ev=b.querySelectorAll(':scope>.evrow'),shown=[].filter.call(ev,function(x){return x.style.display!=='none'}).length,
+       n=b.querySelector(':scope>.fnote');
+   if(ev.length&&!shown){if(!n){n=document.createElement('div');n.className='none fnote';b.prepend(n);}
+    n.textContent='All '+ev.length+' hidden by your filters.';n.style.display='';}
+   else if(n)n.style.display='none';});
+  var c=document.getElementById('fcount');if(c)c.textContent=act.length?'('+act.length+' on)':'';
+  try{localStorage.setItem(K,JSON.stringify(on))}catch(e){}
+ }
+ document.addEventListener('click',function(e){var b=e.target.closest('.fchip');if(!b)return;
+  if(b.id==='fclear')on={};else on[b.dataset.k]=!on[b.dataset.k];apply();});
+ document.addEventListener('toggle',function(){setTimeout(apply,0)},true);  /* sections built on open get filtered too */
+ apply();
+})();
+</script>"""
 
 
 def score_badge(score):
@@ -193,10 +294,16 @@ def event_row(ev: dict) -> str:
     sub = esc(title) if title and title != artist and len(title) < 90 else ""
     via = " + ".join(esc(s) for s in (ev.get("sources") or [ev.get("source", "")]) if s)
     edm = f' · <a href="{esc(ev["edmtrain_url"])}">on Edmtrain</a>' if ev.get("edmtrain_url") else ""
+    edm += f' · <a href="{esc(ev["reddit_url"])}">on Reddit</a>' if ev.get("reddit_url") else ""
+    edm += f' · ⚠ moved from {esc(ev["moved_from"])}' if ev.get("moved_from") else ""
     price = " " + esc(ev.get("price")) if ev.get("price") else ""
     btn = f'<a class="tix" href="{esc(link)}">Tickets{price}</a>' if link else ""
-    return (f'<div class="evrow">{pic}<div class="evmain"><div class="nm">{star}{name}</div>'
-            f'<div class="vn">📍 {venue_html(ev.get("venue", ""), ev.get("address", ""))}{" · " + sub if sub else ""}</div>'
+    venue = (f'📍 {venue_html(ev.get("venue"), ev.get("address", ""))}' if ev.get("venue")
+             else '<span class="tba">📍 Venue TBA</span>')
+    tlab = show_time(ev)[0]
+    when = f' · <span class="st">🕘 {esc(tlab)}</span>' if tlab else ""
+    return (f'<div class="evrow" data-f="{filter_tokens(ev)}">{pic}<div class="evmain"><div class="nm">{star}{name}</div>'
+            f'<div class="vn">{venue}{when}{" · " + sub if sub else ""}</div>'
             f'<div class="chips">{chips_for(ev)}</div>{media_row(ev)}<div class="via">via {via}{edm}</div></div>'
             f'<div class="evside">{score_badge(ev.get("score", 0))}<div>{btn}</div></div></div>')
 
@@ -274,7 +381,7 @@ STRIPES = ('<div style="height:8px;border-radius:4px;margin:2px 0 10px;backgroun
 STYLES = [("classic", "Classic", "index.html", "list.html"), ("outrun", "Outrun", "index-outrun.html", "list-outrun.html"),
           ("console", "Console", "index-console.html", "list-console.html"),
           ("night", "Night", "index-night.html", "list-night.html"), ("deck", "Deck", "index-deck.html", "list-deck.html"),
-          ("redline", "Redline", "index-redline.html", "list-redline.html")]
+          ("holo", "Holo", "index-holo.html", "list-holo.html")]
 
 
 def style_switcher(active, base, page="index"):
@@ -316,14 +423,17 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
                f'Smaller rooms and tonight\'s live music: <a href="{HEARD_HOME}" style="color:{ORANGE};">Heard (getheard.live)</a></div>')
 
     # bucket the shows
-    groups = {k: [] for k in ("tonight", "week", "next", "later", "unknown")}
+    groups = {k: [] for k in ("tonight", "tomorrow", "week", "next", "later", "unknown")}
     for e in events:
         b = bucket(e.get("date_str", ""), now)
         if b != "past":
             groups[b].append(e)
+    from datetime import timedelta as _td
+    tmr = (now - _td(hours=6) + _td(days=1)).strftime("%a %b %-d")
 
     s_tonight = _details("tonight", "🔥 Tonight", len(groups["tonight"]),
                          _days_html(groups["tonight"], now), open_=bool(groups["tonight"]))
+    s_tomorrow = _details("tomorrow", f"🌅 Tomorrow · {tmr}", len(groups["tomorrow"]), _days_html(groups["tomorrow"], now))
     s_week = _details("week", "This week", len(groups["week"]), _days_html(groups["week"], now))
     s_next = _details("next", "Next week", len(groups["next"]), _days_html(groups["next"], now))
 
@@ -348,7 +458,8 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
     nav_link = f"color:{ORANGE};text-decoration:none;padding:6px 12px;border:1px solid #005254;border-radius:999px;"
     nav = (f'<div style="position:sticky;top:0;background:#001515;padding:8px 0;margin:0 0 12px;z-index:5;{FONT}'
            f'font-size:13px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;border-bottom:1px solid #003e3f;">'
-           f'<a href="#tonight" style="{nav_link}">Tonight</a><a href="#week" style="{nav_link}">This week</a>'
+           f'<a href="#tonight" style="{nav_link}">Tonight</a><a href="#tomorrow" style="{nav_link}">Tomorrow</a>'
+           f'<a href="#week" style="{nav_link}">This week</a>'
            f'<a href="#next" style="{nav_link}">Next week</a><a href="#later" style="{nav_link}">Later</a></div>')
 
     dup_note = f" · {dupes_removed} duplicate listings merged" if dupes_removed else ""
@@ -373,7 +484,8 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
             "console": lambda: console_svg(run_no, len(groups["tonight"]), n_all),
             "night": lambda: night_svg(counts),
             "deck": lambda: deck_svg(tl, run_no),
-            "redline": lambda: radar_svg(len(groups["tonight"]))}.get(th[0], lambda: hero_svg(run_no))()
+            "redline": lambda: radar_svg(len(groups["tonight"])),
+            "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no)}.get(th[0], lambda: hero_svg(run_no))()
 
     page = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
@@ -393,7 +505,8 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
   {nav}
   {legend_html()}
   {highlight_html(events, now)}
-  {s_tonight}{s_week}{s_next}{s_later}{s_ann}{s_spots}
+  {filter_bar()}
+  {s_tonight}{s_tomorrow}{s_week}{s_next}{s_later}{s_ann}{s_spots}
   {s_health}
   <div style="text-align:center;color:#009092;font-size:11px;padding:24px 0;border-top:1px solid #003e3f;margin-top:24px;">
     {foot}
@@ -409,6 +522,8 @@ document.addEventListener('click',function(e){{var a=e.target.closest('a[href^="
 {STYLE_JS if site_url else ''}
 {SHARE_JS}
 {LAZY_JS}
+{FILTER_JS}
+{stale_js(now)}
 {MOTION_JS}
 </body></html>"""
     return _theme.apply(page, th)

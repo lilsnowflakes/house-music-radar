@@ -7,7 +7,7 @@ import html
 from datetime import timedelta
 from urllib.parse import quote, urlencode
 
-from digest.dates import day_label, to_date
+from digest.dates import day_label, to_date, show_time
 
 e = html.escape
 SITE = "https://lilsnowflakes.github.io/house-music-radar/"
@@ -58,8 +58,18 @@ def gcal_url(ev, site=SITE):
         return ""
     who = ev.get("artist") or ev.get("title") or "Show"
     details = f"{ev.get('title', '')}\nTickets: {ev.get('ticket_url', '')}\nFrom Mo's House Music Radar: {site}"
-    q = {"action": "TEMPLATE", "text": f"{who} @ {ev.get('venue', '')}".strip(" @"),
-         "dates": f"{d:%Y%m%d}/{d + timedelta(days=1):%Y%m%d}",
+    _lab, st, en = show_time(ev)
+    if st:
+        from datetime import datetime as _dt
+        s_ = _dt(d.year, d.month, d.day, int(st[:2]), int(st[3:]))
+        e_ = _dt(d.year, d.month, d.day, int(en[:2]), int(en[3:])) if en else s_ + timedelta(hours=4)
+        if e_ <= s_:
+            e_ += timedelta(days=1)
+        dates = f"{s_:%Y%m%dT%H%M%S}/{e_:%Y%m%dT%H%M%S}"
+    else:
+        dates = f"{d:%Y%m%d}/{d + timedelta(days=1):%Y%m%d}"
+    q = {"action": "TEMPLATE", "text": f"{who} @ {ev.get('venue', '')}".strip(" @"), "dates": dates,
+         **({"ctz": "America/Los_Angeles"} if st else {}),
          "location": ", ".join(x for x in (ev.get("venue", ""), ev.get("address") or "Los Angeles, CA") if x),
          "details": details}
     return "https://calendar.google.com/calendar/render?" + urlencode(q)
@@ -73,6 +83,9 @@ def buttons_html(ev, color="#00b9bc", site=SITE):
     data = (f'data-text="{e(invite_text(ev, site))}" '
             f'data-title="{e((ev.get("artist") or ev.get("title") or "Show") + " @ " + ev.get("venue", ""))}" '
             f'data-loc="{e(loc)}" data-url="{e(ev.get("ticket_url", ""))}"' + (f' data-date="{d:%Y%m%d}"' if d else ""))
+    _lab, st, en = show_time(ev)
+    if st:
+        data += f' data-start="{st}"' + (f' data-end="{en}"' if en else "")
     out = (f'<span class="sbw" {data}><button type="button" class="sb inv">📣 Invite</button>'
            f'<button type="button" class="sb wa" title="Send on WhatsApp">{_ic("wa")}</button>')
     if d:
@@ -99,15 +112,22 @@ document.addEventListener('click',function(ev){
  if(!d.date)return;
  var y=+d.date.slice(0,4),m=+d.date.slice(4,6)-1,day=+d.date.slice(6,8);
  var end=new Date(Date.UTC(y,m,day+1)).toISOString().slice(0,10).replace(/-/g,'');
+ var s0=d.date,e0=end,timed=!!d.start;
+ if(timed){ /* local LA wall-clock times; ends next day if the end is "earlier" (e.g. 9pm-2am); 4 hours if unknown */
+  var sh=+d.start.slice(0,2),sm=+d.start.slice(3,5),sd=new Date(Date.UTC(y,m,day,sh,sm)),ed;
+  if(d.end){var eh=+d.end.slice(0,2),em=+d.end.slice(3,5);ed=new Date(Date.UTC(y,m,day,eh,em));if(ed<=sd)ed=new Date(ed.getTime()+864e5);}
+  else ed=new Date(sd.getTime()+4*36e5);
+  var f=function(t){return t.toISOString().slice(0,16).replace(/[-:]/g,'')+'00'};s0=f(sd);e0=f(ed);}
  if(b.classList.contains('gcal')){
-  open('https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(d.title)+'&dates='+d.date+'/'+end+
+  open('https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(d.title)+'&dates='+s0+'/'+e0+(timed?'&ctz=America/Los_Angeles':'')+
    '&location='+encodeURIComponent(d.loc)+'&details='+encodeURIComponent('Tickets: '+d.url+'\nFrom Mo\'s House Music Radar: '+location.href.split('#')[0]));
   return; }
  var esc=function(s){return (s||'').replace(/[\;,]/g,function(c){return '\\'+c}).replace(/\n/g,'\\n')};
  var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Mo House Music Radar//EN','BEGIN:VEVENT',
   'UID:'+d.date+'-'+Math.random().toString(36).slice(2)+'@house-music-radar',
   'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').slice(0,15)+'Z',
-  'DTSTART;VALUE=DATE:'+d.date,'DTEND;VALUE=DATE:'+end,'SUMMARY:'+esc(d.title),'LOCATION:'+esc(d.loc),
+  timed?'DTSTART;TZID=America/Los_Angeles:'+s0:'DTSTART;VALUE=DATE:'+d.date,
+  timed?'DTEND;TZID=America/Los_Angeles:'+e0:'DTEND;VALUE=DATE:'+end,'SUMMARY:'+esc(d.title),'LOCATION:'+esc(d.loc),
   'DESCRIPTION:'+esc('Tickets: '+d.url),'END:VEVENT','END:VCALENDAR'].join('\r\n');
  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));
  a.download='show.ics';document.body.appendChild(a);a.click();a.remove();

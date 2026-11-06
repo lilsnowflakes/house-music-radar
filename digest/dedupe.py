@@ -40,9 +40,12 @@ def _merge(keep, other):
     for s in other.get("sources") or [other.get("source", "")]:
         if s and s not in srcs:
             srcs.append(s)
+    for f in ("reddit_url", "moved_from", "promoter"):
+        if other.get(f) and not keep.get(f):
+            keep[f] = other[f]
     if other.get("source") == "Edmtrain" and other.get("ticket_url"):
         keep["edmtrain_url"] = other["ticket_url"]   # their event link stays visible, unmodified
-    for f in ("ticket_url", "price", "address", "image", "ticket_status", "age"):
+    for f in ("ticket_url", "price", "address", "image", "ticket_status", "age", "venue", "start_iso", "time_text"):
         if not keep.get(f) and other.get(f):
             keep[f] = other[f]
     if not keep.get("genres") and other.get("genres"):

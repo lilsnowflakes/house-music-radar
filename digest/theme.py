@@ -17,6 +17,19 @@ RED_FILTER = ('<svg width="0" height="0" style="position:absolute" aria-hidden="
               '<feComponentTransfer><feFuncR type="gamma" amplitude="1" exponent="0.5"/></feComponentTransfer></filter></svg>')
 
 CUSTOM = {
+    # 2026 futuristic: glass panels, iridescent edges, ice-cyan accents, clean sans type.
+    "holo": dict(stops=["#05070d", "#0b1120", "#111a30", "#22304f", "#3f5680", "#7f93bd", "#a9bbe0", "#7cf5ff"],
+                 extra={"#e6fafa": "#eaf6ff"},
+                 css="<style>body{background:radial-gradient(90% 60% at 50% 0%,#101a33 0%,#05070d 70%) fixed!important;"
+                     "font-family:ui-sans-serif,-apple-system,'SF Pro Text','Segoe UI',Inter,Roboto,sans-serif!important}"
+                     ".evrow,details.sec{background:rgba(255,255,255,.035)!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);"
+                     "border-color:rgba(124,245,255,.16)!important;font-family:inherit!important;border-radius:14px!important}"
+                     "details.sec>summary{font-family:inherit!important;letter-spacing:.4px}"
+                     "#highlight{border:1px solid transparent!important;background:linear-gradient(#0b1120,#0b1120) padding-box,"
+                     "conic-gradient(from 200deg,#7cf5ff,#b58cff,#ff8ad8,#ffd27a,#7cf5ff) border-box!important;font-family:inherit!important}"
+                     ".tix,#highlight a[style*='background:#7cf5ff']{background:linear-gradient(90deg,#7cf5ff,#b58cff)!important;color:#05070d!important;font-weight:600}"
+                     ".fchip[aria-pressed=true]{background:linear-gradient(90deg,#7cf5ff,#b58cff)!important;border-color:transparent!important}"
+                     ".sc{font-variant-numeric:tabular-nums}</style>"),
     # Low-light version modeled on dark app dashboards: navy, soft gradients, rounded panels.
     "night": dict(stops=["#0b1630", "#12254a", "#1a3263", "#25407a", "#4a6bb5", "#8fa6d6", "#b4c6ea", "#9a7bff"],
                   extra={"#e6fafa": "#e9f0ff"},

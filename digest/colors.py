@@ -74,3 +74,18 @@ def legend_html():
     parts += [chip(*v) for v in STATUS.values()] + [chip(*v) for v in CHECK.values()]
     return ('<div style="margin:0 0 16px;font-family:monospace;"><div style="color:#777;font-size:11px;'
             'margin-bottom:6px;">Color key: genre, ticket status, genre check</div>' + "".join(parts) + "</div>")
+
+
+def to_light_chips(page):
+    """Swap every dark chip for its light twin (used by light page styles, like the email)."""
+    pairs = {}
+    for label, _k, fg, bg in GENRE:
+        pairs[(fg, bg)] = LIGHT[label]
+    pairs[(OTHER_HOUSE[1], OTHER_HOUSE[2])] = LIGHT["House"]
+    for lab, fg, bg in list(STATUS.values()) + list(CHECK.values()):
+        if lab in LIGHT:
+            pairs[(fg, bg)] = LIGHT[lab]
+    pairs[("#e8e8f0", "#3a3a4a")] = ("#3b3b52", "#e6e4f0")       # age chip
+    for (fg, bg), (lf, lb) in pairs.items():
+        page = page.replace(f"background:{bg};color:{fg};", f"background:{lb};color:{lf};")
+    return page

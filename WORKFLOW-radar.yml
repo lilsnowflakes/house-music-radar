@@ -56,6 +56,8 @@ jobs:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
           SONGKICK_API_KEY: ${{ secrets.SONGKICK_API_KEY }}
+          WATCH_LIST: ${{ secrets.WATCH_LIST }}
+          GOATCOUNTER_CODE: ${{ vars.GOATCOUNTER_CODE }}
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 
       - uses: actions/configure-pages@v5

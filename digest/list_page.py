@@ -122,5 +122,5 @@ document.querySelectorAll('.bar button').forEach(b=>b.addEventListener('click',(
  document.querySelectorAll('.ev').forEach(el=>el.hidden=!!f&&!el.dataset.k.includes(f));
  document.querySelectorAll('.day').forEach(d=>d.hidden=![...d.querySelectorAll('.ev')].some(el=>!el.hidden));
 }}));
-</script>{STYLE_JS}{SHARE_JS}</body></html>"""
+</script>{STYLE_JS}{SHARE_JS}{__import__('digest.analytics', fromlist=['x']).tag()}</body></html>"""
     return _theme.apply(page, _theme.choose() if style == "classic" else (style, 0, "set"))

@@ -3,27 +3,51 @@ import random
 
 
 def hero_svg(seed=0):
+    """Classic: LA at dusk. A lighter sky so the skyline reads, two layers of towers with windows that
+    twinkle on and off, red rooftop beacons, the striped sun, palms and the equalizer."""
     rnd = random.Random(seed)
-    W, H = 680, 170
+    W, H, G = 680, 170, 130          # G = ground line
     bars = "".join(
         f'<rect x="{8 + i * 14}" y="{H - 8 - h}" width="9" height="{h}" rx="2" fill="#00b9bc" opacity="{0.4 + (h / 60)}">'
         f'<animate attributeName="height" values="{h};{max(5, h - 9)};{h}" dur="{0.8 + (i % 5) * 0.17:.2f}s" repeatCount="indefinite"/>'
         f'<animate attributeName="y" values="{H - 8 - h};{H - 8 - max(5, h - 9)};{H - 8 - h}" dur="{0.8 + (i % 5) * 0.17:.2f}s" repeatCount="indefinite"/></rect>'
         for i, h in enumerate(rnd.randint(10, 30) for _ in range(48)))
-    skyline = "".join(
-        f'<rect x="{x}" y="{H - 40 - h}" width="{w}" height="{h + 40}" fill="#001515"/>'
-        for x, w, h in [(250, 22, 38), (276, 16, 62), (296, 26, 30), (326, 18, 78), (348, 24, 44), (376, 20, 54), (400, 28, 26)])
-    palm = lambda x, s: (f'<g transform="translate({x} {H - 40}) scale({s})" fill="#001515">'
+    stars = "".join(f'<circle cx="{rnd.randint(5, W - 5)}" cy="{rnd.randint(4, 60)}" r="{rnd.choice([.6, .8, 1])}" fill="#e6c79a" '
+                    f'opacity="{rnd.choice([.25, .4, .6])}"><animate attributeName="opacity" values=".15;.7;.15" '
+                    f'dur="{rnd.uniform(2.5, 6):.1f}s" begin="-{rnd.uniform(0, 5):.1f}s" repeatCount="indefinite"/></circle>'
+                    for _ in range(26))
+    back = [(232, 18, 46), (252, 14, 58), (268, 20, 40), (300, 12, 70), (318, 22, 52), (352, 16, 64), (372, 26, 36),
+            (420, 18, 50), (440, 14, 42), (458, 22, 30)]
+    front = [(250, 22, 38), (276, 16, 62), (296, 26, 30), (326, 18, 82), (348, 24, 44), (376, 20, 56), (400, 28, 26), (432, 16, 34)]
+    sky_back = "".join(f'<rect x="{x}" y="{G - h}" width="{w}" height="{h}" fill="#003e3f"/>' for x, w, h in back)
+    sky_front = "".join(f'<rect x="{x}" y="{G - h}" width="{w}" height="{h}" fill="#001515"/>' for x, w, h in front)
+    win = ""
+    for x, w, h in front:
+        for wx in range(x + 3, x + w - 3, 5):
+            for wy in range(G - h + 5, G - 4, 6):
+                if rnd.random() < .30:
+                    on, d = rnd.choice([1, 1, .2]), rnd.uniform(3, 11)
+                    win += (f'<rect x="{wx}" y="{wy}" width="2" height="2.4" fill="#ffd9a0" opacity="{on}">'
+                            f'<animate attributeName="opacity" values="{on};{on};.08;{on}" keyTimes="0;.7;.8;1" dur="{d:.1f}s" '
+                            f'begin="-{rnd.uniform(0, d):.1f}s" repeatCount="indefinite"/></rect>')
+    beacons = "".join(f'<circle cx="{x + w / 2}" cy="{G - h - 2}" r="1.6" fill="#ff4a3d"><animate attributeName="opacity" '
+                      f'values="1;.1;1" dur="1.6s" begin="-{i * .5:.1f}s" repeatCount="indefinite"/></circle>'
+                      for i, (x, w, h) in enumerate(sorted(front, key=lambda t: -t[2])[:3]))
+    palm = lambda x, s: (f'<g transform="translate({x} {G}) scale({s})" fill="#001515">'
                          '<path d="M0 0 C2 -30 3 -50 1 -76 L5 -76 C4 -50 5 -30 8 0Z"/>'
                          '<path d="M3 -76 C-14 -88 -30 -80 -38 -66 C-24 -78 -12 -78 3 -72Z"/>'
                          '<path d="M3 -76 C20 -92 38 -84 44 -68 C30 -80 16 -80 3 -72Z"/>'
                          '<path d="M3 -76 C-4 -96 6 -108 16 -112 C8 -100 6 -90 5 -76Z"/></g>')
-    stripes = "".join(f'<rect x="130" y="{70 + k * 11}" width="140" height="{2 + k}" fill="#003e3f"/>' for k in range(5))
-    return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Los Angeles sunset skyline with an equalizer"
- style="display:block;border-radius:10px;border:1px solid #005254;background:linear-gradient(#001515,#00292a 70%,#003e3f)">
-<g data-d="6"><circle cx="200" cy="78" r="58" fill="#00b9bc" opacity=".9"/>{stripes}</g>
-<rect x="-20" y="{H - 40}" width="{W + 40}" height="40" fill="#001515"/>
-<g data-d="2">{skyline}</g><g data-d="10">{palm(70, 1.0)}{palm(112, .75)}{palm(560, 1.1)}{palm(606, .8)}</g>
+    cuts = "".join(f'<rect x="130" y="{78 + k * 9}" width="140" height="{1.6 + k * .9:.1f}" fill="#000"/>' for k in range(5))
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Los Angeles at dusk: skyline with twinkling windows, sun and equalizer"
+ style="display:block;border-radius:10px;border:1px solid #005254;background:linear-gradient(#00292a 0%,#005254 62%,#007c7d 78%,#005254 100%)">
+<defs><mask id="sunm"><rect width="{W}" height="{H}" fill="#fff"/>{cuts}</mask></defs>
+<g data-d="1">{stars}</g>
+<g data-d="6"><circle cx="200" cy="80" r="56" fill="#00b9bc" mask="url(#sunm)"/></g>
+<g data-d="3">{sky_back}</g>
+<rect x="-20" y="{G}" width="{W + 40}" height="{H - G}" fill="#001515"/>
+<g data-d="2">{sky_front}{win}{beacons}</g>
+<g data-d="10">{palm(70, 1.0)}{palm(112, .75)}{palm(560, 1.1)}{palm(606, .8)}</g>
 <g data-d="1">{bars}</g></svg>'''
 
 
@@ -89,6 +113,16 @@ def console_svg(seed=0, tonight=0, total=0):
 <rect width="680" height="200" fill="url(#scan)"/><rect width="680" height="200" fill="url(#vig)"/></svg>'''
 
 
+def searchlights(W=680, H=190):
+    """Hollywood premiere searchlights: soft beams swinging across the sky from below the skyline."""
+    out = ""
+    for i, (x, a0, a1, dur) in enumerate([(250, -32, 18, 11), (300, 24, -20, 13), (640, -12, 28, 9.5)]):
+        out += (f'<g><polygon points="{x - 5},{H} {x + 5},{H} {x + 38},-20 {x - 38},-20" fill="url(#beam)"/>'
+                f'<animateTransform attributeName="transform" type="rotate" values="{a0} {x} {H};{a1} {x} {H};{a0} {x} {H}" '
+                f'dur="{dur}s" begin="-{i * 3}s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></g>')
+    return out
+
+
 def night_svg(counts=None):
     """Low-light 'Night' hero: gradient planet with a ring, stars, and a bar chart of shows per day for the next 7 days."""
     import datetime
@@ -109,8 +143,10 @@ def night_svg(counts=None):
     return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Shows per day for the next seven days"
  style="display:block;border-radius:18px;border:1px solid #25407a;background:linear-gradient(160deg,#0b1630,#142a55)">
 <defs><linearGradient id="nbar" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#9a3cff"/><stop offset="1" stop-color="#29b6ff"/></linearGradient>
+<linearGradient id="beam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e9f3ff" stop-opacity=".55"/>
+<stop offset=".55" stop-color="#cfe0ff" stop-opacity=".16"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></linearGradient>
 <radialGradient id="nplanet" cx=".3" cy=".3" r=".9"><stop offset="0" stop-color="#29b6ff"/><stop offset=".6" stop-color="#7b3cff"/><stop offset="1" stop-color="#c026ff"/></radialGradient></defs>
-<g data-d="2">{stars}</g><g data-d="9">
+<g data-d="2">{stars}</g><g data-d="4">{searchlights(W, H)}</g><g data-d="9">
 <ellipse cx="130" cy="96" rx="92" ry="22" fill="none" stroke="#29b6ff" stroke-width="2" transform="rotate(-18 130 96)" opacity=".85"/>
 <circle cx="130" cy="96" r="52" fill="url(#nplanet)"/>
 <ellipse cx="130" cy="96" rx="92" ry="22" fill="none" stroke="#e9f3ff" stroke-width="2" stroke-dasharray="120 400" stroke-dashoffset="-150" transform="rotate(-18 130 96)"/></g>
@@ -219,3 +255,40 @@ def holo_svg(tonight=0, total=0, seed=0):
 <g data-d="1"><text x="20" y="28" {hud}>LOS ANGELES · 34.05°N 118.24°W</text>
 <text x="20" y="46" {hud} fill="#7cf5ff">● LIVE · {tonight} TONIGHT · {total} UPCOMING</text>
 <text x="20" y="196" {hud}>MO'S HOUSE MUSIC RADAR · 2026</text></g></svg>'''
+
+
+def yla_svg(seed=0):
+    """You Look Amazing: a gold starburst setting into the desert under a soft boho sky with drifting clouds."""
+    import math
+    rnd = random.Random(seed)
+    W, H, cx, cy = 680, 200, 340, 150
+    rays = ""
+    for i in range(23):
+        a = math.pi * (i / 22)
+        long_ = 118 if i % 2 == 0 else 92
+        x1, y1 = cx + 46 * math.cos(a), cy - 46 * math.sin(a)
+        x2, y2 = cx + long_ * math.cos(a), cy - long_ * math.sin(a)
+        rays += (f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" stroke="#d9a441" stroke-width="{2.2 if i % 2 == 0 else 1.4}" '
+                 f'stroke-linecap="round"><animate attributeName="opacity" values=".55;1;.55" dur="{3 + (i % 5) * .6:.1f}s" '
+                 f'begin="-{i * .3:.1f}s" repeatCount="indefinite"/></line>')
+
+    def cloud(x, y, s, dur, d0):
+        return (f'<g opacity=".85"><g transform="translate({x} {y}) scale({s})">'
+                f'<ellipse cx="0" cy="0" rx="34" ry="10" fill="#fffaf2"/><ellipse cx="-14" cy="-7" rx="16" ry="11" fill="#fffaf2"/>'
+                f'<ellipse cx="10" cy="-10" rx="18" ry="13" fill="#fffaf2"/><ellipse cx="26" cy="-3" rx="13" ry="8" fill="#fbeee0"/></g>'
+                f'<animateTransform attributeName="transform" type="translate" values="0 0;{d0} 0;0 0" dur="{dur}s" repeatCount="indefinite"/></g>')
+    sparkles = "".join(f'<circle cx="{rnd.randint(20, 660)}" cy="{rnd.randint(10, 90)}" r="1" fill="#fffaf2">'
+                       f'<animate attributeName="opacity" values="0;.9;0" dur="{rnd.uniform(2, 5):.1f}s" begin="-{rnd.uniform(0, 4):.1f}s" '
+                       f'repeatCount="indefinite"/></circle>' for _ in range(14))
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="A gold starburst sun setting over the desert under soft clouds"
+ style="display:block;border-radius:16px;border:1px solid #d8c3a0;background:linear-gradient(180deg,#8fcfcb 0%,#cfe3d6 34%,#f6d2b4 62%,#f2b878 82%,#e9a25c 100%)">
+<defs><radialGradient id="ysun" cx=".5" cy=".9" r=".8"><stop offset="0" stop-color="#fff1c9"/><stop offset=".6" stop-color="#f6c66a"/><stop offset="1" stop-color="#e3a03c"/></radialGradient></defs>
+<g data-d="2">{sparkles}</g>
+<g data-d="3">{cloud(110, 44, 1.1, 38, 40)}{cloud(540, 30, .9, 46, -50)}{cloud(430, 72, .65, 30, 30)}{cloud(220, 82, .55, 52, -30)}</g>
+<g data-d="6">{rays}<path d="M{cx - 44},{cy} A44,44 0 0 1 {cx + 44},{cy} Z" fill="url(#ysun)"/>
+<path d="M{cx - 44},{cy} A44,44 0 0 1 {cx + 44},{cy}" fill="none" stroke="#c9962e" stroke-width="2"/></g>
+<g data-d="8"><path d="M0,{cy} C120,{cy - 10} 220,{cy + 6} 340,{cy} S560,{cy - 12} 680,{cy - 2} L680,{H} L0,{H} Z" fill="#e9d6b6"/>
+<path d="M0,{cy + 22} C150,{cy + 10} 300,{cy + 30} 450,{cy + 18} S620,{cy + 12} 680,{cy + 20} L680,{H} L0,{H} Z" fill="#dcc29a"/>
+<line x1="0" y1="{cy}" x2="{W}" y2="{cy}" stroke="#127f7c" stroke-width="1.4" opacity=".55"/></g>
+<text x="{cx}" y="{H - 14}" text-anchor="middle" font-family="Georgia,serif" font-size="13" letter-spacing="6" fill="#6b4f33">YOU LOOK AMAZING</text>
+</svg>'''

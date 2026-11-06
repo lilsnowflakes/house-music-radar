@@ -17,6 +17,19 @@ RED_FILTER = ('<svg width="0" height="0" style="position:absolute" aria-hidden="
               '<feComponentTransfer><feFuncR type="gamma" amplitude="1" exponent="0.5"/></feComponentTransfer></filter></svg>')
 
 CUSTOM = {
+    # You Look Amazing (Burning Man camp): sand and cream, Tulum turquoise, sunset gold. A light, boho style.
+    "yla": dict(stops=["#f4eadb", "#fbf6ee", "#e9dcc5", "#d8c3a0", "#9b8467", "#8b7357", "#7a6248", "#127f7c"],
+                extra={"#fff": "#3a2c20", "#ccc": "#5c4a39", "#bbb": "#5c4a39", "#aaa": "#6b5845", "#e6fafa": "#3a2c20"},
+                light_chips=True,
+                css="<style>:root{color-scheme:light}html{background:#f4eadb}"
+                    "body{background:linear-gradient(180deg,#f7efe2 0%,#f1e3cc 100%) fixed!important;"
+                    "font-family:ui-sans-serif,-apple-system,'Segoe UI',Roboto,sans-serif!important}"
+                    "div[style*='letter-spacing:2px'],details.sec>summary,.dl,#highlight div[style*='font-size:22px']"
+                    "{font-family:Georgia,'Times New Roman',serif!important;letter-spacing:.5px}"
+                    ".evrow,details.sec,.spot{box-shadow:0 1px 0 #fff inset,0 6px 18px rgba(120,90,50,.08);border-radius:14px!important;font-family:inherit!important}"
+                    ".tix,.hlcard a[style*='background:#127f7c']{background:linear-gradient(90deg,#127f7c,#1aa39f)!important;color:#fffaf2!important}"
+                    ".hlcard{background:linear-gradient(135deg,#fffaf2,#f6e7cf)!important;border-color:#c9962e!important}"
+                    ".fchip[aria-pressed=true]{background:#127f7c!important;color:#fffaf2!important}</style>"),
     # 2026 futuristic: glass panels, iridescent edges, ice-cyan accents, clean sans type.
     "holo": dict(stops=["#05070d", "#0b1120", "#111a30", "#22304f", "#3f5680", "#7f93bd", "#a9bbe0", "#7cf5ff"],
                  extra={"#e6fafa": "#eaf6ff"},
@@ -119,6 +132,9 @@ def apply(page, theme=None):
         page = page.replace("@@", "#")
         for old, new in c["extra"].items():
             page = re.sub(re.escape(old) + r"\b", new, page, flags=re.I)
+        if c.get("light_chips"):
+            from digest.colors import to_light_chips
+            page = to_light_chips(page)
         if c.get("body"):
             page = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + c["body"], page, count=1)
         return page.replace("</head>", c["css"] + "</head>", 1) if c["css"] else page

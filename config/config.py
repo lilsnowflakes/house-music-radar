@@ -57,31 +57,36 @@ SCORE_WEIGHTS = {
 
 # --- WATCH LIST (built from your DICE / Eventbrite / Ticketmaster history)
 # A show gets a star if its venue, title or lineup text contains any of these.
-WATCH_VENUES = {
-    "los_angeles": [
-        "Sound Nightclub", "The Spotlight", "Jungle Hollywood",
-        "Reframe Studios", "Union Station", "Dream Rooftop", "The Rose Room",
-        "Golden Hour", "Level 8", "ORIGIN", "Kiss Kiss Bang Bang",
-        "Hotel Ziggy", "Pershing Square", "Grand Park", "City Market",
-        "Optimist Studios", "6th St Bridge", "Gin Ling Way",
-        "Santa Monica Pier", "Moroccan Lounge", "The Wiltern", "The Novo",
-        "Pacific Electric", "Hollywood Palladium",
-        "El Rey Theatre", "Fonda Theatre", "Greek Theatre", "Peacock Theater",
-        "Santa Barbara Bowl",
-    ],
-}
+# --- YOUR WATCH LIST (kept private) -----------------------------------
+# Your venues, promoters and artists live in the GitHub secret WATCH_LIST as JSON:
+#   {"venues": ["Sound Nightclub", ...], "promoters": ["Framework", ...], "artists": ["Lane 8", ...]}
+# so they aren't readable in this public repository. Shows matching any of them get a star.
+# Without the secret the radar still runs; nothing is starred. See config/watchlist.example.json.
+def _watch_list():
+    import json as _json
+    raw = os.environ.get("WATCH_LIST", "").strip()
+    if not raw:
+        try:   # local testing: an untracked file next to this one
+            raw = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "watchlist.local.json"), encoding="utf-8").read()
+        except OSError:
+            raw = "{}"
+    try:
+        d = _json.loads(raw)
+    except ValueError:
+        print("WATCH_LIST secret isn't valid JSON; running without a watch list")
+        d = {}
+    return [str(x) for x in d.get("venues", [])], [str(x) for x in d.get("promoters", [])], [str(x) for x in d.get("artists", [])]
 
-# Pop-up nights move around, so promoters are watched too.
-WATCH_PROMOTERS = [
-    "Framework", "Stranger Than", "Sound Presents", "Clinic",
-    "All Day I Dream", "Blind Tiger", "Boiler Room", "SBCLTR",
-    "Techno Night Market", "Venice Gets Deep", "Knee Deep", "Mayan Warrior",
-    "Sun Sequence",
-]
 
-# Artists you have bought AXS tickets for (house / melodic). Shows with these names get a star.
-WATCH_ARTISTS = ["Le Youth", "Lane 8", "Disclosure", "Christian Löffler",
-                 "Christian Loffler", "New Constellations", "Full Crate"]
+_wv, _wp, _wa = _watch_list()
+WATCH_VENUES = {"los_angeles": _wv}
+WATCH_PROMOTERS = _wp
+WATCH_ARTISTS = _wa
+
+# --- WEBSITE VISITOR COUNTS --------------------------------------------
+# GoatCounter (free, no cookies). Set the repository variable or secret GOATCOUNTER_CODE to your
+# account code, e.g. "mohouseradar" for mohouseradar.goatcounter.com. Empty = no counting.
+GOATCOUNTER_CODE = os.environ.get("GOATCOUNTER_CODE", "").strip()
 
 # --- TICKETMASTER ROOMS (announced-but-not-on-sale check) -------------
 # (venue name as Ticketmaster lists it, state code)

@@ -23,7 +23,7 @@ from digest import highlight as _hl
 from digest import moments as _moments
 from digest import ogimage as _og
 from digest.share import buttons_html, SHARE_JS, sprite
-from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg, holo_svg
+from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg, holo_svg, yla_svg
 from config.config import CODE_VERSION
 from digest.colors import legend_html, chips_for
 
@@ -447,7 +447,7 @@ STRIPES = ('<div style="height:8px;border-radius:4px;margin:2px 0 10px;backgroun
 STYLES = [("classic", "Classic", "index.html", "list.html"), ("outrun", "Outrun", "index-outrun.html", "list-outrun.html"),
           ("console", "Console", "index-console.html", "list-console.html"),
           ("night", "Night", "index-night.html", "list-night.html"), ("deck", "Deck", "index-deck.html", "list-deck.html"),
-          ("holo", "Holo", "index-holo.html", "list-holo.html")]
+          ("holo", "Holo", "index-holo.html", "list-holo.html"), ("yla", "YLA ☀", "index-yla.html", "list-yla.html")]
 
 
 def style_switcher(active, base, page="index"):
@@ -552,7 +552,8 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
             "night": lambda: night_svg(counts),
             "deck": lambda: deck_svg(tl, run_no),
             "redline": lambda: radar_svg(len(groups["tonight"])),
-            "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no)}.get(th[0], lambda: hero_svg(run_no))()
+            "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no),
+            "yla": lambda: yla_svg(run_no)}.get(th[0], lambda: hero_svg(run_no))()
 
     slots = _moments.page_slots(photos or [], base, 6)
     og_desc = (f"{len(groups['tonight'])} house shows tonight in LA, {n_all} upcoming. Tonight, tomorrow, set times, tickets."
@@ -603,6 +604,7 @@ document.addEventListener('click',function(e){{var a=e.target.closest('a[href^="
 </script>
 {STYLE_JS if site_url else ''}
 {SHARE_JS}
+{__import__('digest.analytics', fromlist=['x']).tag()}
 {_moments.ROTATE_JS}
 {_moments.FLOAT_JS}
 {LAZY_JS}

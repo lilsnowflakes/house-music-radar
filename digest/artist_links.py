@@ -34,6 +34,21 @@ ICONS = {
 }
 
 
+def _symbol(key, svg):
+    vb = re.search(r'viewBox="([^"]+)"', svg).group(1)
+    inner = re.sub(r"^<svg[^>]*>|</svg>$", "", svg)
+    return f'<symbol id="i-{key}" viewBox="{vb}">{inner}</symbol>'
+
+
+def _size(svg):
+    return re.search(r'width="(\d+)"', svg).group(1), re.search(r'height="(\d+)"', svg).group(1)
+
+
+def icon(key):
+    """Web pages: an empty tag; the picture itself is defined once in the page stylesheet (share.sprite())."""
+    return f'<i class="ico i-{key}"></i>'
+
+
 def soundcloud_url(ev):
     direct = ev.get("soundcloud_url")
     if direct:
@@ -53,11 +68,10 @@ def links_html(ev, color="#00b9bc", size="11px", mode="web", base=""):
         if mode == "email":
             h = {"youtube": 16, "spotify": 20, "soundcloud": 14}[key]
             w = {"youtube": 22, "spotify": 20, "soundcloud": 22}[key]
-            icon = (f'<img src="{html.escape(base)}icons/{key}.png" width="{w}" height="{h}" alt="{label}" '
+            img = (f'<img src="{html.escape(base)}icons/{key}.png" width="{w}" height="{h}" alt="{label}" '
                     f'style="border:0;vertical-align:middle;">')
             out += (f'<a href="{html.escape(url)}" title="{label}" style="text-decoration:none;display:inline-block;'
-                    f'margin-right:14px;">{icon}</a>')
+                    f'margin-right:14px;">{img}</a>')
         else:
-            out += (f'<a href="{html.escape(url)}" title="{label}" aria-label="{label}" style="text-decoration:none;'
-                    f'display:inline-block;margin-right:6px;padding:6px 8px 4px 0;">{ICONS[key].replace("margin-right:5px", "margin:0")}</a>')
+            out += f'<a class="ml" href="{html.escape(url)}" title="{label}" aria-label="{label}">{icon(key)}</a>'
     return out

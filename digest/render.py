@@ -20,7 +20,7 @@ from digest.dates import bucket, sort_key, day_label, to_date, now_pt
 from digest import theme as _theme
 from digest.artist_links import links_html
 from digest import highlight as _hl
-from digest.share import buttons_html, SHARE_JS
+from digest.share import buttons_html, SHARE_JS, sprite
 from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg
 from config.config import CODE_VERSION
 from digest.colors import legend_html, chips_for
@@ -82,55 +82,123 @@ def _initials(name):
     return ("".join(x[0] for x in w[:2]) or "?").upper()
 
 
+LAZY_JS = """<script>
+document.addEventListener('toggle',function(e){var d=e.target;if(d.tagName!=='DETAILS'||!d.open)return;
+ var b=d.querySelector(':scope>.secb'),t=b&&b.querySelector(':scope>template');if(t)t.replaceWith(t.content);},true);
+</script>"""
+
+MOTION_CSS = """
+.hero{position:relative}
+#tilt[hidden]{display:none}
+#tilt{position:absolute;right:10px;bottom:10px;font:12px monospace;color:#00b9bc;background:#001515cc;
+ border:1px solid #005254;border-radius:999px;padding:4px 10px;cursor:pointer}
+.hero [data-d],.hero .xf{transition:transform .25s ease-out}
+@media (orientation:landscape) and (max-height:520px){.hero svg{max-height:46vh;width:auto;margin:0 auto}}
+@media (prefers-reduced-motion:reduce){.hero [data-d],.hero .xf{transition:none}}
+"""
+
+MOTION_JS = r"""<script>
+(function(){
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ var hero=document.querySelector('.hero');if(!hero)return;
+ var els=[].slice.call(hero.querySelectorAll('[data-d]')),xf=hero.querySelector('.xf'),btn=document.getElementById('tilt');
+ function move(x,y){ /* x,y in -1..1 */
+  x=Math.max(-1,Math.min(1,x));y=Math.max(-1,Math.min(1,y));
+  els.forEach(function(e){var d=+e.getAttribute('data-d');e.setAttribute('transform','translate('+(x*d).toFixed(1)+' '+(y*d*.5).toFixed(1)+')');});
+  if(xf)xf.setAttribute('transform','translate('+(x*36).toFixed(1)+' 0)');
+ }
+ function onTilt(e){
+  if(e.gamma==null)return;
+  var a=(screen.orientation&&screen.orientation.angle)||window.orientation||0,x,y;
+  if(a==90){x=e.beta/25;y=(-e.gamma-45)/25;}            /* phone on its side, top to the left */
+  else if(a==-90||a==270){x=-e.beta/25;y=(e.gamma-45)/25;} /* on its side, top to the right */
+  else{x=e.gamma/25;y=(e.beta-45)/25;}                   /* upright: left/right tilt moves the scene */
+  move(x,y);
+ }
+ var touch=matchMedia('(pointer:coarse)').matches||('ontouchstart' in window);
+ function start(){addEventListener('deviceorientation',onTilt);if(btn)btn.hidden=true;}
+ if(touch&&window.DeviceOrientationEvent){
+  if(typeof DeviceOrientationEvent.requestPermission==='function'){
+   /* iPhone (and some browsers): motion needs one tap to allow */
+   btn.hidden=false;btn.onclick=function(){DeviceOrientationEvent.requestPermission().then(function(s){if(s==='granted')start();}).catch(function(){});};
+  }else{start();}  /* Android: works straight away */
+ }
+ hero.addEventListener('mousemove',function(e){var r=hero.getBoundingClientRect();
+  move((e.clientX-r.left)/r.width*2-1,(e.clientY-r.top)/r.height*2-1);});
+ hero.addEventListener('mouseleave',function(){move(0,0);});
+})();
+</script>"""
+
+PAGE_CSS = """
+.ic{vertical-align:middle}
+.ml{text-decoration:none;display:inline-block;margin-right:6px;padding:6px 8px 4px 0}
+.sb{color:#00b9bc;text-decoration:none;font-size:12px;border:1px solid #005254;border-radius:999px;padding:3px 10px;
+ margin:3px 0 3px 6px;display:inline-block;background:none;cursor:pointer;font-family:inherit}
+.evrow{display:flex;gap:12px;align-items:center;background:#00292a;border:1px solid #005254;border-radius:8px;
+ padding:10px 12px;margin-bottom:6px;font-family:monospace}
+.evmain{min-width:0;flex:1}
+.evside{text-align:right;flex:none}
+.evside>div{margin-top:6px}
+.nm{font-size:15px}.nm a,.nm span{color:#fff;text-decoration:none;font-weight:bold}
+.vn{color:#ccc;font-size:12px;margin-top:2px}
+.chips{margin-top:6px}
+.mrow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px}
+.sharebar{margin-left:auto;text-align:right}
+.via{color:#009092;font-size:11px}.via a{color:#00b9bc}
+.av{width:44px;height:44px;border-radius:50%;flex:none}
+img.av{object-fit:cover;border:1px solid #005254}
+div.av{background:#003e3f;color:#00b9bc;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.tix{background:#00b9bc;color:#001515;padding:3px 10px;border-radius:4px;text-decoration:none;font-size:11px;white-space:nowrap}
+.sc{color:#00b9bc;font-weight:bold;font-size:18px;line-height:1}.sc span{color:#009092;font-size:10px;font-weight:normal}
+.sc0{color:#009092;font-size:13px;line-height:1}.sc0 span{font-size:10px}
+.dl{color:#00a5a7;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin:14px 0 6px;font-family:monospace}
+details.sec{margin-bottom:10px;background:#001515;border:1px solid #005254;border-radius:10px;padding:0 12px}
+details.sec>summary{cursor:pointer;padding:12px 0;color:#00b9bc;font-weight:bold;font-family:monospace}
+details.sec>summary span{color:#00a5a7;font-weight:normal}
+.secb{padding-bottom:10px}
+.none{color:#00a5a7;font-size:13px;padding:6px 0;font-family:monospace}
+@media (max-width:560px){
+ .evrow{flex-wrap:wrap}
+ .evmain{flex-basis:calc(100% - 60px)}
+ .evside{flex-basis:100%;display:flex;justify-content:space-between;align-items:center;text-align:left}
+ .evside>div{margin-top:0}
+ .hlpic{width:60px!important;height:60px!important;font-size:20px!important}
+ .sb{font-size:11px;padding:3px 8px}
+}
+"""
+
+
 def score_badge(score):
     """Always shown. A dash means no popularity data came back for this artist (yet)."""
     if score:
-        return (f'<div title="Popularity score (0-100): Spotify 50%, RA 30%, SoundCloud 20%" style="color:#00b9bc;'
-                f'font-weight:bold;font-size:18px;line-height:1;">{score:.0f}<span style="color:#009092;font-size:10px;'
-                f'font-weight:normal;">/100</span></div>')
-    return ('<div title="No popularity data for this artist yet" style="color:#009092;font-size:13px;line-height:1;">'
-            '–<span style="font-size:10px;">/100</span></div>')
+        return (f'<div class="sc" title="Popularity score (0-100): Spotify 50%, RA 30%, SoundCloud 20%">'
+                f'{score:.0f}<span>/100</span></div>')
+    return '<div class="sc0" title="No popularity data for this artist yet">–<span>/100</span></div>'
 
 
 def media_row(ev):
     """Media icons on the left, invite/calendar buttons pushed to the right: fewer mis-taps."""
-    return (f'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px;">'
-            f'<div>{links_html(ev)}</div><div class="sharebar" style="margin-left:auto;text-align:right;">{buttons_html(ev)}</div></div>')
+    return f'<div class="mrow"><div>{links_html(ev)}</div><div class="sharebar">{buttons_html(ev)}</div></div>'
 
 
 def event_row(ev: dict) -> str:
-    """One compact line per show: photo or initials, artist, venue (Maps), chips, tickets."""
+    """One compact card per show. All styling is in PAGE_CSS so 400+ rows stay light."""
     artist = ev.get("artist") or ev.get("title") or "Unknown"
     star = "★ " if ev.get("watched") else ""
     link = ev.get("ticket_url", "")
-    name = (f'<a href="{esc(link)}" style="color:#fff;text-decoration:none;font-weight:bold;">{esc(artist)}</a>'
-            if link else f'<span style="color:#fff;font-weight:bold;">{esc(artist)}</span>')
-    if ev.get("image"):
-        pic = (f'<img src="{esc(ev["image"])}" alt="" width="44" height="44" loading="lazy" '
-               f'style="border-radius:50%;object-fit:cover;border:1px solid #005254;flex:none;">')
-    else:
-        pic = (f'<div style="width:44px;height:44px;border-radius:50%;background:#003e3f;color:#00b9bc;'
-               f'display:flex;align-items:center;justify-content:center;font-weight:bold;flex:none;">'
-               f'{esc(_initials(artist))}</div>')
+    name = f'<a href="{esc(link)}">{esc(artist)}</a>' if link else f'<span>{esc(artist)}</span>'
+    pic = (f'<img class="av" src="{esc(ev["image"])}" alt="" width="44" height="44" loading="lazy">'
+           if ev.get("image") else f'<div class="av">{esc(_initials(artist))}</div>')
     title = ev.get("title", "")
     sub = esc(title) if title and title != artist and len(title) < 90 else ""
-    srcs = ev.get("sources") or [ev.get("source", "")]
-    via = " + ".join(esc(s) for s in srcs if s)
-    score = ev.get("score", 0)
-    sc = score_badge(score)
-    btn = (f'<a href="{esc(link)}" style="background:#00b9bc;color:#001515;padding:3px 10px;border-radius:4px;'
-           f'text-decoration:none;font-size:11px;white-space:nowrap;">Tickets{" " + esc(ev.get("price")) if ev.get("price") else ""}</a>'
-           if link else "")
-    return (f'<div class="evrow" style="display:flex;gap:12px;align-items:center;background:#00292a;border:1px solid #005254;'
-            f'border-radius:8px;padding:10px 12px;margin-bottom:6px;{FONT}">{pic}'
-            f'<div class="evmain" style="min-width:0;flex:1;"><div style="font-size:15px;">{star}{name}</div>'
-            f'<div style="color:#ccc;font-size:12px;margin-top:2px;">📍 {venue_html(ev.get("venue", ""), ev.get("address", ""))}'
-            f'{" · " + sub if sub else ""}</div>'
-            f'<div style="margin-top:6px;">{chips_for(ev)}</div>'
-            f'{media_row(ev)}'
-            f'<div style="color:#009092;font-size:11px;">via {via}'
-            f'{(" · <a href=" + chr(34) + esc(ev["edmtrain_url"]) + chr(34) + " style=" + chr(34) + "color:#00b9bc;" + chr(34) + ">on Edmtrain</a>") if ev.get("edmtrain_url") else ""}</div></div>'
-            f'<div class="evside" style="text-align:right;flex:none;">{sc}<div style="margin-top:6px;">{btn}</div></div></div>')
+    via = " + ".join(esc(s) for s in (ev.get("sources") or [ev.get("source", "")]) if s)
+    edm = f' · <a href="{esc(ev["edmtrain_url"])}">on Edmtrain</a>' if ev.get("edmtrain_url") else ""
+    price = " " + esc(ev.get("price")) if ev.get("price") else ""
+    btn = f'<a class="tix" href="{esc(link)}">Tickets{price}</a>' if link else ""
+    return (f'<div class="evrow">{pic}<div class="evmain"><div class="nm">{star}{name}</div>'
+            f'<div class="vn">📍 {venue_html(ev.get("venue", ""), ev.get("address", ""))}{" · " + sub if sub else ""}</div>'
+            f'<div class="chips">{chips_for(ev)}</div>{media_row(ev)}<div class="via">via {via}{edm}</div></div>'
+            f'<div class="evside">{score_badge(ev.get("score", 0))}<div>{btn}</div></div></div>')
 
 
 def highlight_html(events, now):
@@ -172,19 +240,19 @@ def _by_day(evs, today):
 def _days_html(evs, today):
     out = ""
     for label, items in _by_day(evs, today).items():
-        out += (f'<div style="color:#00a5a7;font-size:12px;letter-spacing:1px;text-transform:uppercase;'
-                f'margin:14px 0 6px;{FONT}">{esc(label)}</div>' + "".join(event_row(e) for e in items))
+        out += f'<div class="dl">{esc(label)}</div>' + "".join(event_row(e) for e in items)
     return out
 
 
-def _details(id_, title, count, body, open_=False, level=2):
+def _details(id_, title, count, body, open_=False, level=2, lazy=True):
+    """Collapsible section. Closed sections keep their rows in a <template> that is only turned into
+    real page elements when opened: the phone builds Tonight first, everything else on demand."""
     size = "17px" if level == 2 else "14px"
-    empty = f'<div style="color:#00a5a7;font-size:13px;padding:6px 0;{FONT}">Nothing listed.</div>'
-    return (f'<details id="{id_}" {"open" if open_ else ""} style="margin-bottom:10px;background:#001515;'
-            f'border:1px solid #005254;border-radius:10px;padding:0 12px;">'
-            f'<summary style="cursor:pointer;padding:12px 0;color:#00b9bc;font-weight:bold;font-size:{size};{FONT}">'
-            f'{title} <span style="color:#00a5a7;font-weight:normal;">({count})</span></summary>'
-            f'<div style="padding-bottom:10px;">{body or empty}</div></details>')
+    inner = body or '<div class="none">Nothing listed.</div>'
+    if lazy and not open_:
+        inner = f"<template>{inner}</template>"
+    return (f'<details class="sec" id="{id_}" {"open" if open_ else ""}><summary style="font-size:{size}">'
+            f'{title} <span>({count})</span></summary><div class="secb">{inner}</div></details>')
 
 
 def source_map(events, health):
@@ -311,20 +379,12 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
 <html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mo's House Music Radar</title>
-<style>
-@media (max-width:560px){{
- .evrow{{flex-wrap:wrap!important}}
- .evmain{{flex-basis:calc(100% - 60px)!important}}
- .evside{{flex-basis:100%!important;display:flex!important;justify-content:space-between;align-items:center;text-align:left!important}}
- .evside>div{{margin-top:0!important}}
- .hlpic{{width:60px!important;height:60px!important;font-size:20px!important}}
- .sharebar a,.sharebar button{{font-size:11px!important;padding:3px 8px!important}}
-}}
-</style></head>
+<style>{PAGE_CSS}{MOTION_CSS}</style></head>
 <body data-style="{style}" style="background:#001515;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
+{sprite()}
   {banner}
   {style_switcher(style, base)}
-  {hero}
+  <div class="hero">{hero}<button type="button" id="tilt" hidden>✨ Tilt</button></div>
   <div style="text-align:center;padding:14px 0 6px;">
     <div style="font-size:28px;font-weight:bold;color:{ORANGE};letter-spacing:2px;">🎛 MO'S HOUSE MUSIC RADAR</div>
     <div style="color:#00a5a7;font-size:13px;margin-top:4px;">{stamp} · Los Angeles · {run_txt} · last ran {ran}</div>
@@ -348,5 +408,7 @@ document.addEventListener('click',function(e){{var a=e.target.closest('a[href^="
 </script>
 {STYLE_JS if site_url else ''}
 {SHARE_JS}
+{LAZY_JS}
+{MOTION_JS}
 </body></html>"""
     return _theme.apply(page, th)

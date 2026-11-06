@@ -14,7 +14,7 @@ from digest.colors import chips_for, legend_html
 from digest.dates import sort_key, day_label, bucket
 from digest import theme as _theme
 from digest.artist_links import links_html
-from digest.share import buttons_html, SHARE_JS
+from digest.share import buttons_html, SHARE_JS, sprite
 from digest.render import style_switcher, STYLE_JS
 from config.config import CODE_VERSION
 from digest.venue_links import venue_html
@@ -98,8 +98,12 @@ def build_list_page(events, site_url="", home_url="index.html", style="classic")
 .v{{color:var(--mut);font-size:13px;margin-top:2px}}.bs{{margin-top:8px}}
 .b.s{{display:inline-block;background:#3d2a0a;color:#ffc16b;font-size:11px;padding:2px 8px;border-radius:4px}}
 .lk a{{color:var(--acc);text-decoration:none}}
+
+.ic{{vertical-align:middle}}.ml{{text-decoration:none;display:inline-block;margin-right:6px;padding:6px 8px 4px 0}}
+.sb{{color:#00b9bc;text-decoration:none;font-size:12px;border:1px solid #005254;border-radius:999px;padding:3px 10px;margin:3px 0 3px 6px;display:inline-block;background:none;cursor:pointer;font-family:inherit}}
+@media(max-width:520px){{.sb{{font-size:11px;padding:3px 8px}}}}
 @media(max-width:520px){{.ev{{flex-direction:column;gap:8px}}.side{{text-align:left;max-width:none}}}}
-</style></head><body data-style="{style}"><div class="wrap">
+</style></head><body data-style="{style}">{sprite()}<div class="wrap">
 {style_switcher(style, "", "list")}
 <div class="nav"><a href="{e(home_url)}">← Weekly digest</a> · Smaller rooms and tonight's live music: <a href="{HEARD_HOME}">Heard</a></div>
 <h1>Mo's House Music Radar</h1>

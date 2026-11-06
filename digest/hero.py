@@ -21,10 +21,10 @@ def hero_svg(seed=0):
     stripes = "".join(f'<rect x="130" y="{70 + k * 11}" width="140" height="{2 + k}" fill="#003e3f"/>' for k in range(5))
     return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Los Angeles sunset skyline with an equalizer"
  style="display:block;border-radius:10px;border:1px solid #005254;background:linear-gradient(#001515,#00292a 70%,#003e3f)">
-<circle cx="200" cy="78" r="58" fill="#00b9bc" opacity=".9"/>{stripes}
-<rect x="0" y="{H - 40}" width="{W}" height="40" fill="#001515"/>
-{skyline}{palm(70, 1.0)}{palm(112, .75)}{palm(560, 1.1)}{palm(606, .8)}
-{bars}</svg>'''
+<g data-d="6"><circle cx="200" cy="78" r="58" fill="#00b9bc" opacity=".9"/>{stripes}</g>
+<rect x="-20" y="{H - 40}" width="{W + 40}" height="40" fill="#001515"/>
+<g data-d="2">{skyline}</g><g data-d="10">{palm(70, 1.0)}{palm(112, .75)}{palm(560, 1.1)}{palm(606, .8)}</g>
+<g data-d="1">{bars}</g></svg>'''
 
 
 def vapor_svg(seed=0):
@@ -49,13 +49,13 @@ def vapor_svg(seed=0):
 <linearGradient id="vsun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffb96"/><stop offset=".55" stop-color="#ff9ee5"/><stop offset="1" stop-color="#ff2a9d"/></linearGradient>
 <filter id="vglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
-<rect width="{W}" height="{HZ}" fill="url(#vsky)"/>{stars}
-<circle cx="340" cy="{HZ - 4}" r="70" fill="url(#vsun)" filter="url(#vglow)"/>{slits}
+<rect x="-20" width="{W + 40}" height="{HZ}" fill="url(#vsky)"/><g data-d="2">{stars}</g>
+<g data-d="6"><circle cx="340" cy="{HZ - 4}" r="70" fill="url(#vsun)" filter="url(#vglow)"/>{slits}</g>
 <rect y="{HZ}" width="{W}" height="{H - HZ}" fill="#0b0220"/>
 <g stroke="#01cdfe" stroke-width="1.3" opacity=".9" filter="url(#vglow)" clip-path="url(#vclip)">{vlines}{hlines}</g>
 <clipPath id="vclip"><rect y="{HZ}" width="{W}" height="{H - HZ}"/></clipPath>
 <line x1="0" y1="{HZ}" x2="{W}" y2="{HZ}" stroke="#ff71ce" stroke-width="2" filter="url(#vglow)"/>
-{palm(60, 1.05)}{palm(104, .72)}{palm(590, 1.1)}{palm(636, .78)}
+<g data-d="10">{palm(60, 1.05)}{palm(104, .72)}{palm(590, 1.1)}{palm(636, .78)}</g>
 <text x="18" y="26" font-family="monospace" font-size="15" fill="#01cdfe" filter="url(#vglow)" letter-spacing="3">ハウス ミュージック</text>
 <text x="662" y="26" text-anchor="end" font-family="monospace" font-size="12" fill="#ff71ce" filter="url(#vglow)" letter-spacing="4">L . A .  1 9 8 6</text>
 </svg>'''
@@ -110,10 +110,10 @@ def night_svg(counts=None):
  style="display:block;border-radius:18px;border:1px solid #25407a;background:linear-gradient(160deg,#0b1630,#142a55)">
 <defs><linearGradient id="nbar" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#9a3cff"/><stop offset="1" stop-color="#29b6ff"/></linearGradient>
 <radialGradient id="nplanet" cx=".3" cy=".3" r=".9"><stop offset="0" stop-color="#29b6ff"/><stop offset=".6" stop-color="#7b3cff"/><stop offset="1" stop-color="#c026ff"/></radialGradient></defs>
-{stars}
+<g data-d="2">{stars}</g><g data-d="9">
 <ellipse cx="130" cy="96" rx="92" ry="22" fill="none" stroke="#29b6ff" stroke-width="2" transform="rotate(-18 130 96)" opacity=".85"/>
 <circle cx="130" cy="96" r="52" fill="url(#nplanet)"/>
-<ellipse cx="130" cy="96" rx="92" ry="22" fill="none" stroke="#e9f3ff" stroke-width="2" stroke-dasharray="120 400" stroke-dashoffset="-150" transform="rotate(-18 130 96)"/>
+<ellipse cx="130" cy="96" rx="92" ry="22" fill="none" stroke="#e9f3ff" stroke-width="2" stroke-dasharray="120 400" stroke-dashoffset="-150" transform="rotate(-18 130 96)"/></g>
 <text x="330" y="30" font-family="monospace" font-size="12" fill="#8fa6d6" letter-spacing="2">SHOWS · NEXT 7 NIGHTS</text>{bars}</svg>'''
 
 
@@ -162,6 +162,8 @@ def deck_svg(lines=None, seed=0):
 <text x="604" y="62" text-anchor="middle" font-family="monospace" font-size="7" fill="#8a8f99">IN</text><text x="640" y="62" text-anchor="middle" font-family="monospace" font-size="7" fill="#8a8f99">OUT</text>
 {wheel(118, 140)}{wheel(562, 140)}{pads(52)}{pads(496)}
 <rect x="250" y="104" width="180" height="116" rx="4" fill="none" stroke="#2c2e34"/>{knobs}{faders}{meter(325)}{meter(348)}
+<rect x="296" y="240" width="88" height="4" rx="2" fill="#050506"/>
+<g class="xf"><rect x="334" y="234" width="12" height="15" rx="2" fill="#cfd3da"/><line x1="340" y1="236" x2="340" y2="247" stroke="#555"/></g>
 
 <text x="322" y="231" text-anchor="middle" font-family="monospace" font-size="8" fill="#8a8f99">CH1</text><text x="358" y="231" text-anchor="middle" font-family="monospace" font-size="8" fill="#8a8f99">CH2</text></svg>'''
 
@@ -180,6 +182,6 @@ def radar_svg(n=0):
 <line x1="0" y1="{cy}" x2="{W}" y2="{cy}" stroke="#003e3f"/><line x1="{cx}" y1="0" x2="{cx}" y2="{H}" stroke="#003e3f"/>{rings}
 <g><path d="M{cx} {cy} L{cx + 100} {cy - 24} A103 103 0 0 1 {cx + 100} {cy + 24} Z" fill="url(#sw)"/>
 <line x1="{cx}" y1="{cy}" x2="{cx + 103}" y2="{cy}" stroke="#00b9bc" stroke-width="2"/>
-<animateTransform attributeName="transform" type="rotate" from="0 {cx} {cy}" to="360 {cx} {cy}" dur="5s" repeatCount="indefinite"/></g>{blips}
+<animateTransform attributeName="transform" type="rotate" from="0 {cx} {cy}" to="360 {cx} {cy}" dur="5s" repeatCount="indefinite"/></g><g data-d="5">{blips}</g>
 <text x="16" y="24" font-family="monospace" font-size="12" fill="#00a5a7" letter-spacing="3">SCANNING LOS ANGELES</text>
 <text x="664" y="24" text-anchor="end" font-family="monospace" font-size="12" fill="#00a5a7" letter-spacing="2">{n} TONIGHT</text></svg>'''

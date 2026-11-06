@@ -1,0 +1,6 @@
+# Featured show at the top of the website and the email.
+# One line per show: an artist name (or part of the ticket link). Optional note after a |
+# Example:
+#   Adriatique | Outdoors at Reframe. Go early, the sunset set is the one.
+# Lines starting with # are ignored. Leave it empty and the radar picks one itself:
+# the best show in the next 7 days (your spots and progressive/melodic first).

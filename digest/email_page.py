@@ -8,10 +8,12 @@ from collections import OrderedDict
 
 from config.config import CODE_VERSION, HEARD_HOME
 from digest.artist_links import links_html
+from digest.share import email_links
 from digest.colors import chips_for
 from digest.dates import bucket, day_label, now_pt, sort_key
 from digest.venue_links import maps_url
 from digest import theme as _theme
+from digest import highlight as _hl
 
 INK, MUTED, LINE, CARD, BG = "#1b1b2f", "#5b5b72", "#e4e1ec", "#ffffff", "#f1eff6"
 ACC, ACC_DK = "#0b7a75", "#08524f"
@@ -49,6 +51,7 @@ def _row(ev, base):
 <div style="font-size:13px;color:{MUTED};margin-top:3px;">📍 <a href="{e(maps_url(venue, ev.get('address', '')))}" style="color:{ACC_DK};text-decoration:underline;">{e(venue)}</a></div>
 <div style="margin-top:8px;line-height:1.9;">{chips_for(ev, light=True)}</div>
 <div style="margin-top:6px;">{links_html(ev, mode="email", base=base)}</div>
+<div style="margin-top:6px;">{email_links(ev)}</div>
 <div style="font-size:11px;color:#8a8aa0;margin-top:6px;">via {srcs}</div>
 </td><td valign="middle" align="right" style="padding:14px 14px 14px 0;">{btn}</td></tr></table></td></tr>"""
 
@@ -107,6 +110,12 @@ def build_email(events, announced, health, site_url="", dupes_removed=0):
         f'<div style="font-size:11px;color:#bfe9e5;">{lab}</div></td>' for n, lab in stats)
 
     body = ""
+    hl, note, how = _hl.pick(events, now)
+    if hl:
+        n_html = f'<div style="font-size:14px;color:{INK};margin:4px 0 8px;">{e(note)}</div>' if note else ""
+        body += (f'<tr><td style="padding:22px 0 8px;{F}font-size:12px;font-weight:800;letter-spacing:2px;color:{ACC_DK};">'
+                 f'★ HIGHLIGHT · {e(how.upper())}</td></tr>'
+                 + (f'<tr><td style="{F}">{n_html}</td></tr>' if note else "") + _row(hl, base))
     for key, title in (("tonight", "🔥 Tonight"), ("week", "This week"), ("next", "Next week")):
         if groups[key] or key == "tonight":
             inner = _days(groups[key], base, now) if groups[key] else \

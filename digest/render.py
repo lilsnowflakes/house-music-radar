@@ -19,6 +19,8 @@ import os
 from digest.dates import bucket, sort_key, day_label, to_date, now_pt
 from digest import theme as _theme
 from digest.artist_links import links_html
+from digest import highlight as _hl
+from digest.share import buttons_html, SHARE_JS
 from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg
 from config.config import CODE_VERSION
 from digest.colors import legend_html, chips_for
@@ -80,6 +82,22 @@ def _initials(name):
     return ("".join(x[0] for x in w[:2]) or "?").upper()
 
 
+def score_badge(score):
+    """Always shown. A dash means no popularity data came back for this artist (yet)."""
+    if score:
+        return (f'<div title="Popularity score (0-100): Spotify 50%, RA 30%, SoundCloud 20%" style="color:#00b9bc;'
+                f'font-weight:bold;font-size:18px;line-height:1;">{score:.0f}<span style="color:#009092;font-size:10px;'
+                f'font-weight:normal;">/100</span></div>')
+    return ('<div title="No popularity data for this artist yet" style="color:#009092;font-size:13px;line-height:1;">'
+            '–<span style="font-size:10px;">/100</span></div>')
+
+
+def media_row(ev):
+    """Media icons on the left, invite/calendar buttons pushed to the right: fewer mis-taps."""
+    return (f'<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px;">'
+            f'<div>{links_html(ev)}</div><div class="sharebar" style="margin-left:auto;text-align:right;">{buttons_html(ev)}</div></div>')
+
+
 def event_row(ev: dict) -> str:
     """One compact line per show: photo or initials, artist, venue (Maps), chips, tickets."""
     artist = ev.get("artist") or ev.get("title") or "Unknown"
@@ -99,20 +117,46 @@ def event_row(ev: dict) -> str:
     srcs = ev.get("sources") or [ev.get("source", "")]
     via = " + ".join(esc(s) for s in srcs if s)
     score = ev.get("score", 0)
-    sc = f'<span style="color:#00b9bc;font-weight:bold;">{score:.0f}</span>' if score else ""
+    sc = score_badge(score)
     btn = (f'<a href="{esc(link)}" style="background:#00b9bc;color:#001515;padding:3px 10px;border-radius:4px;'
            f'text-decoration:none;font-size:11px;white-space:nowrap;">Tickets{" " + esc(ev.get("price")) if ev.get("price") else ""}</a>'
            if link else "")
-    return (f'<div style="display:flex;gap:12px;align-items:center;background:#00292a;border:1px solid #005254;'
+    return (f'<div class="evrow" style="display:flex;gap:12px;align-items:center;background:#00292a;border:1px solid #005254;'
             f'border-radius:8px;padding:10px 12px;margin-bottom:6px;{FONT}">{pic}'
-            f'<div style="min-width:0;flex:1;"><div style="font-size:15px;">{star}{name}</div>'
+            f'<div class="evmain" style="min-width:0;flex:1;"><div style="font-size:15px;">{star}{name}</div>'
             f'<div style="color:#ccc;font-size:12px;margin-top:2px;">📍 {venue_html(ev.get("venue", ""), ev.get("address", ""))}'
             f'{" · " + sub if sub else ""}</div>'
             f'<div style="margin-top:6px;">{chips_for(ev)}</div>'
-            f'<div style="margin-top:4px;">{links_html(ev)}</div>'
+            f'{media_row(ev)}'
             f'<div style="color:#009092;font-size:11px;">via {via}'
             f'{(" · <a href=" + chr(34) + esc(ev["edmtrain_url"]) + chr(34) + " style=" + chr(34) + "color:#00b9bc;" + chr(34) + ">on Edmtrain</a>") if ev.get("edmtrain_url") else ""}</div></div>'
-            f'<div style="text-align:right;flex:none;">{sc}<div style="margin-top:6px;">{btn}</div></div></div>')
+            f'<div class="evside" style="text-align:right;flex:none;">{sc}<div style="margin-top:6px;">{btn}</div></div></div>')
+
+
+def highlight_html(events, now):
+    ev, note, how = _hl.pick(events, now)
+    if not ev:
+        return ""
+    artist = ev.get("artist") or ev.get("title") or ""
+    link = ev.get("ticket_url", "")
+    pic = (f'<img class="hlpic" src="{esc(ev["image"])}" alt="" width="96" height="96" style="border-radius:50%;object-fit:cover;'
+           f'border:2px solid #00b9bc;flex:none;">' if ev.get("image") else
+           f'<div class="hlpic" style="width:96px;height:96px;border-radius:50%;background:#003e3f;color:#00b9bc;display:flex;'
+           f'align-items:center;justify-content:center;font-size:30px;font-weight:bold;flex:none;border:2px solid #00b9bc;">'
+           f'{esc(_initials(artist))}</div>')
+    btn = (f'<a href="{esc(link)}" style="background:#00b9bc;color:#001515;padding:8px 16px;border-radius:6px;'
+           f'text-decoration:none;font-weight:bold;font-size:13px;display:inline-block;margin-top:10px;">'
+           f'Tickets{" · " + esc(ev.get("price")) if ev.get("price") else ""}</a>') if link else ""
+    return (f'<div id="highlight" style="background:linear-gradient(135deg,#00292a,#003e3f);border:2px solid #00b9bc;'
+            f'border-radius:14px;padding:16px;margin:0 0 16px;{FONT}">'
+            f'<div style="display:flex;justify-content:space-between;align-items:center;"><div style="color:#00b9bc;font-size:11px;'
+            f'letter-spacing:2px;font-weight:bold;">★ HIGHLIGHT · {esc(how.upper())}</div>{score_badge(ev.get("score", 0))}</div>'
+            f'<div style="display:flex;gap:16px;align-items:center;margin-top:10px;">{pic}<div style="min-width:0;">'
+            f'<div style="color:#fff;font-size:22px;font-weight:bold;line-height:1.2;">{esc(artist)}</div>'
+            f'<div style="color:#00a5a7;font-size:13px;margin-top:4px;">{esc(day_label(ev.get("date_str", "")))} · '
+            f'📍 {venue_html(ev.get("venue", ""), ev.get("address", ""))}</div>'
+            f'{f"<div style=\"color:#ccc;font-size:13px;margin-top:6px;\">{esc(note)}</div>" if note else ""}'
+            f'<div style="margin-top:8px;">{chips_for(ev)}</div>{media_row(ev)}{btn}</div></div></div>')
 
 
 def _by_day(evs, today):
@@ -266,7 +310,17 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
     page = f"""<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mo's House Music Radar</title></head>
+<title>Mo's House Music Radar</title>
+<style>
+@media (max-width:560px){{
+ .evrow{{flex-wrap:wrap!important}}
+ .evmain{{flex-basis:calc(100% - 60px)!important}}
+ .evside{{flex-basis:100%!important;display:flex!important;justify-content:space-between;align-items:center;text-align:left!important}}
+ .evside>div{{margin-top:0!important}}
+ .hlpic{{width:60px!important;height:60px!important;font-size:20px!important}}
+ .sharebar a,.sharebar button{{font-size:11px!important;padding:3px 8px!important}}
+}}
+</style></head>
 <body data-style="{style}" style="background:#001515;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
   {banner}
   {style_switcher(style, base)}
@@ -278,6 +332,7 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
   {STRIPES if th[0] == 'mahogany' else ''}
   {nav}
   {legend_html()}
+  {highlight_html(events, now)}
   {s_tonight}{s_week}{s_next}{s_later}{s_ann}{s_spots}
   {s_health}
   <div style="text-align:center;color:#009092;font-size:11px;padding:24px 0;border-top:1px solid #003e3f;margin-top:24px;">
@@ -292,5 +347,6 @@ document.addEventListener('click',function(e){{var a=e.target.closest('a[href^="
  if(a){{e.preventDefault();history.replaceState(null,'',a.getAttribute('href'));openFor(a.getAttribute('href').slice(1));}}}});
 </script>
 {STYLE_JS if site_url else ''}
+{SHARE_JS}
 </body></html>"""
     return _theme.apply(page, th)

@@ -59,6 +59,10 @@ def chips_for(ev, light=False):
         status = "sold out"
     if status in STATUS:
         out += chip(*STATUS[status], light=light)
+    age = ev.get("age")
+    if age:
+        fg, bg = ("#3b3b52", "#e6e4f0") if light else ("#e8e8f0", "#3a3a4a")
+        out += chip("Ages " + age if age != "All ages" else "All ages", fg, bg)
     verdict = (ev.get("house_check") or {}).get("verdict") or "tagged"
     if verdict in CHECK:
         out += chip(*CHECK[verdict], light=light)

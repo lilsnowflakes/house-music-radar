@@ -4,6 +4,7 @@ Pulls upcoming events from all configured sources.
 Returns a list of normalized event dicts.
 """
 
+import re
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -197,6 +198,13 @@ def scrape_19hz(city: str) -> list:
                     source="19hz",
                 )
             )
+            # 19hz's price cell reads like "$35+ | 21+" or "$20 | All ages": split the age out
+            ev_ = events[-1]
+            parts = [p.strip() for p in price_text.split("|")]
+            ages = [p for p in parts if re.fullmatch(r"(?i)all ages|\d{2}\+", p)]
+            if ages:
+                ev_["age"] = "All ages" if ages[0].lower() == "all ages" else ages[0]
+                ev_["price"] = " | ".join(p for p in parts if p not in ages)
     except Exception as e:
         print(f"[19hz] Error scraping {city}: {e}")
 

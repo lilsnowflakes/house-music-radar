@@ -39,6 +39,8 @@ SCRAPER_MAP["heard"] = la_sources.scrape_heard
 from scrapers import apis
 SCRAPER_MAP["seatgeek"] = apis.scrape_seatgeek
 SCRAPER_MAP["edmtrain"] = apis.scrape_edmtrain
+from scrapers import calendars
+SCRAPER_MAP["calendars"] = calendars.scrape_calendars
 
 OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs")
 
@@ -81,6 +83,9 @@ def collect(cities, sources_map):
     for name, (n, note) in apis.LAST.items():
         if note:
             health.append((f"{name} detail", "skipped" if note.startswith("skipped") else "error", note))
+    for name, (n, note) in calendars.LAST.items():
+        health.append((f"calendar / {name}", "ok" if n else ("empty" if note.startswith("page read") else "error"),
+                       f"{n} shows" if n else note))
     for venue, (n, err) in venues.LAST.items():
         health.append((f"venue calendar / {venue}", "ok" if n else ("error" if err else "empty"),
                        f"{n} shows" if n else (err or "0 shows (page layout changed or blocked)")))

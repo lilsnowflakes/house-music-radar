@@ -27,8 +27,9 @@ RA_URL = "https://ra.co/events/us/losangeles"
 DICE_URLS = [
     "https://dice.fm/browse/losangeles-5982e13c613de866017c3e3a/music/dj",
     "https://dice.fm/browse/losangeles-5982e13c613de866017c3e3a/music/party",
+    "https://dice.fm/browse/losangeles-5982e13c613de866017c3e3a/music/gig/house",
 ]
-SHOTGUN_URL = "https://shotgun.live/en/cities/los-angeles"
+SHOTGUN_URL = "https://shotgun.live/en/cities/los-angeles/house"   # house-only page: smaller, fewer misses
 SCENESTAR_URL = "https://thescenestar.com/los-angeles-show-list-by-the-scenestar/"
 
 DICE_ANNOUNCED = []   # announced-not-on-sale shows found on DICE, read by main.py
@@ -204,8 +205,9 @@ def parse_scenestar(html, city="los_angeles"):
             continue
         title, at = L[i + 1], L[i + 2][3:]
         venue = re.sub(r"\s*\(.*$", "", at).strip()
-        if not (any(r in venue.lower() or r in title.lower() for r in rooms)
-                or any(h in title.lower() for h in HOUSE_HINTS)):
+        # whole words only: "origin" must not match "Original Room", "rave" must not match "Ravens"
+        if not (any(re.search(rf"\b{re.escape(r)}\b", venue.lower()) for r in rooms)
+                or any(re.search(rf"\b{re.escape(h)}\b", title.lower()) for h in HOUSE_HINTS)):
             continue
         out.append(normalize_event(
             title=title, artist=re.split(r"\s+w/\s+", title)[0], venue=venue, city=city,

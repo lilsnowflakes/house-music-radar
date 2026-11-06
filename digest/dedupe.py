@@ -42,7 +42,7 @@ def _merge(keep, other):
             srcs.append(s)
     if other.get("source") == "Edmtrain" and other.get("ticket_url"):
         keep["edmtrain_url"] = other["ticket_url"]   # their event link stays visible, unmodified
-    for f in ("ticket_url", "price", "address", "image", "ticket_status"):
+    for f in ("ticket_url", "price", "address", "image", "ticket_status", "age"):
         if not keep.get(f) and other.get(f):
             keep[f] = other[f]
     if not keep.get("genres") and other.get("genres"):

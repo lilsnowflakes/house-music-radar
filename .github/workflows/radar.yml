@@ -2,9 +2,9 @@ name: House Music Radar
 
 on:
   schedule:
-    # Every day 15:30 UTC = 7:30am Pacific in winter (8:30am in summer time). Email only goes out Mondays.
-    - cron: "30 15 * * *"
-  workflow_dispatch:      # lets you press "Run workflow" to test it any time
+    - cron: "0 13 * * *"   # 5am Pacific (6am in summer): fresh "Tonight" before you wake up
+    - cron: "0 1 * * *"    # 5pm Pacific (6pm in summer): catches daytime announcements before you go out
+  workflow_dispatch:       # the "Run workflow" button
 
 permissions:
   contents: read
@@ -20,6 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restore artist memory and photos
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/artist_memory.json
+            data/photos
+          key: radar-memory-${{ github.run_id }}
+          restore-keys: radar-memory-
 
       - uses: actions/setup-python@v5
         with:
@@ -41,7 +50,15 @@ jobs:
           TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
           SEATGEEK_CLIENT_ID: ${{ secrets.SEATGEEK_CLIENT_ID }}
           EDMTRAIN_CLIENT_KEY: ${{ secrets.EDMTRAIN_CLIENT_KEY }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          DRIVE_FOLDER_ID: ${{ secrets.DRIVE_FOLDER_ID }}
           SONGKICK_API_KEY: ${{ secrets.SONGKICK_API_KEY }}
+          WATCH_LIST: ${{ secrets.WATCH_LIST }}
+          GOATCOUNTER_CODE: ${{ vars.GOATCOUNTER_CODE }}
+          RADAR_WORKFLOW: "2026.11.06"   # lets the page tell you if GitHub is running an older copy of this file
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 
       - uses: actions/configure-pages@v5
@@ -58,4 +75,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Wait before retrying
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 90
+      - id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v4

@@ -189,6 +189,13 @@ def main():
         for name, (n, note) in ticketmaster.LAST.items():
             health.append((name, "error" if note.startswith("error") else ("skipped" if note.startswith("skipped") else "ok"), note))
 
+    if not args.demo:
+        wf = os.environ.get("RADAR_WORKFLOW", "")
+        health.insert(0, ("Workflow file", "ok" if wf else "error",
+                          f"current (v{wf})" if wf else
+                          "GitHub is running an OLD .github/workflows/radar.yml: Drive photos, artist memory, Reddit and the "
+                          "5am/5pm schedule are all off. Open .github/workflows/radar.yml on GitHub, tap the pencil, select all, "
+                          "paste the contents of WORKFLOW-radar.yml, commit."))
     os.makedirs(OUT_DIR, exist_ok=True)
     from digest import moments
     photos = moments.sync()
@@ -197,11 +204,12 @@ def main():
     with open(os.path.join(OUT_DIR, "moments.html"), "w", encoding="utf-8") as f:
         f.write(moments.timeline_page(photos, site_url=SITE_URL))
     from digest import ogimage, highlight as _hlm
-    from digest.dates import bucket as _b, now_pt as _now
+    from digest.dates import now_pt as _now
+    from digest import theme as _th
     _n = _now()
-    _hl_ev = _hlm.pick(events, _n)[0]
-    ogimage.build(sum(1 for e in events if _b(e.get("date_str", ""), _n) == "tonight"),
-                  sum(1 for e in events if _b(e.get("date_str", ""), _n) != "past"), _hl_ev, _n)
+    n_imgs = ogimage.build_all(events, _hlm.pick(events, _n)[0], _n, [s[0] for s in render.STYLES], _th.run_number())
+    health.append(("Share images", "ok" if n_imgs == len(render.STYLES) else "error",
+                   f"{n_imgs} of {len(render.STYLES)} styles have their own link preview picture"))
     page = None
     for style, _label, index_file, list_file in render.STYLES:
         html_ = render.build_page(events, announced, health, site_url=SITE_URL, demo=args.demo,

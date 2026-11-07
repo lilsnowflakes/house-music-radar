@@ -1,10 +1,11 @@
 """
 scoring.py
-Enriches events with artist scores from:
-  - Spotify monthly listeners
-  - Resident Advisor followers
-  - SoundCloud followers
-  - YouTube DJ sets / track lookups
+Scores each show 0-100:
+  reach  up to 60  Spotify followers, log scale (remembered between runs)
+  buzz   up to 20  how many sources list it (+5 for a Reddit mention)
+  spot       15    one of your watched venues / promoters / artists
+  house       5    genre confirmed as house
+Also adds Spotify links/photos and a recent YouTube set.
 """
 
 import requests
@@ -234,64 +235,56 @@ def get_youtube_content(artist_name: str) -> dict:
 # ------------------------------------------------------------------
 # SCORING ENGINE
 # ------------------------------------------------------------------
-def normalize_score(value: int, max_value: int) -> float:
-    """Normalize a raw number to 0-100 scale."""
-    if max_value == 0:
-        return 0
-    return min(100, (value / max_value) * 100)
+# How the 0-100 score is built. Every part works on its own, so a quiet source never zeroes the page.
+REACH_MAX, BUZZ_MAX, SPOT_PTS, HOUSE_PTS = 60, 20, 15, 5
+
+
+def reach_points(followers: int) -> float:
+    """Spotify followers on a log scale: ~500 followers = 0, 1M+ = the full 60."""
+    import math
+    if not followers or followers < 500:
+        return 0.0
+    return round(min(1.0, (math.log10(followers) - 2.7) / 3.3) * REACH_MAX, 1)
+
+
+def buzz_points(ev: dict) -> int:
+    """More independent listings = more people talking about it."""
+    n = len({s for s in (ev.get("sources") or [ev.get("source", "")]) if s})
+    pts = {0: 0, 1: 0, 2: 10}.get(n, 20)
+    if ev.get("reddit_url") and pts < BUZZ_MAX:
+        pts += 5
+    return min(BUZZ_MAX, pts)
+
+
+def score_one(ev: dict) -> float:
+    reach = reach_points(ev.get("spotify_listeners", 0))
+    buzz = buzz_points(ev)
+    spot = SPOT_PTS if ev.get("watched") else 0
+    house = HOUSE_PTS if (ev.get("house_check") or {}).get("verdict") == "house" else 0
+    ev["score_parts"] = {"reach": reach, "buzz": buzz, "spot": spot, "house": house,
+                         "reach_known": bool(ev.get("spotify_listeners"))}
+    return round(reach + buzz + spot + house, 1)
 
 
 def score_events(events: list) -> list:
-    """
-    Enriches each event with scores and YouTube content.
-    Adds a combined 'score' field (0-100).
-    """
+    """Adds artist links, photos and YouTube sets, then a 0-100 'worth going' score.
+    Resident Advisor and SoundCloud are no longer called: RA blocks bots and SoundCloud's page never returned numbers."""
     if not events:
         return events
-
     print(f"\nScoring {len(events)} events...")
-
-    # First pass: collect raw numbers for normalization
+    from digest.artist_links import artist_name
     for ev in events:
-        from digest.artist_links import artist_name
         artist = artist_name(ev)
-        if not artist:
-            continue
-
-        print(f"  Scoring: {artist}")
-
-        ev["spotify_listeners"] = get_spotify_monthly_listeners(artist)
-        ev["image"] = _images.get(artist, "")
-        ev["spotify_url"] = _spotify_urls.get(artist, "")
-        ev["ra_followers"] = get_ra_followers(artist)
-        ev["soundcloud_followers"] = get_soundcloud_followers(artist)
-
-        yt = get_youtube_content(artist)
-        ev["youtube_set_url"] = yt.get("set_url", "")
-        ev["youtube_track_urls"] = yt.get("track_urls", [])
-
-        time.sleep(0.5)  # Be polite to APIs
-
-    # Second pass: normalize and combine scores
-    max_spotify = max((e["spotify_listeners"] for e in events), default=1) or 1
-    max_ra = max((e["ra_followers"] for e in events), default=1) or 1
-    max_sc = max((e["soundcloud_followers"] for e in events), default=1) or 1
-
-    for ev in events:
-        spotify_norm = normalize_score(ev["spotify_listeners"], max_spotify)
-        ra_norm = normalize_score(ev["ra_followers"], max_ra)
-        sc_norm = normalize_score(ev["soundcloud_followers"], max_sc)
-
-        ev["score"] = round(
-            (spotify_norm * SCORE_WEIGHTS["spotify_listeners"])
-            + (ra_norm * SCORE_WEIGHTS["ra_followers"])
-            + (sc_norm * SCORE_WEIGHTS["soundcloud_followers"]),
-            1,
-        )
-
-    # Sort by score descending
+        if artist:
+            ev["spotify_listeners"] = get_spotify_monthly_listeners(artist)
+            ev["image"] = ev.get("image") or _images.get(artist, "")
+            ev["spotify_url"] = ev.get("spotify_url") or _spotify_urls.get(artist, "")
+            yt = get_youtube_content(artist)
+            ev["youtube_set_url"] = yt.get("set_url", "")
+            ev["youtube_track_urls"] = yt.get("track_urls", [])
+            time.sleep(0.3)
+        ev["score"] = score_one(ev)
     events.sort(key=lambda x: x["score"], reverse=True)
-
     return events
 
 

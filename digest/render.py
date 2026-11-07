@@ -23,7 +23,7 @@ from digest import highlight as _hl
 from digest import moments as _moments
 from digest import ogimage as _og
 from digest.share import buttons_html, SHARE_JS, sprite
-from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg, holo_svg, yla_svg
+from digest.hero import hero_svg, vapor_svg, console_svg, night_svg, deck_svg, radar_svg, holo_svg, yla_svg, minimal_svg
 from config.config import CODE_VERSION
 from digest.colors import legend_html, chips_for
 
@@ -124,13 +124,16 @@ MOTION_CSS = """
 
 MOTION_JS = r"""<script>
 (function(){
- if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  var hero=document.querySelector('.hero');if(!hero)return;
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){[].forEach.call(hero.querySelectorAll('svg'),function(s){s.pauseAnimations&&s.pauseAnimations();});return;}
  var els=[].slice.call(hero.querySelectorAll('[data-d]')),xf=hero.querySelector('.xf'),btn=document.getElementById('tilt');
  function move(x,y){ /* x,y in -1..1 */
   x=Math.max(-1,Math.min(1,x));y=Math.max(-1,Math.min(1,y));
   els.forEach(function(e){var d=+e.getAttribute('data-d');e.setAttribute('transform','translate('+(x*d).toFixed(1)+' '+(y*d*.5).toFixed(1)+')');});
   if(xf)xf.setAttribute('transform','translate('+(x*36).toFixed(1)+' 0)');
+  /* outrun floor: pivots on the horizon, so the far end stays put and the near end swings with you */
+  [].forEach.call(hero.querySelectorAll('[data-skew]'),function(e){var p=e.getAttribute('data-skew');
+   e.setAttribute('transform','translate(0 '+p+') skewX('+(-x*22).toFixed(1)+') translate(0 -'+p+')');});
  }
  function onTilt(e){
   if(e.gamma==null)return;
@@ -322,12 +325,16 @@ def divider(kind="eq", seed=0):
     return f'<svg class="div" viewBox="0 0 {W} {H}" preserveAspectRatio="none" aria-hidden="true">{body}</svg>'
 
 
-def score_badge(score):
-    """Always shown. A dash means no popularity data came back for this artist (yet)."""
+def score_badge(score, parts=None):
+    """Always shown. Hover/long-press shows how the number was built."""
+    p = parts or {}
+    tip = "Score 0-100"
+    if p:
+        tip = (f"Artist reach {p['reach']:.0f}/60" + ("" if p.get("reach_known") else " (no Spotify data yet)") +
+               f" · buzz {p['buzz']}/20 · your spot {p['spot']}/15 · house {p['house']}/5")
     if score:
-        return (f'<div class="sc" title="Popularity score (0-100): Spotify 50%, RA 30%, SoundCloud 20%">'
-                f'{score:.0f}<span>/100</span></div>')
-    return '<div class="sc0" title="No popularity data for this artist yet">–<span>/100</span></div>'
+        return f'<div class="sc" title="{esc(tip)}">{score:.0f}<span>/100</span></div>'
+    return f'<div class="sc0" title="{esc(tip)}">–<span>/100</span></div>'
 
 
 def media_row(ev):
@@ -358,7 +365,7 @@ def event_row(ev: dict) -> str:
     return (f'<div class="evrow" data-f="{filter_tokens(ev)}">{pic}<div class="evmain"><div class="nm">{star}{name}</div>'
             f'<div class="vn">{venue}{when}{" · " + sub if sub else ""}</div>'
             f'<div class="chips">{chips_for(ev)}</div>{media_row(ev)}<div class="via">via {via}{edm}</div></div>'
-            f'<div class="evside">{score_badge(ev.get("score", 0))}<div>{btn}</div></div></div>')
+            f'<div class="evside">{score_badge(ev.get("score", 0), ev.get("score_parts"))}<div>{btn}</div></div></div>')
 
 
 def highlight_html(events, now):
@@ -391,7 +398,7 @@ def _one_highlight(events, now, id_, night_iso, hidden):
             f'style="background:linear-gradient(135deg,#00292a,#003e3f);border:2px solid #00b9bc;'
             f'border-radius:14px;padding:16px;margin:0 0 16px;{FONT}">'
             f'<div style="display:flex;justify-content:space-between;align-items:center;"><div style="color:#00b9bc;font-size:11px;'
-            f'letter-spacing:2px;font-weight:bold;">★ HIGHLIGHT · {esc(how.upper())}</div>{score_badge(ev.get("score", 0))}</div>'
+            f'letter-spacing:2px;font-weight:bold;">★ HIGHLIGHT · {esc(how.upper())}</div>{score_badge(ev.get("score", 0), ev.get("score_parts"))}</div>'
             f'<div style="display:flex;gap:16px;align-items:center;margin-top:10px;">{pic}<div style="min-width:0;">'
             f'<div style="color:#fff;font-size:22px;font-weight:bold;line-height:1.2;">{esc(artist)}</div>'
             f'<div style="color:#00a5a7;font-size:13px;margin-top:4px;">{esc(day_label(ev.get("date_str", "")))} · '
@@ -447,7 +454,8 @@ STRIPES = ('<div style="height:8px;border-radius:4px;margin:2px 0 10px;backgroun
 STYLES = [("classic", "Classic", "index.html", "list.html"), ("outrun", "Outrun", "index-outrun.html", "list-outrun.html"),
           ("console", "Console", "index-console.html", "list-console.html"),
           ("night", "Night", "index-night.html", "list-night.html"), ("deck", "Deck", "index-deck.html", "list-deck.html"),
-          ("holo", "Holo", "index-holo.html", "list-holo.html"), ("yla", "YLA ☀", "index-yla.html", "list-yla.html")]
+          ("holo", "Holo", "index-holo.html", "list-holo.html"), ("yla", "YLA ☀", "index-yla.html", "list-yla.html"),
+          ("minimal", "Minimal", "index-minimal.html", "list-minimal.html")]
 
 
 def style_switcher(active, base, page="index"):
@@ -465,6 +473,32 @@ STYLE_JS = ("<script>try{var k='radarStyle',cur=document.body.dataset.style;"
             "document.querySelectorAll('#styles a').forEach(function(a){a.addEventListener('click',function(){localStorage.setItem(k,a.dataset.style)})});"
             "var want=localStorage.getItem(k);if(want&&want!==cur&&!location.search){var l=document.querySelector('#styles a[data-style='+want+']');"
             "if(l)location.replace(l.getAttribute('href'))}}catch(e){}</script>")
+
+
+def make_hero(theme_name, events, groups, now, run_no=0):
+    """The top picture for a style. Also used for that style's share image."""
+    from datetime import timedelta
+    day0 = now.date()
+    counts = [sum(1 for x in events if to_date(x.get("date_str", ""), now) == day0 + timedelta(days=i)) for i in range(7)]
+    tl = [f"{(x.get('artist') or x.get('title') or '').upper()} @ {(x.get('venue') or '').upper()}" for x in groups["tonight"]]
+    n_all = sum(len(v) for v in groups.values())
+    return {"outrun": lambda: vapor_svg(run_no),
+            "console": lambda: console_svg(run_no, len(groups["tonight"]), n_all),
+            "night": lambda: night_svg(counts),
+            "deck": lambda: deck_svg(tl, run_no),
+            "redline": lambda: radar_svg(len(groups["tonight"])),
+            "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no),
+            "yla": lambda: yla_svg(run_no),
+            "minimal": lambda: minimal_svg(len(groups["tonight"]), n_all, run_no)}.get(theme_name, lambda: hero_svg(run_no))()
+
+
+def group_events(events, now):
+    groups = {k: [] for k in ("tonight", "tomorrow", "week", "next", "later", "unknown")}
+    for e in events:
+        b = bucket(e.get("date_str", ""), now)
+        if b != "past":
+            groups[b].append(e)
+    return groups
 
 
 def build_page(events, announced, health, site_url="", demo=False, dupes_removed=0, style="classic", photos=None) -> str:
@@ -540,20 +574,10 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
     foot = (f'{run_txt} · last ran {ran} · code v{CODE_VERSION} · color: {th[0]} ({how}). '
             f'To pick one, edit config/theme.txt (auto, mahogany, rotate, turquoise, violet, magenta, amber, green, blue, red).<br>'
             f'Updated every morning and evening; the email goes out Mondays. Within each day shows are A to Z by artist. '
-            f'Scores: Spotify 50% · RA 30% · SoundCloud 20%.')
+            f'Score: artist reach 60 · buzz across sources 20 · your spots 15 · confirmed house 5.')
 
-    from datetime import timedelta
-    day0 = now.date()
-    counts = [sum(1 for x in events if to_date(x.get("date_str", ""), now) == day0 + timedelta(days=i)) for i in range(7)]
-    tl = [f"{(x.get('artist') or x.get('title') or '').upper()} @ {(x.get('venue') or '').upper()}" for x in groups["tonight"]]
     n_all = sum(len(v) for v in groups.values())
-    hero = {"outrun": lambda: vapor_svg(run_no),
-            "console": lambda: console_svg(run_no, len(groups["tonight"]), n_all),
-            "night": lambda: night_svg(counts),
-            "deck": lambda: deck_svg(tl, run_no),
-            "redline": lambda: radar_svg(len(groups["tonight"])),
-            "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no),
-            "yla": lambda: yla_svg(run_no)}.get(th[0], lambda: hero_svg(run_no))()
+    hero = make_hero(th[0], events, groups, now, run_no)
 
     slots = _moments.page_slots(photos or [], base, 6)
     og_desc = (f"{len(groups['tonight'])} house shows tonight in LA, {n_all} upcoming. Tonight, tomorrow, set times, tickets."
@@ -562,7 +586,7 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
 <html><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mo's House Music Radar</title>
-{_og.meta_tags(site_url, "Mo's House Music Radar", og_desc, dict((s[0], s[2]) for s in STYLES)[style], now.strftime("%Y%m%d%H"))}
+{_og.meta_tags(site_url, "Mo's House Music Radar", og_desc, dict((s[0], s[2]) for s in STYLES)[style], now.strftime("%Y%m%d%H"), _og.image_name(style))}
 <style>{PAGE_CSS}{MOTION_CSS}{_moments.SPOT_CSS}{_moments.FLOAT_CSS}</style></head>
 <body data-style="{style}" style="background:#001515;color:#fff;font-family:monospace;max-width:680px;margin:0 auto;padding:20px;">
 {sprite()}

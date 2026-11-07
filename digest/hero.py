@@ -58,9 +58,17 @@ def vapor_svg(seed=0):
     stars = "".join(f'<circle cx="{rnd.randint(8, W - 8)}" cy="{rnd.randint(6, 80)}" r="{rnd.choice([.8, 1, 1.4])}" '
                     f'fill="#fffb96" opacity="{rnd.choice([.4, .7, 1])}"/>' for _ in range(34))
     slits = "".join(f'<rect x="250" y="{HZ - 40 + k * 9}" width="180" height="{2 + k * 1.2:.1f}" fill="#241046"/>' for k in range(5))
-    vlines = "".join(f'<line x1="340" y1="{HZ}" x2="{340 + dx}" y2="{H}" />' for dx in range(-900, 901, 90))
-    hlines = "".join(f'<line x1="0" y1="{y:.1f}" x2="{W}" y2="{y:.1f}"/>'
-                     for y in [HZ + 4 * (1.55 ** k) for k in range(1, 9) if HZ + 4 * (1.55 ** k) < H])
+    # lines run a little above the horizon (hidden by the clip) so tilting never opens a gap there
+    vlines = "".join(f'<line x1="{340 - dx * .6:.0f}" y1="{HZ - (H - HZ) * .6:.0f}" x2="{340 + dx}" y2="{H}" />'
+                     for dx in range(-1260, 1261, 90))
+    # the floor rolls toward you: each line slides to where the next one sits, so the loop never jumps
+    def _row(k):
+        ys = ";".join(f"{HZ + 4 * (1.55 ** (k + t / 8)):.1f}" for t in range(9))
+        y0 = ys.split(";")[0]
+        return (f'<line x1="-400" y1="{y0}" x2="{W + 400}" y2="{y0}">'
+                f'<animate attributeName="y1" values="{ys}" dur="1.1s" repeatCount="indefinite"/>'
+                f'<animate attributeName="y2" values="{ys}" dur="1.1s" repeatCount="indefinite"/></line>')
+    hlines = "".join(_row(k) for k in range(0, 9))
     palm = lambda x, s: (f'<g transform="translate({x} {HZ}) scale({s})" fill="#0b0220">'
                          '<path d="M0 0 C2 -30 3 -50 1 -76 L5 -76 C4 -50 5 -30 8 0Z"/>'
                          '<path d="M3 -76 C-14 -88 -30 -80 -38 -66 C-24 -78 -12 -78 3 -72Z"/>'
@@ -74,9 +82,10 @@ def vapor_svg(seed=0):
 <filter id="vglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
 <rect x="-20" width="{W + 40}" height="{HZ}" fill="url(#vsky)"/><g data-d="2">{stars}</g>
-<g data-d="6"><circle cx="340" cy="{HZ - 4}" r="70" fill="url(#vsun)" filter="url(#vglow)"/>{slits}</g>
+<clipPath id="vsunclip"><circle cx="340" cy="{HZ - 4}" r="70"/></clipPath>
+<g><circle cx="340" cy="{HZ - 4}" r="70" fill="url(#vsun)" filter="url(#vglow)"/><g clip-path="url(#vsunclip)">{slits}</g></g>
 <rect y="{HZ}" width="{W}" height="{H - HZ}" fill="#0b0220"/>
-<g stroke="#01cdfe" stroke-width="1.3" opacity=".9" filter="url(#vglow)" clip-path="url(#vclip)">{vlines}{hlines}</g>
+<g stroke="#01cdfe" stroke-width="1.3" opacity=".9" filter="url(#vglow)" clip-path="url(#vclip)"><g data-skew="{HZ}">{vlines}</g>{hlines}</g>
 <clipPath id="vclip"><rect y="{HZ}" width="{W}" height="{H - HZ}"/></clipPath>
 <line x1="0" y1="{HZ}" x2="{W}" y2="{HZ}" stroke="#ff71ce" stroke-width="2" filter="url(#vglow)"/>
 <g data-d="10">{palm(60, 1.05)}{palm(104, .72)}{palm(590, 1.1)}{palm(636, .78)}</g>
@@ -291,4 +300,21 @@ def yla_svg(seed=0):
 <path d="M0,{cy + 22} C150,{cy + 10} 300,{cy + 30} 450,{cy + 18} S620,{cy + 12} 680,{cy + 20} L680,{H} L0,{H} Z" fill="#dcc29a"/>
 <line x1="0" y1="{cy}" x2="{W}" y2="{cy}" stroke="#127f7c" stroke-width="1.4" opacity=".55"/></g>
 <text x="{cx}" y="{H - 14}" text-anchor="middle" font-family="Georgia,serif" font-size="13" letter-spacing="6" fill="#6b4f33">YOU LOOK AMAZING</text>
+</svg>'''
+
+
+def minimal_svg(tonight=0, total=0, seed=0):
+    """Minimal hero: white field, one thin horizon, a quiet row of gray level bars."""
+    rnd = random.Random(seed)
+    W, H = 680, 200
+    bars = "".join(f'<rect x="{40 + i * 12}" y="{150 - h}" width="6" height="{h}" fill="{"#141414" if i % 9 == 0 else "#bdbdbd"}">'
+                   f'<animate attributeName="height" values="{h};{max(4, h * .35):.0f};{h}" dur="{1.2 + (i % 5) * .23:.2f}s" repeatCount="indefinite"/>'
+                   f'<animate attributeName="y" values="{150 - h};{150 - max(4, h * .35):.0f};{150 - h}" dur="{1.2 + (i % 5) * .23:.2f}s" repeatCount="indefinite"/></rect>'
+                   for i, h in enumerate(rnd.randint(8, 64) for _ in range(50)))
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Minimal level bars"
+ style="display:block;background:#fefefe;border-top:1px solid #141414;border-bottom:1px solid #141414">
+<text x="40" y="44" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" font-size="12" letter-spacing="5" fill="#141414">LOS ANGELES · HOUSE</text>
+<text x="640" y="44" text-anchor="end" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" font-size="12" letter-spacing="3" fill="#8c8c8c">{tonight} TONIGHT · {total} AHEAD</text>
+<g data-d="6">{bars}</g>
+<line x1="40" y1="150" x2="640" y2="150" stroke="#141414" stroke-width="1"/>
 </svg>'''

@@ -17,6 +17,21 @@ RED_FILTER = ('<svg width="0" height="0" style="position:absolute" aria-hidden="
               '<feComponentTransfer><feFuncR type="gamma" amplitude="1" exponent="0.5"/></feComponentTransfer></filter></svg>')
 
 CUSTOM = {
+    # Minimal: black, white and gray only. Everything colored (chips, photos, drawings) is turned to grayscale,
+    # and the YouTube / Spotify / SoundCloud icons are hidden.
+    "minimal": dict(stops=["#ffffff", "#f5f5f5", "#e2e2e2", "#cccccc", "#8c8c8c", "#6b6b6b", "#4d4d4d", "#111111"],
+                    extra={"#fff": "#111", "#ccc": "#444", "#bbb": "#4d4d4d", "#aaa": "#5c5c5c", "#e6fafa": "#111"},
+                    light_chips=True,
+                    css="<style>:root{color-scheme:light}html{background:#fff}"
+                        "body{background:#fff!important;color:#111;"
+                        "font-family:'Helvetica Neue',Helvetica,ui-sans-serif,-apple-system,'Segoe UI',Arial,sans-serif!important}"
+                        ".ml,.mlinks{display:none!important}"
+                        "body>*:not(#pf):not(#lb),#pf img,#lb img{filter:grayscale(1)}"
+                        ".evrow,details.sec,.spot,.hlcard{border-radius:2px!important;box-shadow:none!important;font-family:inherit!important}"
+                        ".evrow{border-width:0 0 1px 0!important;background:#fff!important;padding-left:0!important;padding-right:0!important}"
+                        ".tix,.hlcard a[style*='background:#111111']{background:#111!important;color:#fff!important}"
+                        ".fchip[aria-pressed=true]{background:#111!important;color:#fff!important}"
+                        "div[style*='letter-spacing:2px'],details.sec>summary{letter-spacing:1.5px!important;font-weight:500!important;font-family:inherit!important}</style>"),
     # You Look Amazing (Burning Man camp): sand and cream, Tulum turquoise, sunset gold. A light, boho style.
     "yla": dict(stops=["#f4eadb", "#fbf6ee", "#e9dcc5", "#d8c3a0", "#9b8467", "#8b7357", "#7a6248", "#127f7c"],
                 extra={"#fff": "#3a2c20", "#ccc": "#5c4a39", "#bbb": "#5c4a39", "#aaa": "#6b5845", "#e6fafa": "#3a2c20"},

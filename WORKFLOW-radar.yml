@@ -58,6 +58,7 @@ jobs:
           SONGKICK_API_KEY: ${{ secrets.SONGKICK_API_KEY }}
           WATCH_LIST: ${{ secrets.WATCH_LIST }}
           GOATCOUNTER_CODE: ${{ vars.GOATCOUNTER_CODE }}
+          RADAR_WORKFLOW: "2026.11.06"   # lets the page tell you if GitHub is running an older copy of this file
           SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
 
       - uses: actions/configure-pages@v5

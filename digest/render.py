@@ -17,6 +17,7 @@ from zoneinfo import ZoneInfo
 from collections import Counter, OrderedDict
 import os
 from digest.dates import bucket, sort_key, day_label, to_date, now_pt, show_time
+from digest.artist_links import artist_name
 from digest import theme as _theme
 from digest.artist_links import links_html
 from digest import highlight as _hl
@@ -62,14 +63,40 @@ def section(title: str, body: str, note: str = "") -> str:
     </div>"""
 
 
+# The Crate: where tonight's records came from. Each source is a record in the crate.
+CRATE_WORDS = {"ok": "spinning", "empty": "dry", "error": "skipping", "skipped": "off"}
+
+
+def hand_pull_html(health):
+    """Sites a person (or a scraper service) needs to save by hand this week, worked out from this run."""
+    from config.config import HAND_PULL
+    from scrapers.la_sources import USED_INBOX
+    bad = {lab.split(" / ")[0] for lab, st, _ in health if st in ("error", "empty")}
+    rows = ""
+    for name, key, url, fname, why in HAND_PULL:
+        used = next((v for k, v in USED_INBOX.items() if k.lower() in name.lower()), None)
+        if used:
+            state, col = f"read from inbox/{used[0]} ({used[1]} shows) — refresh it weekly", "#e0b341"
+        elif key and key not in bad:
+            state, col = "came through live this run", "#5ec269"
+        else:
+            state, col = "needs a pull", "#e5534b"
+        rows += (f'<li style="margin:0 0 8px;"><b style="color:#ccc;">{esc(name)}</b> · <span style="color:{col};">{esc(state)}</span><br>'
+                 f'<span style="color:#00a5a7;">save: {esc(url)} → inbox/{esc(fname)}</span><br>'
+                 f'<span style="color:#009092;">why: {esc(why)}</span></li>')
+    return (f'<div style="{FONT}font-size:12px;margin:14px 0 6px;color:#00b9bc;">Hand-pull list (for whoever saves pages):</div>'
+            f'<ul style="{FONT}font-size:12px;padding-left:18px;margin:0 0 12px;">{rows}</ul>')
+
+
 def health_table(rows) -> str:
     colors = {"ok": "#5ec269", "empty": "#e0b341", "error": "#e5534b",
               "skipped": "#00a5a7"}
     trs = ""
     for label, status, detail in rows:
         c = colors.get(status, "#00a5a7")
+        word = CRATE_WORDS.get(status, status)
         trs += (f'<tr><td style="padding:4px 10px;color:#ccc;">{esc(label)}</td>'
-                f'<td style="padding:4px 10px;color:{c};">{esc(status)}</td>'
+                f'<td style="padding:4px 10px;color:{c};white-space:nowrap;">● {esc(word)}</td>'
                 f'<td style="padding:4px 10px;color:#00a5a7;">{esc(detail)}</td></tr>')
     return ('<table style="font-family:monospace;font-size:12px;border-collapse:collapse;">'
             f"{trs}</table>")
@@ -120,7 +147,34 @@ MOTION_CSS = """
 .hero [data-d],.hero .xf{transition:transform .25s ease-out}
 @media (orientation:landscape) and (max-height:520px){.hero svg{max-height:46vh;width:auto;margin:0 auto}}
 @media (prefers-reduced-motion:reduce){.hero [data-d],.hero .xf{transition:none}}
+.hero .as{cursor:pointer}
+.abub{position:absolute;z-index:5;transform:translate(-50%,-130%);pointer-events:none;white-space:nowrap;
+ font:600 13px ui-sans-serif,-apple-system,'Segoe UI',sans-serif;color:#eaf6ff;padding:6px 12px;border-radius:999px;
+ background:rgba(11,17,32,.82);border:1px solid rgba(124,245,255,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+ box-shadow:0 0 14px rgba(255,138,216,.45);text-shadow:0 0 6px #ff71ce;opacity:0;animation:abub 2.6s ease forwards}
+.abub small{display:block;font:10px ui-monospace,monospace;color:#a9bbe0;letter-spacing:1px;text-shadow:none;text-align:center}
+@keyframes abub{0%{opacity:0;margin-top:6px}12%{opacity:1;margin-top:0}75%{opacity:1}100%{opacity:0;margin-top:-10px}}
 """
+
+# Holo stars: tap (or hover) a star to see who's playing; the name floats up like a little cloud and fades. */
+STAR_JS = r"""<script>
+(function(){
+ var hero=document.querySelector('.hero');if(!hero)return;
+ function show(g){
+  var dot=g.querySelectorAll('circle')[1]||g.querySelector('circle'),hb=hero.getBoundingClientRect(),b=dot.getBoundingClientRect();
+  var old=hero.querySelector('.abub');if(old)old.remove();
+  var d=document.createElement('div');d.className='abub';
+  d.textContent=g.getAttribute('data-a');
+  var w=g.getAttribute('data-w');if(w){var s=document.createElement('small');s.textContent=w;d.appendChild(s);}
+  var x=b.left+b.width/2-hb.left;x=Math.max(70,Math.min(hb.width-70,x));
+  d.style.left=x+'px';d.style.top=(b.top+b.height/2-hb.top)+'px';
+  hero.appendChild(d);setTimeout(function(){d.remove();},2700);
+ }
+ hero.addEventListener('click',function(e){var g=e.target.closest&&e.target.closest('.as');if(g)show(g);});
+ hero.addEventListener('mouseover',function(e){var g=e.target.closest&&e.target.closest('.as');
+  if(g&&g!==hero._last){hero._last=g;show(g);}});
+})();
+</script>"""
 
 MOTION_JS = r"""<script>
 (function(){
@@ -475,6 +529,22 @@ STYLE_JS = ("<script>try{var k='radarStyle',cur=document.body.dataset.style;"
             "if(l)location.replace(l.getAttribute('href'))}}catch(e){}</script>")
 
 
+def _star_names(events, now):
+    """Artists for the Holo stars: soonest shows first, one star per artist, with the night they play."""
+    from digest.artist_links import artist_name
+    from digest import dates as _d
+    out, seen = [], set()
+    for ev in sorted(events, key=lambda e: _d.sort_key(e.get("date_str", ""))):
+        if _d.bucket(ev.get("date_str", "")) in ("past", "unknown"):
+            continue
+        nm = (artist_name(ev) or "").strip()
+        if not nm or nm.lower() in seen:
+            continue
+        seen.add(nm.lower())
+        out.append((nm, _d.day_label(ev.get("date_str", ""))))
+    return out
+
+
 def make_hero(theme_name, events, groups, now, run_no=0):
     """The top picture for a style. Also used for that style's share image."""
     from datetime import timedelta
@@ -487,7 +557,7 @@ def make_hero(theme_name, events, groups, now, run_no=0):
             "night": lambda: night_svg(counts),
             "deck": lambda: deck_svg(tl, run_no),
             "redline": lambda: radar_svg(len(groups["tonight"])),
-            "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no),
+            "holo": lambda: holo_svg(len(groups["tonight"]), n_all, run_no, _star_names(events, now)),
             "yla": lambda: yla_svg(run_no),
             "minimal": lambda: minimal_svg(len(groups["tonight"]), n_all, run_no)}.get(theme_name, lambda: hero_svg(run_no))()
 
@@ -555,6 +625,15 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
 
     spots = [e for e in events if e.get("watched") and bucket(e.get("date_str", ""), now) != "past"]
     s_spots = _details("spots", "★ Your spots", len(spots), _days_html(spots, now))
+    spot_venues = []
+    for e in sorted(spots, key=lambda e: sort_key(e.get("date_str", ""))):
+        tag = f'{e.get("venue") or artist_name(e)} ({day_label(e.get("date_str", ""))[:3]})'
+        if tag not in spot_venues:
+            spot_venues.append(tag)
+    spot_line = (f'<a href="#spots" class="spotline" style="display:block;text-decoration:none;margin:0 0 14px;padding:10px 14px;'
+                 f'border:1px solid #005254;border-radius:10px;color:#ccc;{FONT}font-size:13px;">'
+                 f'<b style="color:#00b9bc;">★ {len(spots)} show{"s" if len(spots) != 1 else ""} at your spots:</b> '
+                 f'{esc(", ".join(spot_venues[:5]))}{" + more" if len(spot_venues) > 5 else ""} →</a>') if spots else ""
 
     nav_link = f"color:{ORANGE};text-decoration:none;padding:6px 12px;border:1px solid #005254;border-radius:999px;"
     nav = (f'<div style="position:sticky;top:0;background:#001515;padding:8px 0;margin:0 0 12px;z-index:5;{FONT}'
@@ -564,11 +643,15 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
            f'<a href="#next" style="{nav_link}">Next week</a><a href="#later" style="{nav_link}">Later</a></div>')
 
     dup_note = f" · {dupes_removed} duplicate listings merged" if dupes_removed else ""
-    s_health = (f'<div id="health" style="margin-top:28px;"><h2 style="color:{ORANGE};border-bottom:1px solid #005254;'
-                f'padding-bottom:8px;{FONT}">Source health</h2>'
-                f'<div style="color:#009092;font-size:12px;margin-bottom:10px;{FONT}">What each source returned on this run{dup_note}. '
-                f'Yellow or red means that source returned nothing. Check it before trusting the lists above.</div>'
-                f'{source_map(events, health)}</div>')
+    n_ok = sum(1 for _, st, _ in health if st == "ok")
+    n_bad = sum(1 for _, st, _ in health if st in ("error", "empty"))
+    flag = (f' · <span style="color:#e5534b;">{n_bad} skipping or dry</span>' if n_bad else
+            ' · <span style="color:#5ec269;">all spinning</span>')
+    s_health = (f'<details id="health" class="sec" style="margin-top:28px;"><summary>🎚 The Crate '
+                f'<span style="font-size:12px;">· where tonight\'s records came from · {n_ok} spinning{flag}</span></summary>'
+                f'<div class="secb"><div style="color:#009092;font-size:12px;margin-bottom:10px;{FONT}">Every source is a record in the crate. '
+                f'Spinning = it delivered shows this run; dry = it answered with nothing; skipping = it failed; off = not set up{dup_note}.</div>'
+                f'{source_map(events, health)}{hand_pull_html(health)}</div></details>')
 
     how = {"rotate": "rotates every run", "auto": "default for Classic"}.get(th[2], "set by config/theme.txt")
     foot = (f'{run_txt} · last ran {ran} · code v{CODE_VERSION} · color: {th[0]} ({how}). '
@@ -600,7 +683,7 @@ def build_page(events, announced, health, site_url="", demo=False, dupes_removed
   {STRIPES if th[0] == 'mahogany' else ''}
   {nav}
   {legend_html()}
-  {highlight_html(events, now)}
+  {spot_line}{highlight_html(events, now)}
   {filter_bar()}
   {s_tonight}
   {slots[0]}
@@ -634,6 +717,6 @@ document.addEventListener('click',function(e){{var a=e.target.closest('a[href^="
 {LAZY_JS}
 {FILTER_JS}
 {stale_js(now)}
-{MOTION_JS}
+{MOTION_JS}{STAR_JS if style == "holo" else ""}
 </body></html>"""
     return _theme.apply(page, th)

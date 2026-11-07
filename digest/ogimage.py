@@ -74,6 +74,8 @@ def build_all(events, highlight, now, styles, run_no=0):
                 hero = make_hero(th[0], events, groups, now, run_no).replace("<svg ", f'<svg preserveAspectRatio="{align}" ', 1)
                 if th[0] == "minimal":   # the card already says it; drop the drawing's own labels
                     hero = re.sub(r"<text\b.*?</text>", "", hero, flags=re.S)
+                if th[0] == "holo":      # keep the record label, drop the readouts (and "tap a star" makes no sense in a still)
+                    hero = re.sub(r'<text\b[^>]*font-size="10".*?</text>', "", hero, flags=re.S)
                 html_ = _card_html(headline, sub, stamp, hero)
                 if th[0] == "mahogany":
                     html_ = html_.replace('<div class="bar"></div>', RUG)

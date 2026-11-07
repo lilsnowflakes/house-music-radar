@@ -16,6 +16,21 @@ RED_FILTER = ('<svg width="0" height="0" style="position:absolute" aria-hidden="
               '<feColorMatrix type="matrix" values="0.28 0.62 0.06 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>'
               '<feComponentTransfer><feFuncR type="gamma" amplitude="1" exponent="0.5"/></feComponentTransfer></filter></svg>')
 
+# Minimal style: black on white while the sun is up in Los Angeles, white on black from sunset to sunrise.
+# Worked out in the visitor's browser from LA's coordinates (standard sunrise equation), checked every 5 minutes.
+MINIMAL_SUN_JS = """<script>(function(){
+ function sun(t){var r=Math.PI/180,lat=34.05,lng=-118.24,JD=t/864e5+2440587.5,n=Math.round(JD-2451545+lng/360),
+  J=n-lng/360,M=(357.5291+.98560028*J)%360,C=1.9148*Math.sin(M*r)+.02*Math.sin(2*M*r)+.0003*Math.sin(3*M*r),
+  L=(M+C+282.9372)%360,Jt=2451545+J+.0053*Math.sin(M*r)-.0069*Math.sin(2*L*r),
+  sd=Math.sin(L*r)*Math.sin(23.4397*r),cd=Math.cos(Math.asin(sd)),
+  w=Math.acos((Math.sin(-.833*r)-Math.sin(lat*r)*sd)/(Math.cos(lat*r)*cd))/r,ms=function(j){return(j-2440587.5)*864e5;};
+  return[ms(Jt-w/360),ms(Jt+w/360)];}
+ function set(){var t=Date.now(),s=sun(t),night=t<s[0]||t>s[1];
+  document.documentElement.classList.toggle('mnight',night);
+  var m=document.querySelector('meta[name=theme-color]');if(m)m.content=night?'#000000':'#ffffff';}
+ set();setInterval(set,3e5);
+})();</script>"""
+
 CUSTOM = {
     # Minimal: black, white and gray only. Everything colored (chips, photos, drawings) is turned to grayscale,
     # and the YouTube / Spotify / SoundCloud icons are hidden.
@@ -31,7 +46,12 @@ CUSTOM = {
                         ".evrow{border-width:0 0 1px 0!important;background:#fff!important;padding-left:0!important;padding-right:0!important}"
                         ".tix,.hlcard a[style*='background:#111111']{background:#111!important;color:#fff!important}"
                         ".fchip[aria-pressed=true]{background:#111!important;color:#fff!important}"
-                        "div[style*='letter-spacing:2px'],details.sec>summary{letter-spacing:1.5px!important;font-weight:500!important;font-family:inherit!important}</style>"),
+                        "div[style*='letter-spacing:2px'],details.sec>summary{letter-spacing:1.5px!important;font-weight:500!important;font-family:inherit!important}"
+                        # after LA sunset everything flips to white on black (photos flip back so they look normal)
+                        "html.mnight,html.mnight body{background:#000!important}"
+                        "html.mnight body>*:not(#pf):not(#lb){filter:grayscale(1) invert(1)}"
+                        "html.mnight body>*:not(#pf):not(#lb) img{filter:invert(1)}"
+                        "</style>" + MINIMAL_SUN_JS),
     # You Look Amazing (Burning Man camp): sand and cream, Tulum turquoise, sunset gold. A light, boho style.
     "yla": dict(stops=["#f4eadb", "#fbf6ee", "#e9dcc5", "#d8c3a0", "#9b8467", "#8b7357", "#7a6248", "#127f7c"],
                 extra={"#fff": "#3a2c20", "#ccc": "#5c4a39", "#bbb": "#5c4a39", "#aaa": "#6b5845", "#e6fafa": "#3a2c20"},
@@ -57,7 +77,10 @@ CUSTOM = {
                      "conic-gradient(from 200deg,#7cf5ff,#b58cff,#ff8ad8,#ffd27a,#7cf5ff) border-box!important;font-family:inherit!important}"
                      ".tix,.hlcard a[style*='background:#7cf5ff']{background:linear-gradient(90deg,#7cf5ff,#b58cff)!important;color:#05070d!important;font-weight:600}"
                      ".fchip[aria-pressed=true]{background:linear-gradient(90deg,#7cf5ff,#b58cff)!important;border-color:transparent!important}"
-                     ".sc{font-variant-numeric:tabular-nums}</style>"),
+                     ".sc{font-variant-numeric:tabular-nums}"
+                     # Tron glow: the teal letters get the same pink neon halo as Outrun
+                     "h1,h2,details.sec>summary,div[style*='letter-spacing:2px'],.sc"
+                     "{text-shadow:0 0 6px rgba(255,113,206,.75),0 0 16px rgba(181,140,255,.45)}</style>"),
     # Low-light version modeled on dark app dashboards: navy, soft gradients, rounded panels.
     "night": dict(stops=["#0b1630", "#12254a", "#1a3263", "#25407a", "#4a6bb5", "#8fa6d6", "#b4c6ea", "#9a7bff"],
                   extra={"#e6fafa": "#e9f0ff"},

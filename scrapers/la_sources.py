@@ -273,6 +273,9 @@ def _run(name, fn):
         return []
 
 
+USED_INBOX = {}   # name -> (inbox file, shows read from it) when a hand-saved page was used this run
+
+
 def _with_inbox(name, url, parser, city, scrolls=0, inbox_file=""):
     def go():
         try:
@@ -281,6 +284,7 @@ def _with_inbox(name, url, parser, city, scrolls=0, inbox_file=""):
             saved = saved_page(inbox_file) if inbox_file else None
             if saved:
                 found = parser(saved, city)
+                USED_INBOX[name] = (inbox_file, len(found))
                 print(f"    {name}: live read failed ({e}); used inbox/{inbox_file} ({len(found)} shows)")
                 return found
             raise
@@ -307,4 +311,4 @@ def scrape_shotgun(city):
 
 
 def scrape_scenestar(city):
-    return _run("SceneStar", lambda: parse_scenestar(fetch_html(SCENESTAR_URL), city)) if city == "los_angeles" else []
+    return _with_inbox("SceneStar", SCENESTAR_URL, parse_scenestar, city, inbox_file="scenestar.html")

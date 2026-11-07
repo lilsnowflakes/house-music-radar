@@ -40,6 +40,20 @@ SOURCES = {
     "los_angeles": ["19hz", "resident_advisor", "dice", "shotgun", "scenestar",
                     "venue_calendars", "heard", "seatgeek", "edmtrain", "calendars", "reddit", "ticketmaster_la"],
 }
+# Sites that block automated reads. A saved copy of the page (HTML) dropped into inbox/ under the file
+# name below is read instead whenever the live read fails. Hand these to whoever pulls pages for you.
+#   (name, source key, page to save, inbox file, why it needs a hand pull)
+HAND_PULL = [
+    ("Resident Advisor", "resident_advisor", "https://ra.co/events/us/losangeles", "ra.html",
+     "bot wall; RA's robots.txt asks automated readers to stay out"),
+    ("SceneStar", "scenestar", "https://thescenestar.com/los-angeles-show-list-by-the-scenestar/", "scenestar.html",
+     "answers automated reads with 403 Forbidden"),
+    ("Shotgun", "shotgun", "https://shotgun.live/en/cities/los-angeles/house", "shotgun.html",
+     "shows load by JavaScript; often comes back empty"),
+    ("AXS (Academy LA, Exchange LA, Avalon)", "", "https://www.axs.com/venues/ (each venue's page)", "axs-<venue>.html",
+     "bot check; no reader built yet: send one saved page and a reader gets written"),
+]
+
 # Note: 1001Tracklists has no city listings, so it is not a source here.
 
 HOUSE_GENRES = [

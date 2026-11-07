@@ -84,49 +84,90 @@ def _process(raw_bytes, pid):
     return full.size
 
 
+PHOTO_EXT = (".heic", ".heif", ".jpg", ".jpeg", ".png", ".webp")
+
+
+def _explain(status, text):
+    """Turn Google's error into the one thing to fix."""
+    t = text or ""
+    if "SERVICE_DISABLED" in t or "accessNotConfigured" in t or "has not been used in project" in t:
+        return ("the Google Drive API is switched off for this key's project. In Google Cloud: APIs & Services > Library > "
+                "Google Drive API > Enable, wait 5 minutes, re-run")
+    if "REFERRER" in t.upper() or "referer" in t:
+        return ("the API key only allows certain websites. In Google Cloud > Credentials > your key: set "
+                "Application restrictions to None (keep API restriction = Google Drive API)")
+    if "API_KEY_INVALID" in t or "keyInvalid" in t or "API key not valid" in t:
+        return "the GOOGLE_API_KEY secret isn't a valid key (copy it again from Google Cloud > Credentials)"
+    if "API_KEY_SERVICE_BLOCKED" in t or "are blocked" in t:
+        return "the key's API restriction doesn't include Google Drive API (Credentials > your key > API restrictions)"
+    if status == 404 or "notFound" in t or "File not found" in t:
+        return ("folder not found: check DRIVE_FOLDER_ID, and share the folder as 'Anyone with the link: Viewer'")
+    if status == 403:
+        return "Google said no access (403): share the folder as 'Anyone with the link: Viewer'. " + t[:80]
+    return f"{status}: {t[:120]}"
+
+
 def sync():
     """Bring the Drive folder into data/photos. Returns the full photo list, newest first."""
     idx = _load_index()
     key, folder = _env("GOOGLE_API_KEY"), _env("DRIVE_FOLDER_ID")
+    if folder and "folders/" in folder:          # a pasted link instead of the bare ID still works
+        folder = folder.split("folders/")[1].split("?")[0].split("/")[0]
     if not key or not folder:
         LAST["Photos (Drive)"] = ("skipped", "add GOOGLE_API_KEY and DRIVE_FOLDER_ID secrets to use the Drive photo folder")
     else:
         try:
             files, token = [], None
             while True:
+                # every file, not only ones Drive labels image/*: iPhone HEIC often arrives as a generic file
                 r = requests.get("https://www.googleapis.com/drive/v3/files", timeout=20, params={
-                    "q": f"'{folder}' in parents and mimeType contains 'image/' and trashed=false",
-                    "orderBy": "createdTime desc", "pageSize": 200, "key": key, **({"pageToken": token} if token else {}),
-                    "fields": "nextPageToken,files(id,name,description,createdTime,md5Checksum,imageMediaMetadata(time))"})
+                    "q": f"'{folder}' in parents and mimeType != 'application/vnd.google-apps.folder' and trashed=false",
+                    "orderBy": "createdTime desc", "pageSize": 200, "key": key,
+                    "supportsAllDrives": "true", "includeItemsFromAllDrives": "true",
+                    **({"pageToken": token} if token else {}),
+                    "fields": "nextPageToken,files(id,name,mimeType,description,createdTime,md5Checksum,imageMediaMetadata(time))"})
                 if r.status_code != 200:
-                    raise RuntimeError(f"{r.status_code}: {r.text[:120]}")
+                    raise RuntimeError(_explain(r.status_code, r.text))
                 j = r.json()
-                files += j.get("files", [])
+                files += [f for f in j.get("files", [])
+                          if (f.get("mimeType") or "").startswith("image/") or (f.get("name") or "").lower().endswith(PHOTO_EXT)]
                 token = j.get("nextPageToken")
                 if not token:
                     break
-            new = 0
+            new, bad = 0, []
             live = set()
             for f in files:
                 pid = f["id"] + "-" + (f.get("md5Checksum") or "x")[:8]
-                live.add(pid)
                 cap, credit = _caption(f.get("name"), f.get("description"))
                 rec = idx.get(pid) or {}
                 if not rec or not os.path.exists(os.path.join(STORE, f"{pid}-t.webp")):
-                    raw = requests.get(f"https://www.googleapis.com/drive/v3/files/{f['id']}",
-                                       params={"alt": "media", "key": key}, timeout=60)
-                    if raw.status_code != 200:
+                    try:          # one bad file never stops the rest
+                        raw = requests.get(f"https://www.googleapis.com/drive/v3/files/{f['id']}",
+                                           params={"alt": "media", "key": key, "supportsAllDrives": "true"}, timeout=60)
+                        if raw.status_code != 200:
+                            raise RuntimeError(_explain(raw.status_code, raw.text))
+                        w, h = _process(raw.content, pid)
+                    except Exception as ex:
+                        bad.append(f"{f.get('name')}: {str(ex)[:90]}")
                         continue
-                    w, h = _process(raw.content, pid)
                     rec = {"w": w, "h": h}
                     new += 1
+                live.add(pid)
                 rec.update(caption=cap, credit=credit, taken=_taken(f))   # captions can be edited in Drive later
                 idx[pid] = rec
             for pid in [p for p in idx if p not in live and not p.startswith("local-")]:   # removed from Drive -> removed here
                 idx.pop(pid, None)
-            LAST["Photos (Drive)"] = ("ok", f"{len(files)} photos in the folder, {new} new this run")
+            week = len(recent([r for r in idx.values()]))
+            note = f"{len(files)} photos in the folder, {new} new this run, {week} from the last 7 days"
+            if files and not week:
+                note += " (spotlight hidden until a newer photo lands; older ones still show down the page and on Moments)"
+            if not files:
+                note = "connected, but the folder has no photos in it yet"
+            if bad:
+                note += f" · {len(bad)} couldn't be read: " + "; ".join(bad[:2])
+            LAST["Photos (Drive)"] = ("error" if bad and not new and not live else "ok", note)
         except Exception as ex:
-            LAST["Photos (Drive)"] = ("error", f"{str(ex)[:120]} (kept the photos from earlier runs)")
+            LAST["Photos (Drive)"] = ("error", f"{str(ex)[:260]} (kept the photos from earlier runs)")
     _add_local(idx)
     os.makedirs(STORE, exist_ok=True)
     json.dump(idx, open(INDEX, "w", encoding="utf-8"), indent=0)

@@ -232,38 +232,73 @@ def radar_svg(n=0):
 <text x="664" y="24" text-anchor="end" font-family="monospace" font-size="12" fill="#00a5a7" letter-spacing="2">{n} TONIGHT</text></svg>'''
 
 
-def holo_svg(tonight=0, total=0, seed=0):
-    """'Holo' hero (2026 futuristic): a rotating wireframe globe in an iridescent gradient, an orbiting
-    satellite, a live waveform and HUD readouts."""
+def holo_svg(tonight=0, total=0, seed=0, artists=None):
+    """'Holo' hero: a spinning vinyl record that doubles as a radar screen. The sweep scans the grooves,
+    tonight's shows blink on the record, and the stars around it are artists: tap one to see the name."""
+    import math
+    from html import escape as _e
     rnd = random.Random(seed)
-    W, H, cx, cy, R = 680, 210, 520, 108, 78
-    mer = ""
-    for i in range(6):   # meridians: ellipses whose width sweeps, which reads as rotation
-        ph = i / 6
-        mer += (f'<ellipse cx="{cx}" cy="{cy}" rx="{R}" ry="{R}" fill="none" stroke="url(#hg)" stroke-width="1" opacity=".75">'
-                f'<animate attributeName="rx" values="{R};0;{R}" keyTimes="0;.5;1" dur="9s" begin="-{ph * 9:.2f}s" repeatCount="indefinite"/></ellipse>')
-    lat = "".join(f'<ellipse cx="{cx}" cy="{cy + y}" rx="{(R * R - y * y) ** .5:.1f}" ry="{max(2, ((R * R - y * y) ** .5) * .18):.1f}" '
-                  f'fill="none" stroke="url(#hg)" stroke-width=".8" opacity=".55"/>' for y in (-52, -26, 0, 26, 52))
+    W, H, cx, cy, R = 680, 210, 505, 105, 90
+    grooves = "".join(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="{"#2a3552" if r % 12 else "#3f5680"}" '
+                      f'stroke-width="{.6 if r % 12 else .9}"/>' for r in range(32, R, 4))
+    rings = "".join(f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="none" stroke="#7cf5ff" stroke-width=".6" '
+                    f'stroke-dasharray="2 5" opacity="{o}"/>' for r, o in ((R + 16, .35), (R + 34, .18)))
+    blips = ""
+    for i in range(max(tonight, 4)):
+        ang, rad = rnd.uniform(0, 2 * math.pi), rnd.uniform(38, R - 8)
+        blips += (f'<circle cx="{cx + rad * math.cos(ang):.1f}" cy="{cy + rad * math.sin(ang):.1f}" r="2.6" fill="#ff8ad8">'
+                  f'<animate attributeName="opacity" values="1;.15;1" dur="{1.4 + i * .27:.2f}s" repeatCount="indefinite"/></circle>')
+    # stars: some plain, some carry an artist name (bigger tap target, same look)
+    names = list(artists or [])[:28]
+    stars = ""
+    taken = []
+    for k in range(46):
+        for _ in range(30):     # keep stars off the record and the text block
+            x, y = rnd.randint(14, 666), rnd.randint(10, 200)
+            if math.hypot(x - cx, y - cy) > R + 22 and not (x < 300 and y < 58) and all(math.hypot(x - a, y - b) > 22 for a, b in taken):
+                break
+        taken.append((x, y))
+        dur, beg = rnd.uniform(2.5, 6.5), rnd.uniform(0, 6)
+        blink = f'<animate attributeName="opacity" values=".1;1;.1" dur="{dur:.1f}s" begin="-{beg:.1f}s" repeatCount="indefinite"/>'
+        if k < len(names):
+            nm, when = names[k]
+            stars += (f'<g class="as" data-a="{_e(nm)}" data-w="{_e(when)}"><circle cx="{x}" cy="{y}" r="12" fill="transparent"/>'
+                      f'<circle cx="{x}" cy="{y}" r="1.9" fill="#cfe9ff" filter="url(#hglow)">{blink}</circle></g>')
+        else:
+            stars += f'<circle cx="{x}" cy="{y}" r=".9" fill="#cfe9ff">{blink}</circle>'
     pts = []
     for k in range(3):
-        pts.append(" ".join(f"{x},{150 + 18 * __import__('math').sin(x / (18 + k * 6) + k) * rnd.uniform(.5, 1):.1f}" for x in range(20, 380, 8)))
+        pts.append(" ".join(f"{x},{165 + 14 * math.sin(x / (18 + k * 6) + k) * rnd.uniform(.5, 1):.1f}" for x in range(20, 330, 8)))
     wave = (f'<polyline fill="none" stroke="url(#hg)" stroke-width="2" points="{pts[0]}">'
             f'<animate attributeName="points" values="{pts[0]};{pts[1]};{pts[2]};{pts[0]}" dur="4s" repeatCount="indefinite"/></polyline>')
-    dots = "".join(f'<circle cx="{rnd.randint(10, 670)}" cy="{rnd.randint(8, 200)}" r=".9" fill="#cfe9ff" opacity="{rnd.choice([.25, .5, .8])}"/>' for _ in range(40))
     hud = 'font-family="ui-monospace,monospace" font-size="10" fill="#a9bbe0" letter-spacing="1.5"'
-    return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="Wireframe globe and live waveform"
- style="display:block;border-radius:16px;border:1px solid #22304f;background:radial-gradient(120% 140% at 80% 40%,#111a30 0%,#05070d 60%)">
+    tip = "TAP A STAR · SEE WHO'S PLAYING" if names else "SCANNING LOS ANGELES"
+    return f'''<svg viewBox="0 0 {W} {H}" width="100%" role="img" aria-label="A spinning vinyl record used as a radar screen, with artist stars around it"
+ style="display:block;border-radius:16px;border:1px solid #22304f;background:radial-gradient(120% 140% at 75% 45%,#111a30 0%,#05070d 60%)">
 <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf5ff"/><stop offset=".35" stop-color="#b58cff"/>
 <stop offset=".7" stop-color="#ff8ad8"/><stop offset="1" stop-color="#ffd27a"/></linearGradient>
+<linearGradient id="hsw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7cf5ff" stop-opacity="0"/><stop offset="1" stop-color="#7cf5ff" stop-opacity=".5"/></linearGradient>
+<linearGradient id="hsheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#cfe9ff" stop-opacity=".13"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="hlabel"><stop offset="0" stop-color="#ffd27a"/><stop offset=".55" stop-color="#ff8ad8"/><stop offset="1" stop-color="#b58cff"/></radialGradient>
 <filter id="hglow"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<g data-d="2">{dots}</g>
-<g data-d="8" filter="url(#hglow)">{mer}{lat}
-<ellipse cx="{cx}" cy="{cy}" rx="{R + 30}" ry="20" fill="none" stroke="#7cf5ff" stroke-width=".8" opacity=".5" transform="rotate(-14 {cx} {cy})"/>
-<circle r="4" fill="#ffffff"><animateMotion dur="6s" repeatCount="indefinite" path="M{cx - R - 30},{cy} a{R + 30},20 0 1,0 {2 * (R + 30)},0 a{R + 30},20 0 1,0 -{2 * (R + 30)},0" rotate="auto"/></circle></g>
+<g data-d="2">{stars}</g>
+<g data-d="8">{rings}
+<circle cx="{cx}" cy="{cy}" r="{R}" fill="#07090f" stroke="url(#hg)" stroke-width="1.4" filter="url(#hglow)"/>
+<g>{grooves}<path d="M{cx} {cy} L{cx + R} {cy - 30} A{R + 5} {R + 5} 0 0 1 {cx + R} {cy + 30} Z" fill="url(#hsheen)"/>
+<path d="M{cx} {cy} L{cx - R} {cy + 30} A{R + 5} {R + 5} 0 0 1 {cx - R} {cy - 30} Z" fill="url(#hsheen)"/>
+<circle cx="{cx}" cy="{cy}" r="28" fill="url(#hlabel)"/>
+<text x="{cx}" y="{cy - 8}" text-anchor="middle" font-family="ui-sans-serif,sans-serif" font-size="7" font-weight="700" fill="#05070d" letter-spacing="1.5">MO'S RADAR</text>
+<text x="{cx}" y="{cy + 14}" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" fill="#05070d" letter-spacing="1">33⅓ · LA</text>
+<animateTransform attributeName="transform" type="rotate" from="0 {cx} {cy}" to="360 {cx} {cy}" dur="1.8s" repeatCount="indefinite"/></g>
+<circle cx="{cx}" cy="{cy}" r="2.5" fill="#05070d" stroke="#a9bbe0" stroke-width=".8"/>
+{blips}
+<g><path d="M{cx} {cy} L{cx + R + 14} {cy - 40} A{R + 22} {R + 22} 0 0 1 {cx + R + 22} {cy} Z" fill="url(#hsw)"/>
+<line x1="{cx}" y1="{cy}" x2="{cx + R + 22}" y2="{cy}" stroke="#7cf5ff" stroke-width="1.6" filter="url(#hglow)"/>
+<animateTransform attributeName="transform" type="rotate" from="0 {cx} {cy}" to="360 {cx} {cy}" dur="4.5s" repeatCount="indefinite"/></g></g>
 <g data-d="3" filter="url(#hglow)">{wave}</g>
 <g data-d="1"><text x="20" y="28" {hud}>LOS ANGELES · 34.05°N 118.24°W</text>
 <text x="20" y="46" {hud} fill="#7cf5ff">● LIVE · {tonight} TONIGHT · {total} UPCOMING</text>
-<text x="20" y="196" {hud}>MO'S HOUSE MUSIC RADAR · 2026</text></g></svg>'''
+<text x="20" y="200" {hud}>{tip}</text></g></svg>'''
 
 
 def yla_svg(seed=0):
